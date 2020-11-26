@@ -4,20 +4,20 @@ function [Nominal] = PureAligningNominal( Mesh, Raw, Tire )
 Fyo = FyoEvaluation( Mesh, Raw, Tire );
 
 %% Defining Initial Point
-x0.Bt = 0.75;
-x0.Ct = 1.75;
-x0.Dt = 2.25;
-x0.Et = -0.3;
+x0.Bt = 5;
+x0.Ct = 0.8;
+x0.Dt = -5;
+x0.Et = -10;
 x0.Ht = -0.1;
 
 x0.qbz10 = 0.1;
 x0.Dr = 0.1;
 
 %% Defining Optimization Variables
-Bt = optimvar( 'Bt', 'LowerBound', 0, 'UpperBound', 1.5);
-Ct = optimvar( 'Ct', 'LowerBound', 1.6, 'UpperBound', 2);
-Dt = optimvar( 'Dt', 'LowerBound', 0, 'UpperBound', 2* max(abs(AligningMoment)));
-Et = optimvar( 'Et', 'Lowerbound', -inf, 'UpperBound', 0.98);
+Bt = optimvar( 'Bt', 'LowerBound', 0.001, 'UpperBound', 28);
+Ct = optimvar( 'Ct', 'LowerBound', 0.001, 'UpperBound', 1.85);
+Dt = optimvar( 'Dt', 'LowerBound', -20* max(abs(AligningMoment)), 'UpperBound',0 );
+Et = optimvar( 'Et', 'Lowerbound', -10, 'UpperBound', 1);
 Ht = optimvar( 'Ht', 'Lowerbound', -2.5, 'UpperBound', 0);
 
 qbz10 = optimvar( 'qbz10', 'LowerBound', 0 );
