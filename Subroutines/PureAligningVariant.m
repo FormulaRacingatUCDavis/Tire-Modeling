@@ -3,8 +3,6 @@ function [ Variant, Tire ] = PureAligningVariant( Raw, x0, Tire )
 %% Evaluate Fyo
 Fyo = FyoEvaluation;
 
-x0.qdz0 = 0;
-
 %% Optimization Variables
 qbz1 = optimvar( 'qbz1', 'Lowerbound', -5, 'Upperbound', 2 );
 qbz2 = optimvar( 'qbz2', 'Lowerbound', -5, 'Upperbound', 2*x0.qbz2 );
@@ -15,9 +13,8 @@ qbz10 = optimvar( 'qbz10', 'Lowerbound', -5, 'Upperbound', 5 );
 
 qcz1 = optimvar( 'qcz1', 'Lowerbound', 1, 'Upperbound', 5 );
 
-qdz0 = optimvar( 'qdz0', 'Lowerbound', 0, 'Upperbound', 0.5);
 qdz1 = optimvar( 'qdz1', 'Lowerbound', 0, 'Upperbound', 10 );
-qdz2 = optimvar( 'qdz2', 'Lowerbound', -5, 'Upperbound', 0 );
+qdz2 = optimvar( 'qdz2', 'Lowerbound', -0.5, 'Upperbound', 0 );
 qdz3 = optimvar( 'qdz3', 'Lowerbound', -5, 'Upperbound', 5 );
 qdz4 = optimvar( 'qdz4', 'Lowerbound', -5, 'Upperbound', 5 );
 qdz6 = optimvar( 'qdz6', 'Lowerbound', -5, 'Upperbound', 5 );
@@ -27,9 +24,9 @@ qdz9 = optimvar( 'qdz9', 'Lowerbound', -5, 'Upperbound', 5 );
 qdz10 = optimvar( 'qdz10', 'Lowerbound', -5, 'Upperbound', 5 );
 qdz11 = optimvar( 'qdz11', 'Lowerbound', -5, 'Upperbound', 5 );
 
-qez1 = optimvar( 'qez1', 'Lowerbound', -1.5, 'Upperbound', 0.75 );
-qez2 = optimvar( 'qez2', 'Lowerbound', -1.5, 'Upperbound', 1.5 );
-qez3 = optimvar( 'qez3', 'Lowerbound', -1.5, 'Upperbound', 1.5 );
+qez1 = optimvar( 'qez1', 'Lowerbound', -1, 'Upperbound', 0.8 );
+qez2 = optimvar( 'qez2', 'Lowerbound', 0, 'Upperbound', 2 );
+qez3 = optimvar( 'qez3', 'Lowerbound', -3, 'Upperbound', 0 );
 qez4 = optimvar( 'qez4', 'Lowerbound', -1.5, 'Upperbound', 1.5 );
 qez5 = optimvar( 'qez5', 'Lowerbound', -1.5, 'Upperbound', 0 );
 
@@ -45,7 +42,7 @@ ppz2 = optimvar( 'ppz2', 'Lowerbound', -5, 'Upperbound', 5 );
 Obj = fcn2optimexpr( @ErrorMzo, ...
     qbz1, qbz2, qbz3, qbz5, qbz6, qbz10, ...
     qcz1, ...
-    qdz0, qdz1, qdz2, qdz3, qdz4, qdz6, qdz7, qdz8, qdz9, qdz10, qdz11, ...
+    qdz1, qdz2, qdz3, qdz4, qdz6, qdz7, qdz8, qdz9, qdz10, qdz11, ...
     qez1, qez2, qez3, qez4, qez5, ...
     qhz1, qhz2, qhz3, qhz4, ...
     ppz1, ppz2 );
@@ -79,7 +76,6 @@ Tire.q.B.z(10) = Variant.Solution.qbz10;
 
 Tire.q.C.z(1) = Variant.Solution.qcz1;
 
-Tire.q.D.z(99) = Variant.Solution.qdz0;
 Tire.q.D.z(1) = Variant.Solution.qdz1;
 Tire.q.D.z(2) = Variant.Solution.qdz2;
 Tire.q.D.z(3) = Variant.Solution.qdz3;

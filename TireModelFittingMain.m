@@ -12,10 +12,10 @@ set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
 % Default Directories
-Directory.Tool = mfilename('fullpath');
+Directory.Tool = mfilename('C:\FSAE\GitHub');
 Directory.Tool = Directory.Tool(1 : strfind(Directory.Tool, mfilename()) - 2);
-Directory.Data = [Directory.Tool, '\Tire Data']; % Change to Personal Directory Where Tire Data is Stored
-Directory.Save = [Directory.Tool, '\Models']; % Change to Personal Directory Where Model & Documentation Should be Saved
+Directory.Data = [Directory.Tool, 'C:\FSAE\GitHub\Tire-Data']; % Change to Personal Directory Where Tire Data is Stored
+Directory.Save = [Directory.Tool, '\Tire-Modeling']; % Change to Personal Directory Where Model & Documentation Should be Saved
 
 addpath( genpath( Directory.Tool ) );
 
@@ -133,4 +133,23 @@ for p = 2
         Tire.run{i}.dat.RL(Tire.run{i}.bin.P(:,p)), ...
         abs(Tire.run{i}.dat.FZ(Tire.run{i}.bin.P(:,p))));
 end
-
+%% Dt and Et Graphing
+% Code does not affect fit of tire. It is just to estimate parameters of Dt
+% and Et. If debudding is not needed, feel free to comment out.
+dFz = @(Fz)(Fz - Tire.Fzo) ./ Tire.Fzo;
+dPi = @(Pi)(Pi - Tire.Pio) ./ Tire.Pio;
+figure
+subplot(2,1,1)
+gamma = 2;
+Pi = 11;
+Dt = @(Fz)(Tire.Ro .*(Fz./Tire.Fzo)) * (Tire.q.D.z(1) + Tire.q.D.z(2).*dFz(Fz) *...
+    (1 - Tire.p.P.z(1) * dPi(Pi))) * (1 + Tire.q.D.z(3) * abs(gamma) + ...
+    Tire.q.D.z(4) * gamma.^2);
+ fplot(Dt,[0,2500])
+ Ct = 0.8;
+ Bt = 2.5;
+ Slip = 0;
+ subplot(2,1,2)
+ Et = @(Fz)(Tire.q.E.z(1) + Tire.q.E.z(2)*dFz(Fz) + Tire.q.E.z(3) * dFz(Fz).^2)...
+     *(1 + (Tire.q.E.z(4) + Tire.q.E.z(5)* gamma)*(2/pi)*atan(Bt * Ct * Slip))
+ fplot(Et, [0,2500])

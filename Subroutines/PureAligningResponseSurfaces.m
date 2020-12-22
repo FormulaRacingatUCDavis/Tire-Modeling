@@ -46,7 +46,7 @@ Ct.Surface = @(Pi, Fz, Gam, x0) x0.qcz1 + 0*(Pi + Fz + Gam);
 %% Fitting D_{t} Surface
 % Initial Vector 
 Dt0.qdz1 = 1;
-Dt0.qdz2 = 0;
+Dt0.qdz2 = -6;
 Dt0.qdz3 = 0;
 Dt0.qdz4 = 0;
 
@@ -77,6 +77,7 @@ x0.ppz1 = Dt.Solution.ppz1;
 Dt.Surface = @(Pi, Fz, Gam, x0) Tire.Ro .* (Fz./Tire.Fzo) .* ...
     ( x0.qdz1 + x0.qdz2.*dFz(Fz) ) .* ( 1 - x0.ppz1.*dPi(Pi) ) .* ...
     ( 1 + x0.qdz3.*abs(Gam) + x0.qdz4.*Gam.^2 );
+
 
 clear qdz1 qdz2 qdz3 qdz4 ppz1 Dt0
 
@@ -296,4 +297,8 @@ Response.Dr = Dr;
         
         MeanSquareError= mean( ( [Nominal.Dr] - DrSurface ).^2 );
     end
+
 end
+
+
+
