@@ -67,17 +67,17 @@ Tire = PureLateralFitting( Tire, Data, Bin );
 % Tire = PureLongitudinalFitting( Tire, Data, Bin );
 
 % Aligning Moment Fitting ( Mzo )
-Tire = PureAligningFitting( Tire, Data, Bin );
+% Tire = PureAligningFitting( Tire, Data, Bin );
 
 return
 
 %% Steady State Combined Slip Fitting
 % This is currently undeveloped due to data limitations. Instead, combined
 % tire forces can be evaluated using the Modified-Nicolas-Com
+
 %% Past This is Undeveloped
 
 %% Camber Evaluation Plots
-
 for p = 1:length(Tire.run{2}.binval.P)
     
     Fig{p}.GAM = figure('Name','Optimal Camber from Tread Temperature Differential');
@@ -120,7 +120,7 @@ for p = 1:length(Tire.run{2}.binval.P)
 end
 
 %% Radial Deflection Modeling
-
+% Cornering Stiffness Modeling
 for p = 2
     if p == 1
         i = 3;
@@ -134,3 +134,5 @@ for p = 2
         abs(Tire.run{i}.dat.FZ(Tire.run{i}.bin.P(:,p))));
 end
 
+%% Transient Tire Dynamics
+% Tire = TransientRelaxationLength( Tire, Data, Bin );
