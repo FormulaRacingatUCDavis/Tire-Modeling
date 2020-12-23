@@ -136,3 +136,27 @@ end
 
 %% Transient Tire Dynamics
 % Tire = TransientRelaxationLength( Tire, Data, Bin );
+
+
+
+
+
+%% Dt and Et Graphing
+% Code does not affect fit of tire. Only Estimating Dt/Et parameters
+dFz = @(Fz)(Fz - Tire.Fzo) ./ Tire.Fzo;
+dPi = @(Pi)(Pi - Tire.Pio) ./ Tire.Pio;
+figure
+subplot(2,1,1)
+gamma = 2;
+Pi = 11;
+Dt = @(Fz)(Tire.Ro .*(Fz./Tire.Fzo)) * (Tire.q.D.z(1) + Tire.q.D.z(2).*dFz(Fz) *...
+    (1 - Tire.p.P.z(1) * dPi(Pi))) * (1 + Tire.q.D.z(3) * abs(gamma) + ...
+    Tire.q.D.z(4) * gamma.^2);
+ fplot(Dt,[0,2500])
+ Ct = 0.8;
+ Bt = 2.5;
+ Slip = 0;
+ subplot(2,1,2)
+ Et = @(Fz)(Tire.q.E.z(1) + Tire.q.E.z(2)*dFz(Fz) + Tire.q.E.z(3) * dFz(Fz).^2)...
+     *(1 + (Tire.q.E.z(4) + Tire.q.E.z(5)* gamma)*(2/pi)*atan(Bt * Ct * Slip))
+ fplot(Et, [0,2500])
