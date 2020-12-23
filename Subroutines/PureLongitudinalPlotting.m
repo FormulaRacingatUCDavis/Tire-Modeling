@@ -22,7 +22,7 @@ for p = 1 : size( Nominal, 1 )
                 Nominal(p,z,c).H, Nominal(p,z,c).V ), ...
                 [-0.25 0.25], 'g' )
             
-            xlabel( 'Slip Ratio ($\kappa$) [$deg$]' )
+            xlabel( 'Slip Ratio ($\kappa$) [ ]' )
             ylabel( 'Longitudinal Force ($F_{x}$) [$N$]' )
             title( { ['Normal Load ($F_{z}$): $', num2str(round(Mesh(p,z,c).Load,1)), '$ [$N$]'], ...
                 ['Camber ($\gamma$): $', num2str(Mesh(p,z,c).Camber), '$ [$deg$]'] } )
@@ -54,7 +54,7 @@ for p = 1 : size( Raw, 1 )
             Mesh(p,1,c).Camber, Slip ), [0 2500 -0.25 0.25] )
         
         xlabel( 'Normal Load ($F_{z}$) [$N$]' )
-        ylabel( 'Slip Ratio ($\kappa$) [$deg$]' )
+        ylabel( 'Slip Ratio ($\kappa$) [ ]' )
         zlabel( 'Longitudinal Force ($F_{x}$) [$N$]' )
         title( { ['Pressure ($P_{i}$): $', num2str(Mesh(p,1,c).Pressure), '$ [$psi$]'], ...
                 ['Camber ($\gamma$): $', num2str(Mesh(p,1,c).Camber), '$ [$deg$]'] } )

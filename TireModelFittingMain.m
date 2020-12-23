@@ -14,8 +14,8 @@ set(groot, 'defaultLegendInterpreter','latex');
 % Default Directories
 Directory.Tool = mfilename('fullpath');
 Directory.Tool = Directory.Tool(1 : strfind(Directory.Tool, mfilename()) - 2);
-Directory.Data = [Directory.Tool, '\Tire Data']; % Change to Personal Directory Where Tire Data is Stored
-Directory.Save = [Directory.Tool, '\Models']; % Change to Personal Directory Where Model & Documentation Should be Saved
+Directory.Data = [Directory.Tool(1:max(strfind( Directory.Tool, '\'))), 'Tire-Data'];
+Directory.Save = [Directory.Tool, '\Models'];
 
 addpath( genpath( Directory.Tool ) );
 
@@ -61,10 +61,10 @@ clear i
 %% Steady State Pure Slip Fitting
  
 % Lateral Force Fitting ( Fyo )
-Tire = PureLateralFitting( Tire, Data, Bin );
+% Tire = PureLateralFitting( Tire, Data, Bin );
 
 % Longitudinal Force Fitting ( Fxo )
-% Tire = PureLongitudinalFitting( Tire, Data, Bin );
+Tire = PureLongitudinalFitting( Tire, Data, Bin );
 
 % Aligning Moment Fitting ( Mzo )
 % Tire = PureAligningFitting( Tire, Data, Bin );
