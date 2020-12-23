@@ -67,17 +67,17 @@ Tire = PureLateralFitting( Tire, Data, Bin );
 % Tire = PureLongitudinalFitting( Tire, Data, Bin );
 
 % Aligning Moment Fitting ( Mzo )
-Tire = PureAligningFitting( Tire, Data, Bin );
+% Tire = PureAligningFitting( Tire, Data, Bin );
 
 return
 
 %% Steady State Combined Slip Fitting
 % This is currently undeveloped due to data limitations. Instead, combined
 % tire forces can be evaluated using the Modified-Nicolas-Com
+
 %% Past This is Undeveloped
 
 %% Camber Evaluation Plots
-
 for p = 1:length(Tire.run{2}.binval.P)
     
     Fig{p}.GAM = figure('Name','Optimal Camber from Tread Temperature Differential');
@@ -120,7 +120,7 @@ for p = 1:length(Tire.run{2}.binval.P)
 end
 
 %% Radial Deflection Modeling
-
+% Cornering Stiffness Modeling
 for p = 2
     if p == 1
         i = 3;
@@ -133,23 +133,6 @@ for p = 2
         Tire.run{i}.dat.RL(Tire.run{i}.bin.P(:,p)), ...
         abs(Tire.run{i}.dat.FZ(Tire.run{i}.bin.P(:,p))));
 end
-%% Dt and Et Graphing
-% Code does not affect fit of tire. It is just to estimate parameters of Dt
-% and Et. If debudding is not needed, feel free to comment out.
-dFz = @(Fz)(Fz - Tire.Fzo) ./ Tire.Fzo;
-dPi = @(Pi)(Pi - Tire.Pio) ./ Tire.Pio;
-figure
-subplot(2,1,1)
-gamma = 2;
-Pi = 11;
-Dt = @(Fz)(Tire.Ro .*(Fz./Tire.Fzo)) * (Tire.q.D.z(1) + Tire.q.D.z(2).*dFz(Fz) *...
-    (1 - Tire.p.P.z(1) * dPi(Pi))) * (1 + Tire.q.D.z(3) * abs(gamma) + ...
-    Tire.q.D.z(4) * gamma.^2);
- fplot(Dt,[0,2500])
- Ct = 0.8;
- Bt = 2.5;
- Slip = 0;
- subplot(2,1,2)
- Et = @(Fz)(Tire.q.E.z(1) + Tire.q.E.z(2)*dFz(Fz) + Tire.q.E.z(3) * dFz(Fz).^2)...
-     *(1 + (Tire.q.E.z(4) + Tire.q.E.z(5)* gamma)*(2/pi)*atan(Bt * Ct * Slip))
- fplot(Et, [0,2500])
+
+%% Transient Tire Dynamics
+% Tire = TransientRelaxationLength( Tire, Data, Bin );

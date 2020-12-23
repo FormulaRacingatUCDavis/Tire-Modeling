@@ -48,7 +48,7 @@ for i = [2 3]
             for c = 1 : numel( Case.Camber )
                 Idx.Valid = Bin(i).Pressure(p,:) & Bin(i).Load(z,:) & ...
                     Bin(i).Camber(c,:) & Bin(i).Gain.Slip.Angle & ...
-                    Bin(i).Slip.Ratio( find( Bin(i).Values.Slip.Ratio == 0 ), : ); %#ok<FNDSB>
+                    Bin(i).Slip.Ratio( find( Bin(i).Values.Slip.Ratio == 0 ), : ); 
                 
                 if sum( Idx.Valid ) < 50
                     continue % SKip Sparse Bins
