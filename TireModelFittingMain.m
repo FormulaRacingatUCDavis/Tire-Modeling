@@ -16,7 +16,8 @@ Directory.Tool = mfilename('C:\FSAE\GitHub');
 Directory.Tool = Directory.Tool(1 : strfind(Directory.Tool, mfilename()) - 2);
 Directory.Data = [Directory.Tool, 'C:\FSAE\GitHub\Tire-Data']; % Change to Personal Directory Where Tire Data is Stored
 Directory.Save = [Directory.Tool, '\Tire-Modeling']; % Change to Personal Directory Where Model & Documentation Should be Saved
-
+Directory.Data = [Directory.Tool(1:max(strfind( Directory.Tool, '\'))), 'Tire-Data'];
+Directory.Save = [Directory.Tool, '\Models'];
 addpath( genpath( Directory.Tool ) );
 
 % Figure Structure
@@ -64,10 +65,10 @@ clear i
 Tire = PureLateralFitting( Tire, Data, Bin );
 
 % Longitudinal Force Fitting ( Fxo )
-% Tire = PureLongitudinalFitting( Tire, Data, Bin );
+Tire = PureLongitudinalFitting( Tire, Data, Bin );
 
 % Aligning Moment Fitting ( Mzo )
-% Tire = PureAligningFitting( Tire, Data, Bin );
+Tire = PureAligningFitting( Tire, Data, Bin );
 
 return
 
