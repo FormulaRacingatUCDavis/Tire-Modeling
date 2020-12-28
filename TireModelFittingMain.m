@@ -1,6 +1,13 @@
 clc; clear; clear('global'); close all;
 
+%% FRUCD Tire Model Fitting Tool Main Script
+% This script fits a Pacejka Tire Model to Calspan TTC Data Sets and
+% creates an instance of the FRUCDTire class for use in vehicle models.
+%
 % Use MATLAB, SI Unit Calspan TTC Data Sets
+%
+% Authors: - Blake Christierson (Sept. 2018 - Jun. 2021)
+%          - Carlos Lopez       (Jan.  2019 - ???      )
 
 %% Initialization
 % Global Variables
@@ -12,13 +19,12 @@ set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
 % Default Directories
-Directory.Tool = mfilename('C:\FSAE\GitHub');
-Directory.Tool = Directory.Tool(1 : strfind(Directory.Tool, mfilename()) - 2);
-Directory.Data = [Directory.Tool, 'C:\FSAE\GitHub\Tire-Data']; % Change to Personal Directory Where Tire Data is Stored
-Directory.Save = [Directory.Tool, '\Tire-Modeling']; % Change to Personal Directory Where Model & Documentation Should be Saved
-Directory.Data = [Directory.Tool(1:max(strfind( Directory.Tool, '\'))), 'Tire-Data'];
+Directory.Tool = fileparts( which( 'TireModelFittingMain.m' ) );
+Directory.Data = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'Tire-Data'];
 Directory.Save = [Directory.Tool, '\Models'];
+
 addpath( genpath( Directory.Tool ) );
+addpath( genpath( Directory.Data ) );
 
 % Figure Structure
 Figure.State = 'minimized';
@@ -27,8 +33,8 @@ Figure.State = 'minimized';
 Tire = ModelParameterSetup;
 
 %% Data Import
-TestName = { 'Transient', 'Cornering 1', 'Cornering 2', ...
-    'Warmup', 'Drive, Brake, & Combined 1', 'Drive, Brake, & Combined 2' };
+TestName = { 'Transient', 'Cornering 1'               , 'Cornering 2'                , ...
+             'Warmup'   , 'Drive, Brake, & Combined 1', 'Drive, Brake, & Combined 2' };
 
 % Change Current Directory to Default Data Directory
 cd( Directory.Data )
@@ -59,8 +65,7 @@ end
 
 clear i
 
-%% Steady State Pure Slip Fitting
- 
+%% Steady State, Pure Slip
 % Lateral Force Fitting ( Fyo )
 Tire = PureLateralFitting( Tire, Data, Bin );
 
@@ -70,13 +75,13 @@ Tire = PureLongitudinalFitting( Tire, Data, Bin );
 % Aligning Moment Fitting ( Mzo )
 Tire = PureAligningFitting( Tire, Data, Bin );
 
-return
-
-%% Steady State Combined Slip Fitting
+%% Steady State, Combined Slip
 % This is currently undeveloped due to data limitations. Instead, combined
-% tire forces can be evaluated using the Modified-Nicolas-Com
+% tire forces can be evaluated using the Modified-Nicolas-Comstock (MNC)
+% Model to couple pure slip model. It is implemented within the FRUCDTire 
+% Class Definition.
 
-%% Past This is Undeveloped
+%% Transient, Pure Slip Response
 
 %% Camber Evaluation Plots
 for p = 1:length(Tire.run{2}.binval.P)
