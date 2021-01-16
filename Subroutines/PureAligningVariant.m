@@ -18,11 +18,11 @@ qdz2 = optimvar( 'qdz2', 'Lowerbound', -0.5, 'Upperbound', 0 );
 qdz3 = optimvar( 'qdz3', 'Lowerbound', -5, 'Upperbound', 5 );
 qdz4 = optimvar( 'qdz4', 'Lowerbound', -5, 'Upperbound', 5 );
 qdz6 = optimvar( 'qdz6', 'Lowerbound', -5, 'Upperbound', 5 );
-qdz7 = optimvar( 'qdz7', 'Lowerbound', -5, 'Upperbound', 5 );
+qdz7 = optimvar( 'qdz7', 'Lowerbound', -1, 'Upperbound', 0 );
 qdz8 = optimvar( 'qdz8', 'Lowerbound', -5, 'Upperbound', 5 );
-qdz9 = optimvar( 'qdz9', 'Lowerbound', -5, 'Upperbound', 5 );
+qdz9 = optimvar( 'qdz9', 'Lowerbound', -1, 'Upperbound', 0 );
 qdz10 = optimvar( 'qdz10', 'Lowerbound', -5, 'Upperbound', 5 );
-qdz11 = optimvar( 'qdz11', 'Lowerbound', -5, 'Upperbound', 5 );
+qdz11 = optimvar( 'qdz11', 'Lowerbound', -1, 'Upperbound', 0 );
 
 qez1 = optimvar( 'qez1', 'Lowerbound', -1, 'Upperbound', 0.8 );
 qez2 = optimvar( 'qez2', 'Lowerbound', 0, 'Upperbound', 2 );
