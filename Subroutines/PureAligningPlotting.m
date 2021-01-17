@@ -2,7 +2,7 @@ function [] = PureAligningPlotting( Mesh, Raw, Nominal, Tire )
 % Plots Results from Pure Aligning (Mzo) MF6.1 Fitting
 
 %% Declare Global Variables
-global Figure
+global Figure Mode
 
 %% Evaluate Variant Fit
 Mzo = VariantEval( Tire );
@@ -159,5 +159,63 @@ Figure.Mzo.Surfaces.WindowState = 'minimized';
         
         Mzo = @(Pi, Fz, Gam, Slip) -t0(Pi, Fz, Gam, Slip) .* ...
             Fyo(Pi, Fz, Gam, Slip) + Mzro(Pi, Fz, Gam, Slip);
+        
+        if strcmpi( Mode, 'Debug' )
+            Figure.Mzo.Debug = figure;
+            
+            subplot(3,4,1)
+            fplot(@(Fz) Bt(Fz, 0), [0, 2500])
+            xlabel("Fz")
+            ylabel("Bt")
+            
+            subplot(3,4,2)
+            fplot(@(Fz) Dt(11, Fz, 0), [0 , 2500])
+            xlabel("Fz")
+            ylabel("Dt")
+            
+            subplot(3,4,3)
+            fplot(@(Fz) Ht(Fz,0), [0,2500])
+            xlabel("Fz")
+            ylabel("Ht")
+            
+            subplot(3,4,4)
+            fplot(@(Fz) Et(Fz,0,0), [0,2500])
+            xlabel("Fz")
+            ylabel("Et")
+            
+            subplot(3,4,5)
+            fplot(@(Fz) Br(11,Fz,0), [0,2500])
+            xlabel("Fz")
+            ylabel("Br")
+                        
+            subplot(3,4,6)
+            fplot(@(Fz) Dr(11,Fz,0), [0,2500])
+            xlabel("Fz")
+            ylabel("Dr")            
+            
+            subplot(3,4,7)
+            fplot(@(Fz) Hf(11, Fz,0), [0,2500])
+            xlabel("Fz")
+            ylabel("Hf")   
+            
+            subplot(3,4,8)
+            fplot(@(Fz) Kya(11, Fz, 0), [0 2500])
+            xlabel("Fz")
+            ylabel("Kya")
+            
+            subplot(3,4,9)
+            fsurf(@(Fz, Slip) t0(11, Fz, 0, Slip), [0 2500 -15 15])
+            xlabel("Fz")
+            ylabel("Slip")
+            zlabel("to")
+            
+            subplot(3,4,10)
+            fsurf(@(Fz, Slip) Mzro(11, Fz, 0,Slip), [0 2500 -15 15])
+            xlabel("Fz")
+            ylabel("Slip")
+            zlabel("Mzro")
+            
+            sgtitle("Pure Aligning P6 Debug Plot")
+        end
     end
 end

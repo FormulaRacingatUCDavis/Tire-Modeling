@@ -119,5 +119,11 @@ Figure.Fyo.Surfaces.WindowState = 'minimized';
             By(Pi, Fz, Gam).*(Slip + Hy(Pi, Fz, Gam) ) + ...
             Ey(Fz, Gam, Slip, Hy(Pi, Fz, Gam) ).*atan( ...
             By(Pi, Fz, Gam).*(Slip + Hy(Pi, Fz, Gam) ) ) ) ) + Vy(Fz, Gam);
+        
+ %       if strcmpi( Mode, 'Debug' )
+ %           Figure.Fyo.Debug = figure;
+%            subplot(1,1)
+             
+%        end
     end
 end

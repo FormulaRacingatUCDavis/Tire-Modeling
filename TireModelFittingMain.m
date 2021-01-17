@@ -11,7 +11,7 @@ clc; clear; clear('global'); close all;
 
 %% Initialization
 % Global Variables
-global Directory Figure
+global Directory Figure Mode
 
 % Figure Interpreter
 set(groot,'defaulttextinterpreter','latex');
@@ -28,6 +28,10 @@ addpath( genpath( Directory.Data ) );
 
 % Figure Structure
 Figure.State = 'minimized';
+
+% Script Mode
+Mode = 'Debug';
+
 % Initializing Tire Model
 Tire = ModelParameterSetup;
 

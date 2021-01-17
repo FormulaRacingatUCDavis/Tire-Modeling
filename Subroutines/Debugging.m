@@ -100,6 +100,7 @@ t0 = @(Fz) Dt(Fz) .* cos( Ct .* ...
 
 
 Mzop = @(Fz) -t0(Fz) .* Fyo(Fz);
+
 figure
 subplot(2,1,1)
 fplot(Mzop, [0,2500])

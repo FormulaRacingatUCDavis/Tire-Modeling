@@ -14,7 +14,7 @@ qbz10 = optimvar( 'qbz10', 'Lowerbound', -5, 'Upperbound', 5 );
 qcz1 = optimvar( 'qcz1', 'Lowerbound', 1, 'Upperbound', 5 );
 
 qdz1 = optimvar( 'qdz1', 'Lowerbound', 0, 'Upperbound', 10 );
-qdz2 = optimvar( 'qdz2', 'Lowerbound', -0.5, 'Upperbound', 0 );
+qdz2 = optimvar( 'qdz2', 'Lowerbound', -0.25, 'Upperbound', 0 );
 qdz3 = optimvar( 'qdz3', 'Lowerbound', -5, 'Upperbound', 5 );
 qdz4 = optimvar( 'qdz4', 'Lowerbound', -5, 'Upperbound', 5 );
 qdz6 = optimvar( 'qdz6', 'Lowerbound', -5, 'Upperbound', 5 );
