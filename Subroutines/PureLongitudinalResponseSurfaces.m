@@ -1,8 +1,8 @@
 function [ Response ] = PureLongitudinalResponseSurfaces( Mesh, Nominal, Tire )
 
 %% Defining Operating Condition Functions
-dPi = @(Pi) (Pi - Tire.Pio) ./ Tire.Pio;
-dFz = @(Fz) (Fz - Tire.Fzo) ./ Tire.Fzo;
+dPi = @(Pi) (Pi - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
+dFz = @(Fz) (Fz - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo;
 
 %% Fitting C_{x} Surface
 % Initial Vector
@@ -231,7 +231,7 @@ Response.V = V;
     function MeanSquareError = ErrorDx( pdx1, pdx2, pdx3, ppx3, ppx4 )
         DxSurface = (pdx1 + pdx2.*[Mesh.dFz]) .* ...
             (1 + ppx3.*[Mesh.dPi] + ppx4.*[Mesh.dPi].^2) .* ...
-            (1 - pdx3.*[Mesh.Camber].^2).*[Mesh.Load];
+            (1 - pdx3.*[Mesh.Inclination].^2).*[Mesh.Load];
         
         MeanSquareError= mean( ( [Nominal.D] - DxSurface ).^2 );
     end

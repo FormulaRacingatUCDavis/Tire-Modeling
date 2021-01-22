@@ -11,7 +11,7 @@ clc; clear; clear('global'); close all;
 
 %% Initialization
 % Global Variables
-global Directory Figure Mode
+global Directory Figure
 
 % Figure Interpreter
 set(groot,'defaulttextinterpreter','latex');
@@ -27,17 +27,19 @@ addpath( genpath( Directory.Tool ) );
 addpath( genpath( Directory.Data ) );
 
 % Figure Structure
+Figure.Mode  = 'Debug';
 Figure.State = 'minimized';
-
-% Script Mode
-Mode = 'Debug';
 
 % Initializing Tire Model
 Tire = ModelParameterSetup;
 
 %% Data Import
-TestName = { 'Transient', 'Cornering 1'               , 'Cornering 2'                , ...
-             'Warmup'   , 'Drive, Brake, & Combined 1', 'Drive, Brake, & Combined 2' };
+TestName = { 'Transient'                 , ...
+             'Cornering 1'               , ...
+             'Cornering 2'               , ...
+             'Warmup'                    , ...
+             'Drive, Brake, & Combined 1', ...
+             'Drive, Brake, & Combined 2'};
 
 % Change Current Directory to Default Data Directory
 cd( Directory.Data )
@@ -73,7 +75,7 @@ clear i
 Tire = PureLateralFitting( Tire, Data, Bin );
 
 % Longitudinal Force Fitting ( Fxo )
-%Tire = PureLongitudinalFitting( Tire, Data, Bin );
+Tire = PureLongitudinalFitting( Tire, Data, Bin );
 
 % Aligning Moment Fitting ( Mzo )
 Tire = PureAligningFitting( Tire, Data, Bin );

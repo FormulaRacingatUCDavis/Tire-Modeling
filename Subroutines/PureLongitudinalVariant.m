@@ -37,16 +37,16 @@ Obj = fcn2optimexpr( @ErrorFyo, pcx1, ...
     ppx1, ppx2, ppx3, ppx4 );
 
 %% Optimization Constraint
-[Operating.dFz, Operating.Camber] = meshgrid( (0:100:2500-Tire.Fzo)./Tire.Fzo, 0:5 );
+[Operating.dFz, Operating.Inclination] = meshgrid( (0:100:2500-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo, 0:5 );
 
 Constr = optimineq( 2*numel(Operating.dFz) );
 
 for i = 1 : numel(Operating.dFz)
     Constr(i) = ( pex1 + pex2.*Operating.dFz(i) + pex3.*Operating.dFz(i).^2 ) .* ...
-        ( 1 - pex4.*Operating.Camber(i) ) <= 0.95;
+        ( 1 - pex4.*Operating.Inclination(i) ) <= 0.95;
     
     Constr( i+numel(Operating.dFz) ) = ( pex1 + pex2.*Operating.dFz(i) + pex3.*Operating.dFz(i).^2 ) .* ...
-        ( 1 + pex4.*Operating.Camber(i) ) <= 0.95;
+        ( 1 + pex4.*Operating.Inclination(i) ) <= 0.95;
 end
 
 %% Solving Optimization Problem
@@ -151,7 +151,7 @@ Tire.p.P.x(4) = Variant.Solution.ppx4;
        
         Dx = (pdx1 + pdx2.*[Raw.dFz]) .* ...
             (1 + ppx3.*[Raw.dPi] + ppx4.*[Raw.dPi].^2) .* ...
-            (1 - pdx3.*[Raw.Camber].^2).*[Raw.Load];
+            (1 - pdx3.*[Raw.Inclination].^2).*[Raw.Load];
         
         Ex = ( pex1 + pex2.*[Raw.dFz] + pex3.*[Raw.dFz].^2 ) .* ...
             ( 1 - pex4.*sign([Raw.Slip] ) );

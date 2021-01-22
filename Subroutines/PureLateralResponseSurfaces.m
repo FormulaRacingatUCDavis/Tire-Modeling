@@ -1,8 +1,8 @@
 function [ Response ] = PureLateralResponseSurfaces( Mesh, Nominal, Tire )
 
 %% Defining Operating Condition Functions
-dPi = @(Pi) (Pi - Tire.Pio) ./ Tire.Pio;
-dFz = @(Fz) (Fz - Tire.Fzo) ./ Tire.Fzo;
+dPi = @(Pi) (Pi - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
+dFz = @(Fz) (Fz - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo;
 
 %% Fitting C_{y} Surface
 % Initial Vector
@@ -77,7 +77,7 @@ clear pey1 pey2 pey5 E0
 
 %% Fitting K_{y \alpha} Surface
 % Initial Vector 
-K0.pky1 = 4;
+K0.pky1 = -4;
 K0.pky2 = 0.25;
 K0.pky3 = 0;
 K0.pky4 = 2;
@@ -87,14 +87,14 @@ K0.ppy1 = 0;
 K0.ppy2 = 0;
 
 % Optimization Variables
-pky1 = optimvar( 'pky1', 'Lowerbound', 0.1 );
-pky2 = optimvar( 'pky2', 'Lowerbound', 0.1, 'Upperbound', 5 );
-pky3 = optimvar( 'pky3', 'Lowerbound', -5, 'Upperbound', 5 );
-pky4 = optimvar( 'pky4', 'Lowerbound', 0.05, 'Upperbound', 2.5 );
-pky5 = optimvar( 'pky5', 'Lowerbound', -1, 'Upperbound', 1 );
+pky1 = optimvar( 'pky1', 'Upperbound',-0.1 );
+pky2 = optimvar( 'pky2', 'Lowerbound', 0.1, 'Upperbound', 5   );
+pky3 = optimvar( 'pky3', 'Lowerbound',-5  , 'Upperbound', 5   );
+pky4 = optimvar( 'pky4', 'Lowerbound', 1.5, 'Upperbound', 2.5 );
+pky5 = optimvar( 'pky5', 'Lowerbound',-1  , 'Upperbound', 1   );
 
-ppy1 = optimvar( 'ppy1', 'Lowerbound', -1, 'Upperbound', 1 );
-ppy2 = optimvar( 'ppy2', 'Lowerbound', -1, 'Upperbound', 1 );
+ppy1 = optimvar( 'ppy1', 'Lowerbound',-1, 'Upperbound', 1 );
+ppy2 = optimvar( 'ppy2', 'Lowerbound',-1, 'Upperbound', 1 );
 
 % Optimization Objective
 Obj = fcn2optimexpr( @ErrorKya, pky1, pky2, pky3, pky4, pky5, ppy1, ppy2 );
@@ -112,8 +112,8 @@ x0.pky5 = K.Solution.pky5;
 x0.ppy1 = K.Solution.ppy1;
 x0.ppy2 = K.Solution.ppy2;
 
-K.Surface = @(Pi, Fz, Gam, x0) ( x0.pky1 .* Tire.Fzo .* ( 1 + x0.ppy1.*dPi(Pi) ) .* ...
-    ( 1 - x0.pky3.*abs(Gam) ) .* sin( x0.pky4 .* atan( (Fz./Tire.Fzo) ./ ...
+K.Surface = @(Pi, Fz, Gam, x0) ( x0.pky1 .* Tire.Pacejka.Fzo .* ( 1 + x0.ppy1.*dPi(Pi) ) .* ...
+    ( 1 - x0.pky3.*abs(Gam) ) .* sin( x0.pky4 .* atan( (Fz./Tire.Pacejka.Fzo) ./ ...
     ( ( x0.pky2 + x0.pky5.*Gam.^2 ) .* ( 1 + x0.ppy2.*dPi(Pi) ) ) ) ) ) ;
 
 clear pky1 pky2 pky3 pky4 pky5 ppy1 ppy2 K0
@@ -269,40 +269,40 @@ Response.V = V;
     function MeanSquareError = ErrorDy( pdy1, pdy2, pdy3, ppy3, ppy4 )
         DySurface = (pdy1 + pdy2.*[Mesh.dFz]) .* ...
             (1 + ppy3.*[Mesh.dPi] + ppy4.*[Mesh.dPi].^2) .* ...
-            (1 - pdy3.*[Mesh.Camber].^2).*[Mesh.Load];
+            (1 - pdy3.*[Mesh.Inclination].^2).*[Mesh.Load];
         
-        MeanSquareError= mean( ( [Nominal.D] - DySurface ).^2 );
+        MeanSquareError = mean( ( [Nominal.D] - DySurface ).^2 );
     end
 
     function MeanAbsoluteError = ErrorEy( pey1, pey2, pey5 )
         EySurface = (pey1 + pey2.*[Mesh.dFz]) .* ...
-            (1 + pey5.*[Mesh.Camber].^2);
+            (1 + pey5.*[Mesh.Inclination].^2);
         
-        MeanAbsoluteError= mean( abs( [Nominal.E] - EySurface ) );
+        MeanAbsoluteError = mean( abs( [Nominal.E] - EySurface ) );
     end
 
     function MeanSquareError = ErrorKya( pky1, pky2, pky3, pky4, pky5, ppy1, ppy2 )
-        KySurface = pky1 .* Tire.Fzo .* ( 1 + ppy1.*[Mesh.dPi] ) .* ...
-            ( 1 - pky3.*abs([Mesh.Camber]) ) .* sin( pky4 .* ...
-            atan( ([Mesh.Load]./Tire.Fzo) ./ ...
-            ( ( pky2 + pky5.*[Mesh.Camber].^2 ) .* ( 1 + ppy2.*[Mesh.dPi] ) ) ) );
+        KySurface = pky1 .* Tire.Pacejka.Fzo .* ( 1 + ppy1.*[Mesh.dPi] ) .* ...
+            ( 1 - pky3.*abs([Mesh.Inclination]) ) .* sin( pky4 .* ...
+            atan( ([Mesh.Load]./Tire.Pacejka.Fzo) ./ ...
+            ( ( pky2 + pky5.*[Mesh.Inclination].^2 ) .* ( 1 + ppy2.*[Mesh.dPi] ) ) ) );
         
-        MeanSquareError= mean( ( [Nominal.K] - KySurface ).^2 );
+        MeanSquareError = mean( ( [Nominal.K] - KySurface ).^2 );
     end
 
     function MeanSquareError = ErrorVy( pvy1, pvy2, pvy3, pvy4 )
         VySurface = [Mesh.Load] .* ( ( pvy1 + pvy2.*[Mesh.dFz] ) + ...
-            ( pvy3 + pvy4.*[Mesh.dFz] ).*[Mesh.Camber] );
+            ( pvy3 + pvy4.*[Mesh.dFz] ).*[Mesh.Inclination] );
         
-        MeanSquareError= mean( ( [Nominal.V] - VySurface ).^2 );
+        MeanSquareError = mean( ( [Nominal.V] - VySurface ).^2 );
     end
 
     function MeanSquareError = ErrorHy( phy1, phy2, pky6, pky7, ppy5 )
-        HySurface = ( phy1 + phy2.*[Mesh.dFz] ) + [Mesh.Load].*[Mesh.Camber] .* ...
+        HySurface = ( phy1 + phy2.*[Mesh.dFz] ) + [Mesh.Load].*[Mesh.Inclination] .* ...
             ( ( pky6 + pky7.*[Mesh.dFz] ) .* ( 1 + ppy5.*[Mesh.dPi] ) - ...
             ( x0.pvy3 + x0.pvy4.*[Mesh.dFz] ) ) ./ ...
-            K.Surface( [Mesh.Pressure], [Mesh.Load], [Mesh.Camber], x0 );
+            K.Surface( [Mesh.Pressure], [Mesh.Load], [Mesh.Inclination], x0 );
         
-        MeanSquareError= mean( ( [Nominal.H] - HySurface ).^2 );
+        MeanSquareError = mean( ( [Nominal.H] - HySurface ).^2 );
     end
 end

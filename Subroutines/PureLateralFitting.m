@@ -9,62 +9,62 @@ function Tire = PureLateralFitting( Tire, Data, Bin )
 %   modified for pressure variance. 
 
 % Nominal Fit for Primaries (C,D,E,K,S_H,S_V)
-% Fit Surface Variant Camber & Pressure
+% Fit Surface Variant Inclination & Pressure
 % Fit Primary Curves for Bounds & Initial
 % Constrained High Dimensional fmincon()
 
 %% Operating Condition Space
-Case.Pressure = Bin(2).Values.Pressure; % Pressure Bin Values Storage
-Case.Load = Bin(2).Values.Load; % Normal Load Bin Values Storage
-Case.Camber = Bin(2).Values.Camber; % Camber Bin Values Storage
+Case.Pressure    = Bin(2).Values.Pressure;    % Pressure Bin Values Storage
+Case.Load        = Bin(2).Values.Load;        % Normal Load Bin Values Storage
+Case.Inclination = Bin(2).Values.Inclination; % Inclination Bin Values Storage
 
-Mesh = struct( 'Pressure', [], 'Load', [], 'Camber', [], 'dPi', [], 'dFz', [] );
+Mesh = struct( 'Pressure', [], 'Load', [], 'Inclination', [], 'dPi', [], 'dFz', [] );
 
 for p = 1 : numel( Case.Pressure )
     for z = 1 : numel( Case.Load )
-        for c = 1 : numel( Case.Camber )
-            Mesh(p,z,c).Pressure = Case.Pressure(p);
-            Mesh(p,z,c).Load = Case.Load(z);
-            Mesh(p,z,c).Camber = Case.Camber(c);
+        for c = 1 : numel( Case.Inclination )
+            Mesh(p,z,c).Pressure    = Case.Pressure(p);
+            Mesh(p,z,c).Load        = Case.Load(z);
+            Mesh(p,z,c).Inclination = Case.Inclination(c);
             
-            Mesh(p,z,c).dPi = (Case.Pressure(p) - Tire.Pio) ./ Tire.Pio;
-            Mesh(p,z,c).dFz = (Case.Load(z) - Tire.Fzo) ./ Tire.Fzo;
+            Mesh(p,z,c).dPi = (Case.Pressure(p) - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
+            Mesh(p,z,c).dFz = (Case.Load(z)     - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo;
         end
     end
 end
 
 %% Data Allocation
-Raw = struct( 'Slip', [], 'Force', [], 'Pressure', [], ...
-    'Load', [], 'Camber', [], 'dFz', [], 'dPi', [] );
+Raw = struct( 'Slip', [], 'Force'      , [], 'Pressure', [], ...
+              'Load', [], 'Inclination', [], 'dFz', [], 'dPi', [] );
 Raw( size(Mesh,1), size(Mesh,2), size(Mesh,3) ).Slip = [];
 
 for i = [2 3]
     if isempty( Data(i).Source )
         continue
     end
-    
+
     for p = 1 : numel( Case.Pressure )       
         for z = 1 : numel( Case.Load ) 
-            for c = 1 : numel( Case.Camber )
+            for c = 1 : numel( Case.Inclination )
                 Idx.Valid = Bin(i).Pressure(p,:) & Bin(i).Load(z,:) & ...
-                    Bin(i).Camber(c,:) & Bin(i).Gain.Slip.Angle & ...
+                    Bin(i).Inclination(c,:) & Bin(i).Gain.Slip.Angle & ...
                     Bin(i).Slip.Ratio( find( Bin(i).Values.Slip.Ratio == 0 ), : ); 
                 
                 if sum( Idx.Valid ) < 50
-                    continue % SKip Sparse Bins
+                    continue % Skip Sparse Bins
                 elseif (i == 3) && (Case.Pressure(p) == 12)
                     continue % Skip Tire Aging Sweep at 12 psi in Cornering 2
                 end
                 
-                Raw(p,z,c).Slip = Data(i).Slip.Angle(Idx.Valid); % Allocate Slip Angle Data
-                Raw(p,z,c).Force = Data(i).Force(2,Idx.Valid); % Allocate Lateral Force Data
+                Raw(p,z,c).Slip  = Data(i).Slip.Angle(Idx.Valid); % Allocate Slip Angle Data
+                Raw(p,z,c).Force = Data(i).Force(2,Idx.Valid);    % Allocate Lateral Force Data
                 
-                Raw(p,z,c).Pressure = Data(i).Pressure(Idx.Valid); % Allocate Pressure Data
-                Raw(p,z,c).Load = Data(i).Force(3,Idx.Valid); % Allocate Normal Force Data
-                Raw(p,z,c).Camber = Data(i).Camber(Idx.Valid); % Allocate Camber Data
+                Raw(p,z,c).Pressure    = Data(i).Pressure(Idx.Valid);    % Allocate Pressure Data
+                Raw(p,z,c).Load        = Data(i).Force(3,Idx.Valid);     % Allocate Normal Force Data
+                Raw(p,z,c).Inclination = Data(i).Inclination(Idx.Valid); % Allocate Inclination Data
                 
-                Raw(p,z,c).dFz = (Raw(p,z,c).Load - Tire.Fzo) ./ Tire.Fzo;
-                Raw(p,z,c).dPi = (Raw(p,z,c).Pressure - Tire.Pio) ./ Tire.Pio;
+                Raw(p,z,c).dFz = (Raw(p,z,c).Load     - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo;
+                Raw(p,z,c).dPi = (Raw(p,z,c).Pressure - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
             end
         end
     end
@@ -72,12 +72,12 @@ end
 
 %% Nominal Fitting
 Nominal = struct( 'C0', NaN, 'D0', NaN, 'E0', NaN, 'K0', NaN, 'H0', NaN, 'V0', NaN, ...
-    'C', NaN, 'D', NaN, 'E', NaN, 'K', NaN, 'H', NaN, 'V', NaN, 'Residual', [] );
+                  'C' , NaN, 'D' , NaN, 'E' , NaN, 'K' , NaN, 'H' , NaN, 'V' , NaN, 'Residual', [] );
 Nominal( size(Mesh,1), size(Mesh,2), size(Mesh,3) ).Residual = [];
 
 for p = 1 : numel( Case.Pressure )
     for z = 1 : numel( Case.Load )
-        for c = 1 : numel( Case.Camber )
+        for c = 1 : numel( Case.Inclination )
             if isempty( Raw(p,z,c).Slip )
                 continue
             end
@@ -94,23 +94,23 @@ for n = 1 : 3
             case 1
                 if isempty( [Nominal(i,:,:).Residual] )
                     Case.Pressure(i) = [];
-                    Mesh(i,:,:) = [];
-                    Raw(i,:,:) = [];
-                    Nominal(i,:,:) = [];
+                    Mesh(i,:,:)      = [];
+                    Raw(i,:,:)       = [];
+                    Nominal(i,:,:)   = [];
                 end
             case 2
                 if isempty( [Nominal(:,i,:).Residual] )
-                    Case.Load(i) = [];
-                    Mesh(:,i,:) = [];
-                    Raw(:,i,:) = [];
+                    Case.Load(i)   = [];
+                    Mesh(:,i,:)    = [];
+                    Raw(:,i,:)     = [];
                     Nominal(:,i,:) = [];
                 end
             case 3
                 if isempty( [Nominal(:,:,i).Residual] )
-                    Case.Camber(i) = [];
-                    Mesh(:,:,i) = [];
-                    Raw(:,:,i) = [];
-                    Nominal(:,:,i) = [];
+                    Case.Inclination(i) = [];
+                    Mesh(:,:,i)         = [];
+                    Raw(:,:,i)          = [];
+                    Nominal(:,:,i)      = [];
                 end
         end
     end
@@ -119,7 +119,7 @@ end
 %% Variant Fitting
 Response = PureLateralResponseSurfaces( Mesh, Nominal, Tire );
   
-[ Variant, Tire ] = PureLateralVariant( Raw, Response.x0, Tire ); %#ok<ASGLU>
+[ Variant, Tire ] = PureLateralVariant( Raw, Response.x0, Tire );
 
 %% Plotting Function
-PureLateralPlotting( Mesh, Raw, Nominal, Tire );
+PureLateralPlotting( Mesh, Raw, Nominal, Response, Variant, Tire );

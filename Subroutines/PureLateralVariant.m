@@ -1,39 +1,39 @@
 function [ Variant, Tire ] = PureLateralVariant( Raw, x0, Tire )
 
 %% Optimization Variables
-pcy1 = optimvar( 'pcy1', 'Lowerbound', 0, 'Upperbound', 5 );
+pcy1 = optimvar( 'pcy1', 'Lowerbound',  0   , 'Upperbound',  5    );
 
-pdy1 = optimvar( 'pdy1', 'Lowerbound', 0, 'Upperbound', 10 );
-pdy2 = optimvar( 'pdy2', 'Lowerbound', -5, 'Upperbound', 0 );
-pdy3 = optimvar( 'pdy3', 'Lowerbound', -5, 'Upperbound', 5 );
+pdy1 = optimvar( 'pdy1', 'Lowerbound',  0   , 'Upperbound', 10    );
+pdy2 = optimvar( 'pdy2', 'Lowerbound',- 5   , 'Upperbound',  0    );
+pdy3 = optimvar( 'pdy3', 'Lowerbound',- 5   , 'Upperbound',  5    );
 
-pey1 = optimvar( 'pey1', 'Lowerbound', -5, 'Upperbound', 0.75 );
-pey2 = optimvar( 'pey2', 'Lowerbound', -1.5, 'Upperbound', 1.5 );
-pey3 = optimvar( 'pey3', 'Lowerbound', -1.5, 'Upperbound', 1.5 );
-pey4 = optimvar( 'pey4', 'Lowerbound', -1.5, 'Upperbound', 1.5 );
-pey5 = optimvar( 'pey5', 'Lowerbound', -1.5, 'Upperbound', 0 );
+pey1 = optimvar( 'pey1', 'Lowerbound',- 5   , 'Upperbound',  0.75 );
+pey2 = optimvar( 'pey2', 'Lowerbound',- 1.5 , 'Upperbound',  1.5  );
+pey3 = optimvar( 'pey3', 'Lowerbound',- 1.5 , 'Upperbound',  1.5  );
+pey4 = optimvar( 'pey4', 'Lowerbound',- 1.5 , 'Upperbound',  1.5  );
+pey5 = optimvar( 'pey5', 'Lowerbound',- 1.5 , 'Upperbound',  0    );
 
-pky1 = optimvar( 'pky1', 'Lowerbound', 0.1, 'Upperbound', 25 );
-pky2 = optimvar( 'pky2', 'Lowerbound', 0.1, 'Upperbound', 5 );
-pky3 = optimvar( 'pky3', 'Lowerbound', -5, 'Upperbound', 5 );
-pky4 = optimvar( 'pky4', 'Lowerbound', 0.05, 'Upperbound', 2.5 );
-pky5 = optimvar( 'pky5', 'Lowerbound', -5, 'Upperbound', 5 );
-pky6 = optimvar( 'pky6', 'Lowerbound', -5, 'Upperbound', 5 );
-pky7 = optimvar( 'pky7', 'Lowerbound', -5, 'Upperbound', 5 );
+pky1 = optimvar( 'pky1', 'Lowerbound',-25   , 'Upperbound',- 0.1  );
+pky2 = optimvar( 'pky2', 'Lowerbound',  0.1 , 'Upperbound',  5    );
+pky3 = optimvar( 'pky3', 'Lowerbound',- 5   , 'Upperbound',  5    );
+pky4 = optimvar( 'pky4', 'Lowerbound',  0.05, 'Upperbound',  2.5  );
+pky5 = optimvar( 'pky5', 'Lowerbound',- 5   , 'Upperbound',  5    );
+pky6 = optimvar( 'pky6', 'Lowerbound',- 5   , 'Upperbound',  5    );
+pky7 = optimvar( 'pky7', 'Lowerbound',- 5   , 'Upperbound',  5    );
 
-phy1 = optimvar( 'phy1', 'Lowerbound', -5, 'Upperbound', 5 );
-phy2 = optimvar( 'phy2', 'Lowerbound', -5, 'Upperbound', 5 );
+phy1 = optimvar( 'phy1', 'Lowerbound',- 5   , 'Upperbound',  5    );
+phy2 = optimvar( 'phy2', 'Lowerbound',- 5   , 'Upperbound',  5    );
 
-pvy1 = optimvar( 'pvy1', 'Lowerbound', -5, 'Upperbound', 5 );
-pvy2 = optimvar( 'pvy2', 'Lowerbound', -5, 'Upperbound', 5 );
-pvy3 = optimvar( 'pvy3', 'Lowerbound', -5, 'Upperbound', 5 );
-pvy4 = optimvar( 'pvy4', 'Lowerbound', -5, 'Upperbound', 5 );
+pvy1 = optimvar( 'pvy1', 'Lowerbound',- 5   , 'Upperbound',  5    );
+pvy2 = optimvar( 'pvy2', 'Lowerbound',- 5   , 'Upperbound',  5    );
+pvy3 = optimvar( 'pvy3', 'Lowerbound',- 5   , 'Upperbound',  5    );
+pvy4 = optimvar( 'pvy4', 'Lowerbound',- 5   , 'Upperbound',  5    );
 
-ppy1 = optimvar( 'ppy1', 'Lowerbound', -5, 'Upperbound', 5 );
-ppy2 = optimvar( 'ppy2', 'Lowerbound', -5, 'Upperbound', 5 );
-ppy3 = optimvar( 'ppy3', 'Lowerbound', -5, 'Upperbound', 5 );
-ppy4 = optimvar( 'ppy4', 'Lowerbound', -5, 'Upperbound', 5 );
-ppy5 = optimvar( 'ppy5', 'Lowerbound', -5, 'Upperbound', 5 );
+ppy1 = optimvar( 'ppy1', 'Lowerbound',- 5   , 'Upperbound',  5    );
+ppy2 = optimvar( 'ppy2', 'Lowerbound',- 5   , 'Upperbound',  5    );
+ppy3 = optimvar( 'ppy3', 'Lowerbound',- 5   , 'Upperbound',  5    );
+ppy4 = optimvar( 'ppy4', 'Lowerbound',- 5   , 'Upperbound',  5    );
+ppy5 = optimvar( 'ppy5', 'Lowerbound',- 5   , 'Upperbound',  5    );
 
 %% Optimization Objective
 Obj = fcn2optimexpr( @ErrorFyo, pcy1, ...
@@ -47,19 +47,19 @@ Obj = fcn2optimexpr( @ErrorFyo, pcy1, ...
 %% Optimization Constraint
 Constr = optimineq( 4 );
 
-Constr(1) = ( pey1 + pey2.*(0-Tire.Fzo)./Tire.Fzo ) .* ...
+Constr(1) = ( pey1 + pey2.*(0-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo ) .* ...
     ( 1 + pey5.*(pey4./(2.*pey5)).^2 - ...
     ( pey3 + pey4.*(pey4./(2.*pey5)) ) ) <= 0.99;
 
-Constr(2) = ( pey1 + pey2.*(2500-Tire.Fzo)./Tire.Fzo ) .* ...
+Constr(2) = ( pey1 + pey2.*(2500-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo ) .* ...
     ( 1 + pey5.*(pey4./(2.*pey5)).^2 - ...
     ( pey3 + pey4.*(pey4./(2.*pey5)) ) ) <= 0.99;
 
-Constr(3) = ( pey1 + pey2.*(0-Tire.Fzo)./Tire.Fzo ) .* ...
+Constr(3) = ( pey1 + pey2.*(0-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo ) .* ...
     ( 1 + pey5.*(-pey4./(2.*pey5)).^2 + ...
     ( pey3 + pey4.*(-pey4./(2.*pey5)) ) ) <= 0.99;
 
-Constr(4) = ( pey1 + pey2.*(2500-Tire.Fzo)./Tire.Fzo ) .* ...
+Constr(4) = ( pey1 + pey2.*(2500-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo ) .* ...
     ( 1 + pey5.*(-pey4./(2.*pey5)).^2 + ...
     ( pey3 + pey4.*(-pey4./(2.*pey5)) ) ) <= 0.99;
 
@@ -178,26 +178,26 @@ Tire.p.P.y(5) = Variant.Solution.ppy5;
         
         Dy = (pdy1 + pdy2.*[Raw.dFz]) .* ...
             (1 + ppy3.*[Raw.dPi] + ppy4.*[Raw.dPi].^2) .* ...
-            (1 - pdy3.*[Raw.Camber].^2).*[Raw.Load];
+            (1 - pdy3.*[Raw.Inclination].^2).*[Raw.Load];
         
-        Kya = pky1 .* Tire.Fzo .* ( 1 + ppy1.*[Raw.dPi] ) .* ...
-            ( 1 - pky3.*abs([Raw.Camber]) ) .* sin( pky4 .* ...
-            atan( ([Raw.Load]./Tire.Fzo) ./ ...
-            ( ( pky2 + pky5.*[Raw.Camber].^2 ) .* ( 1 + ppy2.*[Raw.dPi] ) ) ) );
+        Kya = pky1 .* Tire.Pacejka.Fzo .* ( 1 + ppy1.*[Raw.dPi] ) .* ...
+            ( 1 - pky3.*abs([Raw.Inclination]) ) .* sin( pky4 .* ...
+            atan( ([Raw.Load]./Tire.Pacejka.Fzo) ./ ...
+            ( ( pky2 + pky5.*[Raw.Inclination].^2 ) .* ( 1 + ppy2.*[Raw.dPi] ) ) ) );
         
         Kyg0 = [Raw.Load].*(pky6 + pky7.*[Raw.dFz]) .* (1 + ppy5.*[Raw.dPi]);
         
         By = Kya ./ (Cy.*Dy);
         
-        Vyg = [Raw.Load].*(pvy3 + pvy4.*[Raw.dFz]).*[Raw.Camber];
+        Vyg = [Raw.Load].*(pvy3 + pvy4.*[Raw.dFz]).*[Raw.Inclination];
         
         Vy = [Raw.Load].*(pvy1 + pvy2.*[Raw.dFz]) + Vyg;
         
-        Hy = (phy1 + phy2.*[Raw.dFz]) .* (Kyg0.*[Raw.Camber] - Vyg) ./ Kya;
+        Hy = (phy1 + phy2.*[Raw.dFz]) .* (Kyg0.*[Raw.Inclination] - Vyg) ./ Kya;
         
         Ey = ( pey1 + pey2.*[Raw.dFz] ) .* ...
-            ( 1 + pey5.*[Raw.Camber].^2 - ...
-            ( pey3 + pey4.*[Raw.Camber] ).*sign([Raw.Slip] + Hy) );
+            ( 1 + pey5.*[Raw.Inclination].^2 - ...
+            ( pey3 + pey4.*[Raw.Inclination] ).*sign([Raw.Slip] + Hy) );
 
         Fyo = Dy.*sin( Cy.*atan( (1-Ey).*By.*([Raw.Slip] + Hy) + ...
             Ey.*atan(By.*([Raw.Slip] + Hy) ) ) ) + Vy;

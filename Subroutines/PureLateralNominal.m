@@ -72,14 +72,14 @@ Nominal.Residual = FyoNomResidual( Nominal.C, Nominal.D, Nominal.E, ...
         lb.C = 0.1;
         lb.D = 0;
         lb.E = -Inf;
-        lb.K = 0;
+        lb.K = -Inf;
         lb.H = -Inf;
         lb.V = -Inf;
         
         ub.C = 10;
         ub.D = 1.5*max( abs( LateralForce ) );
         ub.E = 1;
-        ub.K = Inf;
+        ub.K = 0;
         ub.H = Inf;
         ub.V = Inf;
     end
