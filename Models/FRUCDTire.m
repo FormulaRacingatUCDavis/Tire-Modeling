@@ -48,7 +48,7 @@ classdef FRUCDTire
             [Fy0, By, Cy, Kya, Hy, Vy, Alpha0] = ...
                 EvaluateFy0( obj, Alpha, Kappa, Fz, dFz, Pi, dPi, Inc, V, i, Fidelity ); 
             
-            [Fyo, ~, ~, ~, ~, Alphao] = ...
+            [Fyo, ~, ~, ~, ~, ~, Alphao] = ...
                 EvaluateFy0( obj, Alpha, Kappa, Fz, dFz, Pi, dPi, 0  , V, i, Fidelity );
             
             [Mz0, Bt, Ct, Dt, Et, Ht, Br, Cr, Dr, Hf] = ...
@@ -62,8 +62,10 @@ classdef FRUCDTire
                     Fy  = Fy0;   
                     
                 case 'MNC' % Modified-Nicolas-Comstock Combined Slip Model
-                    [Fx, Fy ] = MNCCombinedSlipForces( Fx0, Fy0, Kappa0, Alpha0 );
-                    [~ , Fyp] = MNCCombinedSlipForces( Fx0, Fyo, Kappa0, Alphao );
+                    [Fx, Fy ] = MNCCombinedSlipForces( obj, ...
+                        Alpha, Kappa, Fx0, Fy0, Kxk, Kya, Kappa0, Alpha0 );
+                    [~ , Fyp]  = MNCCombinedSlipForces( obj, ...
+                        Alpha, Kappa, Fx0, Fyo, Kxk, Kya, Kappa0, Alphao );
                          
                 case 'MF6_1' % Combined Slip Pacejka MF6.1 Model
                     % Not Implemented
@@ -78,7 +80,7 @@ classdef FRUCDTire
             end
             
             %%% Evaluate Moment & Rolling Resistance
-            Mx = EvaluateMx( obj, Alpha, Kappa, Fz, dFz, Pi, dPi, Inc, V, i, Fidelity, Fx, Fy );
+            Mx = EvaluateMx( obj, Alpha, Kappa, Fz, dFz, Pi, dPi, Inc, V, i, Fidelity, Fy );
             
             My = EvaluateMy( obj, Alpha, Kappa, Fz, dFz, Pi, dPi, Inc, V, i, Fidelity, Fx );
         end
@@ -121,7 +123,7 @@ classdef FRUCDTire
             
             % Evaluate Null Slip Ratio
             if strcmpi( Fidelity.Combined, 'MNC' )
-                Opts = optimoptions( 'fsolve', 'Display', 'off' );
+                Opts = optimoptions( 'fsolve', 'Display', 'off', 'Algorithm', 'Levenberg-Marquardt' );
                 Kappa0 = fsolve( @(k) Dx .* sin( Cx .* atan( (1-Ex) .* Bx.*(k + Hx) + ...
                      Ex.*atan( Bx.*(k + Hx) ) ) ) + Vx, zeros(size(Dx)), Opts );
             else
@@ -169,15 +171,18 @@ classdef FRUCDTire
                 case 'Linear'
                     Fy0 = Kya * Alpha;
                 case 'Pacejka'
-                    Fy0 = Dy .* sin( Cy .* atan( (1-Ey) .* By.*(Alpha - (-1).^(mod(i,2)).*Hy ) + ...
-                        Ey.*atan( By.*(Alpha - (-1).^(mod(i,2)).*Hy ) ) ) ) + Vy;
+                    Fy0 = Dy .* sin( Cy .* atan( (1-Ey) .* By.*(Alpha + (-1).^(mod(i+1,2)).*Hy ) + ...
+                        Ey.*atan( By.*(Alpha + (-1).^(mod(i+1,2)).*Hy ) ) ) ) + ...
+                        (-1).^(mod(i+1,2)).*Vy;
             end
 
             % Evaluate Null Slip Angle
             if strcmpi( Fidelity.Combined, 'MNC' )
-                Opts = optimoptions( 'fsolve', 'Display', 'off' );
-                Alpha0 = fsolve( @(a) Dy .* sin( Cy .* atan( (1-Ey) .* By.*(a - (-1).^(mod(i,2)).*Hy ) + ...
-                    Ey.*atan( By.*(a - (-1).^(mod(i,2)).*Hy ) ) ) ) + Vy, zeros(size(Dy)), Opts );
+                Opts = optimoptions( 'fsolve', 'Display', 'off', 'Algorithm', 'Levenberg-Marquardt' );
+                Alpha0 = fsolve( @(a) Dy .* sin( Cy .* atan( (1-Ey) .* By.*(a + (-1).^(mod(i+1,2)).*Hy ) + ...
+                    Ey.*atan( By.*(a + (-1).^(mod(i+1,2)).*Hy ) ) ) ) + (-1).^(mod(i+1,2)).*Vy, zeros(size(Dy)), Opts );
+            else
+                Alpha0 = [];
             end
         end
         
@@ -193,8 +198,8 @@ classdef FRUCDTire
             
             Ct = obj.Pacejka.q.C.z(1);
             
-            Dt = (obj.Radius.Ro ./ obj.Pacejka.Fzo) .* ...
-                ( obj.Pacejka.q.D.z(5) .* (obj.Pacejka.Fzo ./ obj.Radius.Ro) + ...
+            Dt = (obj.Pacejka.Ro ./ obj.Pacejka.Fzo) .* ...
+                ( obj.Pacejka.q.D.z(5) .* (obj.Pacejka.Fzo ./ obj.Pacejka.Ro) + ...
                 obj.Pacejka.q.D.z(1).*Fz + obj.Pacejka.q.D.z(2).*Fz.*dFz ) .* ...
                 ( 1 - obj.Pacejka.p.P.z(1).*dPi ) .* ...
                 ( 1 + obj.Pacejka.q.D.z(3).*abs(Inc) + ...
@@ -223,18 +228,18 @@ classdef FRUCDTire
             Hf = Hy + Vy ./ Kya;
             
             % Evaluate Trail Function
-            t0 = Dt.*cos( Ct.*atan( (1-Et).*(Bt.*(Alpha - (-1).^(mod(i,2)).*Ht ) + ...
-                Et.*atan( Bt.*(Alpha - (-1).^(mod(i,2)).*Ht ) ) ) ) ) .* cos( Alpha );
+            t0 = Dt.*cos( Ct.*atan( (1-Et).*(Bt.*(Alpha + (-1).^(mod(i+1,2)).*Ht ) + ...
+                Et.*atan( Bt.*(Alpha + (-1).^(mod(i+1,2)).*Ht ) ) ) ) ) .* cos( Alpha );
             
             % Evaluate Residual Aligning Moment
-            Mzro = Dr .* cos( Cr.*atan( Br.*(Alpha - (-1).^(mod(i,2)).*Hf ) ) ) .* cos( Alpha );
+            Mzro = Dr .* cos( Cr.*atan( Br.*(Alpha + (-1).^(mod(i+1,2)).*Hf ) ) ) .* cos( Alpha );
             
             % Evaluate Pure Slip Aligning Moment (Mz0)
             Mz0 = -t0 .* Fyo + Mzro;
         end
         
         %%% Modified-Nicolas Comstock Combined Slip Forces
-        function [Fx, Fy] = MNCCombinedSlipForces( Fx0, Fy0, Kappa0, Alpha0 )
+        function [Fx, Fy] = MNCCombinedSlipForces( ~, Alpha, Kappa, Fx0, Fy0, Kxk, Kya, Kappa0, Alpha0 )
             Fx = abs(Fx0 .* Fy0 ./ sqrt( (Kappa - Kappa0).^2 .* Fy0.^2 + Fx0.^2 .* tan(Alpha - Alpha0).^2 ) .* ...
                 sqrt( (Kappa - Kappa0).^2 .* Kya.^2 + (1 - abs(Kappa - Kappa0)).^2 .* cos(Alpha - Alpha0).^2 .* Fx0.^2 ) ./ Kya) .* sign(Fx0);
 
@@ -247,8 +252,8 @@ classdef FRUCDTire
         function Mz = EvaluateMz( obj, Alpha, Kappa, ~, dFz, ~, ~, Inc, ~, i, ~, ...
             Fx, Fy, Fyp, Kxk, Kya, Bt, Ct, Dt, Et, Ht, Br, Cr, Dr, Hf )
             % Equivalent Slips
-            Alphat = (Alpha - (-1).^(mod(i,2)).*Ht );
-            Alphar = (Alpha - (-1).^(mod(i,2)).*Hf );
+            Alphat = (Alpha + (-1).^(mod(i+1,2)).*Ht );
+            Alphar = (Alpha + (-1).^(mod(i+1,2)).*Hf );
             
             Alphateq = sqrt( Alphat.^2 + (Kxk./Kya).^2 .* Kappa.^2 ) .* sign( Alphat );
             Alphareq = sqrt( Alphar.^2 + (Kxk./Kya).^2 .* Kappa.^2 ) .* sign( Alphar );
@@ -258,9 +263,9 @@ classdef FRUCDTire
                 Et.*atan(Bt.*Alphateq) ) ) .* cos( Alpha );
             
             % Evaluate Scrub Function
-            s = obj.Radial.Nominal .* (obj.Pacejka.s.S.z(1) + ...
-                obj.Pacejka.s.S.z(2) .* (Fy./obj.Pacejka.Fzo) + ...
-                (obj.Pacejka.s.S.z(3) + obj.Pacejka.s.S.z(4) .* dFz) .* Inc );
+            s = obj.Pacejka.Ro .* (obj.Pacejka.s.s.z(1) + ...
+                obj.Pacejka.s.s.z(2) .* (Fy./obj.Pacejka.Fzo) + ...
+                (obj.Pacejka.s.s.z(3) + obj.Pacejka.s.s.z(4) .* dFz) .* Inc );
             
             % Evaluate Residual Aligning Moment
             Mzr = Dr .* cos( Cr.*atan( Br.*(Alphareq) ) ) .* cos( Alpha );
@@ -270,8 +275,9 @@ classdef FRUCDTire
         end
         
         %%% Evaluate Overturning Moment
-        function Mx = EvaluateMx( obj, ~, ~, Fz, ~, ~, dPi, Inc, ~, ~, Fidelity, Fy )
-            
+        function Mx = EvaluateMx( obj, ~, ~, Fz, ~, ~, dPi, Inc, ~, ~, ~, Fy )
+            Mx = 0;
+            %{
             Mx = obj.Pacejka.Ro .* Fz .* ( obj.Pacejka.q.s.x(1) - ...
                 obj.Pacejka.q.s.x(2) .* Inc .* ( 1 + obj.Pacejka.p.P.Mx(1).*dPi ) + ...
                 obj.Pacejka.q.s.x(3) .* Fy ./ obj.Pacejka.Fzo + ...
@@ -280,11 +286,12 @@ classdef FRUCDTire
                 sin( obj.Pacejka.q.s.x(7) .* Inc + obj.Pacejka.q.s.x(8) .* ...
                 atan( obj.Pacejka.q.s.x(9) .* Fy./obj.Pacejka.Fzo ) ) + ...
                 obj.Pacejka.q.s.x(10) .* atan( obj.Pacejka.q.s.x(11) .* Fz./obj.Pacejka.Fzo) .* Inc );
+            %}
         end
     
         %%% Evaluate Rolling Resistance
         function My = EvaluateMy( obj, Alpha, Kappa, Fz, dFz, Pi, dPi, Inc, V, ~, Fidelity, Fx )
-            
+            My = 0;
         end
     end
 end
