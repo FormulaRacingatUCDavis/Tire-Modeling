@@ -84,7 +84,7 @@ Tire.Pacejka.r.B.y = zeros(4,1);
 Tire.Pacejka.r.C.y = 0;
 Tire.Pacejka.r.E.y = zeros(2,1);
 Tire.Pacejka.r.H.y = zeros(2,1);
-Tire.Pacejka.Pacejka.r.V.y = zeros(6,1);
+Tire.Pacejka.r.V.y = zeros(6,1);
 
 % s-Factors (Combined Slip Aligning Moment Coefficients)
 Tire.Pacejka.s.s.z = zeros(4,1);

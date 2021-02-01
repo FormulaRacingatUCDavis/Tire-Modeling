@@ -1,17 +1,16 @@
 function [ Variant, Tire ] = PureLateralVariant( Raw, x0, Tire )
-
 %% Optimization Variables
 pcy1 = optimvar( 'pcy1', 'Lowerbound',  0   , 'Upperbound',  5    );
 
 pdy1 = optimvar( 'pdy1', 'Lowerbound',  0   , 'Upperbound', 10    );
 pdy2 = optimvar( 'pdy2', 'Lowerbound',- 5   , 'Upperbound',  0    );
-pdy3 = optimvar( 'pdy3', 'Lowerbound',- 5   , 'Upperbound',  5    );
+pdy3 = optimvar( 'pdy3', 'Lowerbound',  0   , 'Upperbound',  5    );
 
-pey1 = optimvar( 'pey1', 'Lowerbound',- 5   , 'Upperbound',  0.75 );
-pey2 = optimvar( 'pey2', 'Lowerbound',- 1.5 , 'Upperbound',  1.5  );
-pey3 = optimvar( 'pey3', 'Lowerbound',- 1.5 , 'Upperbound',  1.5  );
-pey4 = optimvar( 'pey4', 'Lowerbound',- 1.5 , 'Upperbound',  1.5  );
-pey5 = optimvar( 'pey5', 'Lowerbound',- 1.5 , 'Upperbound',  0    );
+pey1 = optimvar( 'pey1', 'Lowerbound',-Inf  , 'Upperbound',  0.75 );
+pey2 = optimvar( 'pey2', 'Lowerbound',-Inf  , 'Upperbound', Inf   );
+pey3 = optimvar( 'pey3', 'Lowerbound',-Inf  , 'Upperbound', Inf   );
+pey4 = optimvar( 'pey4', 'Lowerbound',-Inf  , 'Upperbound', Inf   );
+pey5 = optimvar( 'pey5', 'Lowerbound',-Inf  , 'Upperbound', Inf   );
 
 pky1 = optimvar( 'pky1', 'Lowerbound',-25   , 'Upperbound',- 0.1  );
 pky2 = optimvar( 'pky2', 'Lowerbound',  0.1 , 'Upperbound',  5    );
@@ -45,23 +44,17 @@ Obj = fcn2optimexpr( @ErrorFyo, pcy1, ...
     ppy1, ppy2, ppy3, ppy4, ppy5 );
 
 %% Optimization Constraint
-Constr = optimineq( 4 );
+[dFz, Inclination] = meshgrid( ((0:50:2500)-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo, 0:0.1:5 );
 
-Constr(1) = ( pey1 + pey2.*(0-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo ) .* ...
-    ( 1 + pey5.*(pey4./(2.*pey5)).^2 - ...
-    ( pey3 + pey4.*(pey4./(2.*pey5)) ) ) <= 0.99;
+Constr = optimineq( 2*numel( dFz ) );
 
-Constr(2) = ( pey1 + pey2.*(2500-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo ) .* ...
-    ( 1 + pey5.*(pey4./(2.*pey5)).^2 - ...
-    ( pey3 + pey4.*(pey4./(2.*pey5)) ) ) <= 0.99;
-
-Constr(3) = ( pey1 + pey2.*(0-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo ) .* ...
-    ( 1 + pey5.*(-pey4./(2.*pey5)).^2 + ...
-    ( pey3 + pey4.*(-pey4./(2.*pey5)) ) ) <= 0.99;
-
-Constr(4) = ( pey1 + pey2.*(2500-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo ) .* ...
-    ( 1 + pey5.*(-pey4./(2.*pey5)).^2 + ...
-    ( pey3 + pey4.*(-pey4./(2.*pey5)) ) ) <= 0.99;
+for i = 1 : numel( dFz )
+    Constr(i) = fcn2optimexpr( @EyBound, ...
+        pey1, pey2, pey3, pey4, pey5, dFz(i), Inclination(i), 1 ) <= 0.9;
+    
+    Constr(i + numel(dFz)) = fcn2optimexpr( @EyBound, ...
+        pey1, pey2, pey3, pey4, pey5, dFz(i), Inclination(i), -1 ) <= 0.9;
+end
 
 %% Solving Optimization Problem
 [Variant.Solution, Variant.Log] = Runfmincon( Obj, x0, Constr, 3 );
@@ -164,6 +157,12 @@ Tire.Pacejka.p.P.y(5) = Variant.Solution.ppy5;
                 Log(ii).fval = [Log(ii).fval optimValues.fval];
             end
         end
+    end
+
+    function Ey = EyBound( pey1, pey2, pey3, pey4, pey5, dFz, Inclination, Slip )
+        Ey = ( pey1 + pey2.*dFz ) .* ...
+            ( 1 + pey5.*Inclination.^2 - ...
+            ( pey3 + pey4.*Inclination ).*sign(Slip) );
     end
 
     function RMSE = ErrorFyo( pcy1, ...

@@ -4,36 +4,36 @@ function [ Variant, Tire ] = PureAligningVariant( Raw, x0, Tire )
 Fyo = FyoEvaluation;
 
 %% Optimization Variables
-qbz1  = optimvar( 'qbz1' , 'Lowerbound',- 5   , 'Upperbound',  2    );
-qbz2  = optimvar( 'qbz2' , 'Lowerbound',-Inf  , 'Upperbound',  2*x0.qbz2 );
-qbz3  = optimvar( 'qbz3' , 'Lowerbound',-Inf  , 'Upperbound',  2*x0.qbz3 );
-qbz5  = optimvar( 'qbz5' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qbz6  = optimvar( 'qbz6' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qbz10 = optimvar( 'qbz10', 'Lowerbound',- 5   , 'Upperbound',  5    );
+qbz1  = optimvar( 'qbz1' , 'Lowerbound',  0   , 'Upperbound', Inf   );
+qbz2  = optimvar( 'qbz2' , 'Lowerbound',-Inf  , 'Upperbound', Inf   );
+qbz3  = optimvar( 'qbz3' , 'Lowerbound',-Inf  , 'Upperbound', Inf   );
+qbz5  = optimvar( 'qbz5' , 'Lowerbound',- 5   , 'Upperbound', Inf   );
+qbz6  = optimvar( 'qbz6' , 'Lowerbound',- 5   , 'Upperbound', Inf   );
+qbz10 = optimvar( 'qbz10', 'Lowerbound',-Inf  , 'Upperbound', Inf   );
 
-qcz1  = optimvar( 'qcz1' , 'Lowerbound',  1   , 'Upperbound',  5    );
+qcz1  = optimvar( 'qcz1' , 'Lowerbound',  1   , 'Upperbound',  1.1  );
 
-qdz1  = optimvar( 'qdz1' , 'Lowerbound',  0   , 'Upperbound', 10    );
+qdz1  = optimvar( 'qdz1' , 'Lowerbound',-Inf  , 'Upperbound', Inf   );
 qdz2  = optimvar( 'qdz2' , 'Lowerbound',- 1   , 'Upperbound',  0    );
 qdz3  = optimvar( 'qdz3' , 'Lowerbound',- 5   , 'Upperbound',  5    );
 qdz4  = optimvar( 'qdz4' , 'Lowerbound',- 5   , 'Upperbound',  5    );
 qdz6  = optimvar( 'qdz6' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qdz7  = optimvar( 'qdz7' , 'Lowerbound',- 1   , 'Upperbound',  0.1  );
+qdz7  = optimvar( 'qdz7' , 'Lowerbound',- 1   , 'Upperbound',  0    );
 qdz8  = optimvar( 'qdz8' , 'Lowerbound',- 5   , 'Upperbound',  5    );
 qdz9  = optimvar( 'qdz9' , 'Lowerbound',- 1   , 'Upperbound',  0.1  );
-qdz10 = optimvar( 'qdz10', 'Lowerbound',- 5   , 'Upperbound',  5    );
-qdz11 = optimvar( 'qdz11', 'Lowerbound',- 1   , 'Upperbound',  0.1  );
+qdz10 = optimvar( 'qdz10', 'Lowerbound',- 5   , 'Upperbound',  0    );
+qdz11 = optimvar( 'qdz11', 'Lowerbound',- 1   , 'Upperbound',  0    );
 
-qez1  = optimvar( 'qez1' , 'Lowerbound',- 5   , 'Upperbound',  0.8  );
-qez2  = optimvar( 'qez2' , 'Lowerbound',- 5   , 'Upperbound',  0    );
-qez3  = optimvar( 'qez3' , 'Lowerbound',- 0.5 , 'Upperbound',  0.1  );
-qez4  = optimvar( 'qez4' , 'Lowerbound',- 1.5 , 'Upperbound',  1.5  );
-qez5  = optimvar( 'qez5' , 'Lowerbound',- 1.5 , 'Upperbound',  0    );
+qez1  = optimvar( 'qez1' , 'Lowerbound',-Inf  , 'Upperbound',  0.95 );
+qez2  = optimvar( 'qez2' , 'Lowerbound',- 5   , 'Upperbound', Inf   );
+qez3  = optimvar( 'qez3' , 'Lowerbound',- 0.5 , 'Upperbound', Inf   );
+qez4  = optimvar( 'qez4' , 'Lowerbound',-Inf  , 'Upperbound', Inf   );
+qez5  = optimvar( 'qez5' , 'Lowerbound',-Inf  , 'Upperbound', Inf   );
 
-qhz1  = optimvar( 'qhz1' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qhz2  = optimvar( 'qhz2' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qhz3  = optimvar( 'qhz3' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qhz4  = optimvar( 'qhz4' , 'Lowerbound',- 5   , 'Upperbound',  5    );
+qhz1  = optimvar( 'qhz1' , 'Lowerbound',- 2   , 'Upperbound',  2    );
+qhz2  = optimvar( 'qhz2' , 'Lowerbound',- 2   , 'Upperbound',  2    );
+qhz3  = optimvar( 'qhz3' , 'Lowerbound',- 2   , 'Upperbound',  2    );
+qhz4  = optimvar( 'qhz4' , 'Lowerbound',- 2   , 'Upperbound',  2    );
 
 ppz1  = optimvar( 'ppz1' , 'Lowerbound',- 5   , 'Upperbound',  5    );
 ppz2  = optimvar( 'ppz2' , 'Lowerbound',- 5   , 'Upperbound',  5    );
@@ -57,7 +57,7 @@ for i = 1 : numel( dFz )
         qbz1, qbz2, qbz3, qbz5, qbz6, ...
         qcz1, ...
         qez1, qez2, qez3, qez4, qez5, ...
-        dFz(i), Inclination(i) ) <= 0.99;
+        dFz(i), Inclination(i) ) <= 0.95;
 end
 
 %% Solving Optimization Problem

@@ -86,7 +86,9 @@ Tire = PureLongitudinalFitting( Tire, Data, Bin ); % Longitudinal Force ( Fxo )
 
 Tire = PureLateralFitting( Tire, Data, Bin ); % Lateral Force ( Fyo )
 
-Tire = PureAligningFitting( Tire, Data, Bin ); % Aligning Moment ( Mzo )
+% load('TestData_1_27_21_17_15.mat')
+
+%Tire = PureAligningFitting( Tire, Data, Bin ); % Aligning Moment ( Mzo )
 
 %%% Steady State, Combined Slip Force Modeling
 % This is currently undeveloped due to data limitations. Instead, combined tire forces

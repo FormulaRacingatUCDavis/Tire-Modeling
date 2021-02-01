@@ -1,6 +1,6 @@
  function [Nominal] = PureAligningNominal( Mesh, Raw, Tire )
 %% Evaluating Pure Lateral Force Fit (Fyo)
-Fyo = FyoEvaluation( Mesh, Tire );
+[Fyo, By, Cy, Kya, Hy, Vy] = FyoEval( Tire );
 
 %% Preprocess Raw Data
 [Data.Slip, Data.Moment] = prepareCurveData( Raw.Slip, Raw.Moment );
@@ -31,9 +31,10 @@ Fit.Opts.Display = 'Off';
 Fit.Opts.MaxFunEvals = 10000;
 Fit.Opts.MaxIter = 10000;
 
-Fit.Opts.StartPoint = [0.25 1                  0.005 0.1 0.25  0  1];
-Fit.Opts.Lower =      [   0 0 -max(abs(Data.Moment))   0   -5 -5  0];
-Fit.Opts.Upper =      [   2 5  max(abs(Data.Moment))   1    1  5 15];
+% Coefficients           Bt  Ct                     Dr  Dt   Et Ht qbz10
+Fit.Opts.StartPoint = [0.25   1                  0.005 0.1 0.25  0   1];
+Fit.Opts.Lower =      [   0   1 -max(abs(Data.Moment))   0  -10 -5   0];
+Fit.Opts.Upper =      [  50 1.1  max(abs(Data.Moment)) Inf    1  5  50];
 
 %% Fit model to data
 [Fit.Result, Fit.GoF] = fit( Data.Slip, Data.Moment, Fit.Type, Fit.Opts );
@@ -52,44 +53,48 @@ Nominal.Hf = Fyo.Hy + Fyo.Vy/Fyo.Kya;
 
 Nominal.Residual = ( Data.Moment - Fit.Result( Data.Slip ) )';
 
-%{
 figure( 'Name', 'Aligning Moment Test', 'NumberTitle', 'off' )
 plot( Data.Slip, Data.Moment, 'k.', Data.Slip, Fit.Result( Data.Slip ), 'g-.', Data.Slip, Nominal.Residual, 'r.' )
 pause(0.25)
 delete( gcf )
-%}
 
 %% Local Functions
-    function Fyo = FyoEvaluation( Mesh, Tire )
-        % Note Function is evaluated for null camber
-        Fyo.Cy = Tire.Pacejka.p.C.y(1);
+    function [Fyo, By, Cy, Kya, Hy, Vy] = FyoEval( Tire )
+        % Operating Condition Functions
+        dFz = @(Fz) (Fz - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo;
+        dPi = @(Pi) (Pi - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
         
-        Fyo.Dy = (Tire.Pacejka.p.D.y(1) + Tire.Pacejka.p.D.y(2).*Mesh.dFz) .* ...
-            (1 + Tire.Pacejka.p.P.y(3).*Mesh.dPi + Tire.Pacejka.p.P.y(4).*Mesh.dPi.^2) .* ...
-            (1 - Tire.Pacejka.p.D.y(3).*0.^2).*Mesh.Load;
+        % Lateral Force Evaluation
+        Cy = Tire.Pacejka.p.C.y(1);
         
-        Fyo.Ey(1) = ( Tire.Pacejka.p.E.y(1) + Tire.Pacejka.p.E.y(2).*Mesh.dFz ) .* ...
-            ( 1 + Tire.Pacejka.p.E.y(5).*0.^2 + ...
-            ( Tire.Pacejka.p.E.y(3) + Tire.Pacejka.p.E.y(4).*0 ) );
+        Dy = @(Pi, Fz, Gam) (Tire.Pacejka.p.D.y(1) + Tire.Pacejka.p.D.y(2).*dFz(Fz)) .* ...
+            (1 + Tire.Pacejka.p.P.y(3).*dPi(Pi) + Tire.Pacejka.p.P.y(4).*dPi(Pi).^2) .* ...
+            (1 - Tire.Pacejka.p.D.y(3).*Gam.^2).*Fz;
         
-        Fyo.Ey(2) = ( Tire.Pacejka.p.E.y(1) + Tire.Pacejka.p.E.y(2).*Mesh.dFz ) .* ...
-            ( 1 + Tire.Pacejka.p.E.y(5).*0.^2 - ...
-            ( Tire.Pacejka.p.E.y(3) + Tire.Pacejka.p.E.y(4).*0 ) );
+        Kya = @(Pi, Fz, Gam) Tire.Pacejka.p.K.y(1) .* Tire.Pacejka.Fzo .* ( 1 + Tire.Pacejka.p.P.y(1).*dPi(Pi) ) .* ...
+            ( 1 - Tire.Pacejka.p.K.y(3).*abs(Gam) ) .* sin( Tire.Pacejka.p.K.y(4) .* ...
+            atan( (Fz./Tire.Pacejka.Fzo) ./ ...
+            ( ( Tire.Pacejka.p.K.y(2) + Tire.Pacejka.p.K.y(5).*Gam.^2 ) .* ( 1 + Tire.Pacejka.p.P.y(2).*dPi(Pi) ) ) ) );
         
-        Fyo.Kya = Tire.Pacejka.p.K.y(1) .* Tire.Pacejka.Fzo .* ( 1 + Tire.Pacejka.p.P.y(1).*Mesh.dPi ) .* ...
-            ( 1 - Tire.Pacejka.p.K.y(3).*abs(0) ) .* sin( Tire.Pacejka.p.K.y(4) .* ...
-            atan( (Mesh.Load./Tire.Pacejka.Fzo) ./ ...
-            ( ( Tire.Pacejka.p.K.y(2) + Tire.Pacejka.p.K.y(5).*0.^2 ) .* ( 1 + Tire.Pacejka.p.P.y(2).*Mesh.dPi ) ) ) );
+        Kyg0 = @(Pi, Fz) Fz.*(Tire.Pacejka.p.K.y(6) + Tire.Pacejka.p.K.y(7).*dFz(Fz) ) .* (1 + Tire.Pacejka.p.P.y(5).*dPi(Pi) );
         
-        Fyo.Kyg0 = Mesh.Load.*(Tire.Pacejka.p.K.y(6) + Tire.Pacejka.p.K.y(7).*Mesh.dFz ) .* (1 + Tire.Pacejka.p.P.y(5).*Mesh.dPi );
+        By = @(Pi, Fz, Gam) Kya(Pi, Fz, 0) ./ ( Cy.*Dy(Pi, Fz, 0) );
         
-        Fyo.By = Fyo.Kya ./ ( Fyo.Cy.*Fyo.Dy );
+        Vyg = @(Fz, Gam) Fz.*(Tire.Pacejka.p.V.y(3) + Tire.Pacejka.p.V.y(4).*dFz(Fz) ).*Gam;
         
-        Fyo.Vyg = Mesh.Load.*(Tire.Pacejka.p.V.y(3) + Tire.Pacejka.p.V.y(4).*Mesh.dFz ).*0;
+        Vy = @(Fz, Gam) Fz.*(Tire.Pacejka.p.V.y(1) + Tire.Pacejka.p.V.y(2).*dFz(Fz) ) + Vyg(Fz, Gam);
         
-        Fyo.Vy = Mesh.Load.*(Tire.Pacejka.p.V.y(1) + Tire.Pacejka.p.V.y(2).*Mesh.dFz ) + Fyo.Vyg;
+        Hy = @(Pi, Fz, Gam) (Tire.Pacejka.p.H.y(1) + Tire.Pacejka.p.H.y(2).*dFz(Fz) ) .* ...
+            (Kyg0(Pi, Fz).*Gam - Vyg(Fz, Gam) ) ./ Kya(Pi, Fz, Gam);
         
-        Fyo.Hy = (Tire.Pacejka.p.H.y(1) + Tire.Pacejka.p.H.y(2).*Mesh.dFz ) .* ...
-            (Fyo.Kyg0.*0 - Fyo.Vyg ) ./ Fyo.Kya;
+        Ey = @(Fz, Gam, Slip, Hy) ( Tire.Pacejka.p.E.y(1) + Tire.Pacejka.p.E.y(2).*dFz(Fz) ) .* ...
+            ( 1 + Tire.Pacejka.p.E.y(5).*Gam.^2 - ...
+            ( Tire.Pacejka.p.E.y(3) + Tire.Pacejka.p.E.y(4).*Gam ).*sign(deg2rad(Slip) + Hy) );
+
+        Fyo = @(Pi, Fz, Gam, Slip) Dy(Pi, Fz, Gam) .* ...
+            sin( Cy .* atan( (1-Ey(Fz, Gam, Slip, Hy(Pi, Fz, Gam) )) .* ...
+            By(Pi, Fz, Gam).*(deg2rad(Slip) + Hy(Pi, Fz, Gam) ) + ...
+            Ey(Fz, Gam, Slip, Hy(Pi, Fz, Gam) ).*atan( ...
+            By(Pi, Fz, Gam).*(deg2rad(Slip) + Hy(Pi, Fz, Gam) ) ) ) ) + Vy(Fz, Gam);
     end
 end
