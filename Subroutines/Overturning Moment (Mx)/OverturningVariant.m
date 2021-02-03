@@ -116,7 +116,7 @@ Tire.Pacejka.p.p.mx(1) = Variant.Solution.ppmx1 ;
             * sin(qsx7 .* [Raw.Inclination] + qsx8 * atan(qsx9 * ([Raw.Force]./ ...
             Tire.Pacejka.Fzo))) + qsx10 * atan(qsx11 * ([Raw.Load]./Tire.Pacejka.Fzo))...
             * [Raw.Inclination]);
-        RMSE = sqrt( mean( ([Raw.Force] - Mx).^2) );
+        RMSE = sqrt( mean( ([Raw.Moment] - Mx).^2) );
     end
             
 
