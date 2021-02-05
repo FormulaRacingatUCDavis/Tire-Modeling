@@ -112,5 +112,6 @@ Tire = PureAligningFitting( Tire, Data, Bin ); % Aligning Moment ( Mzo )
 % Heat Generation Modeling
 
 %% Exporting Model
+return
 save( [Directory.Media, '\', Tire.Name, '_Figures'], 'Figure' )
 save( [Directory.Model, '\', Tire.Name], 'Tire' )
