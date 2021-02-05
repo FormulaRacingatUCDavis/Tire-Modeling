@@ -12,15 +12,15 @@ Values.Pressure    = [ 8 10 12 14 ]'; % Pressure Bins [psi]
 Values.Load        = lbf2N([ 50 100 150 200 250 350 ])'; % Normal Force Bins [N]
 Values.Inclination = [ -2 0 2 4 ]'; % Inclination Bins [deg]
 Values.Velocity    = mph2kmh([ 0 2 15 25 45 ])'; % Belt Speed Bins [kph]
-Values.Slip.Angle  = [ -1 0 1 6]'; % Slip Angle Bins [deg]
-Values.Slip.Ratio  = 0; % Slip Ratio Bins [deg]
+Values.Slip.Angle  = deg2rad([ -1 0 1 6]'); % Slip Angle Bins [deg]
+Values.Slip.Ratio  = 0; % Slip Ratio Bins [ ]
 
 Tolerance.Pressure    = min( diff(Values.Pressure   ) ) / 3; % Pressure Tolerance [psi]
 Tolerance.Load        = min( diff(Values.Load       ) ) / 3; % Normal Force Tolerance [N]
 Tolerance.Inclination = min( diff(Values.Inclination) ) / 3; % Inclination Tolerance [deg]
 Tolerance.Velocity    = min( diff(Values.Velocity   ) ) / 3; % Belt Velocity Tolerance [kph]
-Tolerance.Slip.Angle  = min( diff(Values.Slip.Angle ) ) / 5; % Slip Angle Tolerance [deg]
-Tolerance.Slip.Ratio  = Tolerance.Slip.Angle    * 0.15 / 12; % Slip Ratio Tolerance [deg]
+Tolerance.Slip.Angle  = min( diff(Values.Slip.Angle ) ) / 10; % Slip Angle Tolerance [deg]
+Tolerance.Slip.Ratio  = Tolerance.Slip.Angle     * 0.15 / 12; % Slip Ratio Tolerance [deg]
 
 % Bin Creation
 Bin.Pressure = ( Data.Pressure > (Values.Pressure - Tolerance.Pressure) ) & ...

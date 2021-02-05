@@ -1,42 +1,49 @@
-function [ Variant, Tire ] = PureAligningVariant( Raw, x0, Tire )
+function [ Variant, Tire ] = PureAligningVariant( Raw, Nominal, x0, Tire )
 
 %% Evaluate Fyo
-Fyo = FyoEvaluation;
+[By, Cy, Kya, Hy, Vy, Fyo] = FyoEvaluation;
 
 %% Optimization Variables
-qbz1  = optimvar( 'qbz1' , 'Lowerbound',  0   , 'Upperbound', Inf   );
-qbz2  = optimvar( 'qbz2' , 'Lowerbound',-Inf  , 'Upperbound', Inf   );
-qbz3  = optimvar( 'qbz3' , 'Lowerbound',-Inf  , 'Upperbound', Inf   );
-qbz5  = optimvar( 'qbz5' , 'Lowerbound',- 5   , 'Upperbound', Inf   );
-qbz6  = optimvar( 'qbz6' , 'Lowerbound',- 5   , 'Upperbound', Inf   );
-qbz10 = optimvar( 'qbz10', 'Lowerbound',-Inf  , 'Upperbound', Inf   );
+qbz1  = optimvar( 'qbz1' , 'Lowerbound',  0.1 , 'Upperbound', 10    );
+qbz2  = optimvar( 'qbz2' , 'Lowerbound',- 1   , 'Upperbound',  1    );
+qbz3  = optimvar( 'qbz3' , 'Lowerbound',- 1   , 'Upperbound',  1    );
+qbz5  = optimvar( 'qbz5' , 'Lowerbound',- 0.5 , 'Upperbound',  0.5  );
+qbz6  = optimvar( 'qbz6' , 'Lowerbound',- 0.1 , 'Upperbound',  0.1  );
+qbz10 = optimvar( 'qbz10', 'Lowerbound',  0.01, 'Upperbound',  5    );
 
-qcz1  = optimvar( 'qcz1' , 'Lowerbound',  1   , 'Upperbound',  1.1  );
+qcz1  = optimvar( 'qcz1' , 'Lowerbound',  0.9 , 'Upperbound',  1.1  );
 
-qdz1  = optimvar( 'qdz1' , 'Lowerbound',-Inf  , 'Upperbound', Inf   );
-qdz2  = optimvar( 'qdz2' , 'Lowerbound',- 1   , 'Upperbound',  0    );
-qdz3  = optimvar( 'qdz3' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qdz4  = optimvar( 'qdz4' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qdz6  = optimvar( 'qdz6' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qdz7  = optimvar( 'qdz7' , 'Lowerbound',- 1   , 'Upperbound',  0    );
-qdz8  = optimvar( 'qdz8' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qdz9  = optimvar( 'qdz9' , 'Lowerbound',- 1   , 'Upperbound',  0.1  );
-qdz10 = optimvar( 'qdz10', 'Lowerbound',- 5   , 'Upperbound',  0    );
-qdz11 = optimvar( 'qdz11', 'Lowerbound',- 1   , 'Upperbound',  0    );
+qdz1  = optimvar( 'qdz1' , 'Lowerbound',  0.01, 'Upperbound',  5    );
+qdz2  = optimvar( 'qdz2' , 'Lowerbound',- 0.75, 'Upperbound',  0    );
+qdz3  = optimvar( 'qdz3' , 'Lowerbound',- 1   , 'Upperbound',  1    );
+qdz4  = optimvar( 'qdz4' , 'Lowerbound',- 1   , 'Upperbound',  1    );
 
-qez1  = optimvar( 'qez1' , 'Lowerbound',-Inf  , 'Upperbound',  0.95 );
-qez2  = optimvar( 'qez2' , 'Lowerbound',- 5   , 'Upperbound', Inf   );
-qez3  = optimvar( 'qez3' , 'Lowerbound',- 0.5 , 'Upperbound', Inf   );
-qez4  = optimvar( 'qez4' , 'Lowerbound',-Inf  , 'Upperbound', Inf   );
-qez5  = optimvar( 'qez5' , 'Lowerbound',-Inf  , 'Upperbound', Inf   );
+qdz6  = optimvar( 'qdz6' , 'Lowerbound',-Inf , 'Upperbound', Inf );
+qdz7  = optimvar( 'qdz7' , 'Lowerbound',-Inf , 'Upperbound', Inf );
+qdz8  = optimvar( 'qdz8' , 'Lowerbound',-Inf , 'Upperbound', Inf );
+qdz9  = optimvar( 'qdz9' , 'Lowerbound',-Inf , 'Upperbound', Inf );
+qdz10  = optimvar( 'qdz10' , 'Lowerbound',-Inf , 'Upperbound', Inf );
+qdz11  = optimvar( 'qdz11' , 'Lowerbound',-Inf , 'Upperbound', Inf );
+%qdz6  = optimvar( 'qdz6' , 'Lowerbound',-abs(x0.qdz6) , 'Upperbound', abs(x0.qdz6)  );
+%qdz7  = optimvar( 'qdz7' , 'Lowerbound',-abs(x0.qdz7) , 'Upperbound', abs(x0.qdz7)  );
+%qdz8  = optimvar( 'qdz8' , 'Lowerbound',-abs(x0.qdz8) , 'Upperbound', abs(x0.qdz8)  );
+%qdz9  = optimvar( 'qdz9' , 'Lowerbound', abs(x0.qdz9) , 'Upperbound', abs(x0.qdz9)  );
+%qdz10 = optimvar( 'qdz10', 'Lowerbound',-abs(x0.qdz10), 'Upperbound', abs(x0.qdz10) );
+%qdz11 = optimvar( 'qdz11', 'Lowerbound',-abs(x0.qdz11), 'Upperbound', abs(x0.qdz11) );
 
-qhz1  = optimvar( 'qhz1' , 'Lowerbound',- 2   , 'Upperbound',  2    );
-qhz2  = optimvar( 'qhz2' , 'Lowerbound',- 2   , 'Upperbound',  2    );
-qhz3  = optimvar( 'qhz3' , 'Lowerbound',- 2   , 'Upperbound',  2    );
-qhz4  = optimvar( 'qhz4' , 'Lowerbound',- 2   , 'Upperbound',  2    );
+qez1  = optimvar( 'qez1' , 'Lowerbound',-20   , 'Upperbound',- 1    );
+qez2  = optimvar( 'qez2' , 'Lowerbound',-20   , 'Upperbound',  0    );
+qez3  = optimvar( 'qez3' , 'Lowerbound',-25   , 'Upperbound',  0    );
+qez4  = optimvar( 'qez4' , 'Lowerbound',- 1   , 'Upperbound',  1    );
+qez5  = optimvar( 'qez5' , 'Lowerbound',- 1   , 'Upperbound',  1    );
 
-ppz1  = optimvar( 'ppz1' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-ppz2  = optimvar( 'ppz2' , 'Lowerbound',- 5   , 'Upperbound',  5    );
+qhz1  = optimvar( 'qhz1' , 'Lowerbound',- 0.03, 'Upperbound',  0.03 );
+qhz2  = optimvar( 'qhz2' , 'Lowerbound',- 0.03, 'Upperbound',  0.03 );
+qhz3  = optimvar( 'qhz3' , 'Lowerbound',- 0.01, 'Upperbound',  0.01 );
+qhz4  = optimvar( 'qhz4' , 'Lowerbound',- 0.01, 'Upperbound',  0.01 );
+
+ppz1  = optimvar( 'ppz1' , 'Lowerbound',- 1   , 'Upperbound',  1    );
+ppz2  = optimvar( 'ppz2' , 'Lowerbound',- 1   , 'Upperbound',  1    );
 
 %% Optimization Objective
 Obj = fcn2optimexpr( @ErrorMzo, ...
@@ -48,19 +55,39 @@ Obj = fcn2optimexpr( @ErrorMzo, ...
     ppz1, ppz2 );
 
 %% Optimization Constraint
-[dFz, Inclination] = meshgrid( ((0:50:2500)-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo, 0:0.1:5 );
+Constr(1) = fcn2optimexpr( @EtBound, qez1, qez2, qez3, qez4, qez5,  0, 0 ) <= 0;
+Constr(2) = fcn2optimexpr( @EtBound, qez1, qez2, qez3, qez4, qez5, -1, 0 ) <= 0;
+Constr(3) = fcn2optimexpr( @EtBound, qez1, qez2, qez3, qez4, qez5, -qez2./(2*qez3), 0 ) <= 0;
 
-Constr = optimineq( numel( dFz ) );
+Constr(4) = fcn2optimexpr( @EtBound, qez1, qez2, qez3, qez4, qez5,  0, 5 ) <= 0;
+Constr(5) = fcn2optimexpr( @EtBound, qez1, qez2, qez3, qez4, qez5, -1, 5 ) <= 0;
+Constr(6) = fcn2optimexpr( @EtBound, qez1, qez2, qez3, qez4, qez5, -qez2./(2*qez3), 5 ) <= 0;
 
-for i = 1 : numel( dFz )
-    Constr(i) = fcn2optimexpr( @EtBound, ...
-        qbz1, qbz2, qbz3, qbz5, qbz6, ...
-        qcz1, ...
-        qez1, qez2, qez3, qez4, qez5, ...
-        dFz(i), Inclination(i) ) <= 0.95;
+Constr(7) = fcn2optimexpr( @EtBound, qez1, qez2, qez3, qez4, qez5,  0, -5 ) <= 0;
+Constr(8) = fcn2optimexpr( @EtBound, qez1, qez2, qez3, qez4, qez5, -1, -5 ) <= 0;
+Constr(9) = fcn2optimexpr( @EtBound, qez1, qez2, qez3, qez4, qez5, -qez2./(2*qez3), -5 ) <= 0;
+
+Fz = 0:100:Tire.Pacejka.Fzo;
+Pi = [8 14];
+Inc = -5:1:5;
+
+[Fz,Pi,Inc] = meshgrid( Fz, Pi, Inc );
+
+for i = 1:numel(Fz)
+    Constr(i+9) = fcn2optimexpr( @DrBound, qdz6, qdz7, qdz8, qdz9, qdz10, qdz11, ppz2, ...
+        Fz(i), Pi(i), Inc(i) ) <= max([Nominal.Dr]);
+    Constr(i+9+numel(Fz)) = min([Nominal.Dr]) - ...
+        fcn2optimexpr( @DrBound, qdz6, qdz7, qdz8, qdz9, qdz10, qdz11, ppz2, Fz(i), Pi(i), Inc(i) ) <= 0;
 end
-
 %% Solving Optimization Problem
+x0.qdz6  = 0;
+x0.qdz7  = 0;
+x0.qdz8  = 0;
+x0.qdz9  = 0;
+x0.qdz10 = 0;
+x0.qdz11 = 0;
+x0.ppz2 = 0;
+
 [Variant.Solution, Variant.Log] = Runfmincon( Obj, x0, Constr, 3 );
 
 %% Clearing Optimization Figure
@@ -80,12 +107,12 @@ Tire.Pacejka.q.D.z(1)  = Variant.Solution.qdz1;
 Tire.Pacejka.q.D.z(2)  = Variant.Solution.qdz2;
 Tire.Pacejka.q.D.z(3)  = Variant.Solution.qdz3;
 Tire.Pacejka.q.D.z(4)  = Variant.Solution.qdz4;
-Tire.Pacejka.q.D.z(6)  = Variant.Solution.qdz6;
-Tire.Pacejka.q.D.z(7)  = Variant.Solution.qdz7;
-Tire.Pacejka.q.D.z(8)  = Variant.Solution.qdz8;
-Tire.Pacejka.q.D.z(9)  = Variant.Solution.qdz9;
-Tire.Pacejka.q.D.z(10) = Variant.Solution.qdz10;
-Tire.Pacejka.q.D.z(11) = Variant.Solution.qdz11;
+Tire.Pacejka.q.D.z(6)  = Variant.Solution.qdz6/10000;
+Tire.Pacejka.q.D.z(7)  = Variant.Solution.qdz7/10000;
+Tire.Pacejka.q.D.z(8)  = Variant.Solution.qdz8/10000;
+Tire.Pacejka.q.D.z(9)  = Variant.Solution.qdz9/10000;
+Tire.Pacejka.q.D.z(10) = Variant.Solution.qdz10/10000;
+Tire.Pacejka.q.D.z(11) = Variant.Solution.qdz11/10000;
 
 Tire.Pacejka.q.E.z(1)  = Variant.Solution.qez1;
 Tire.Pacejka.q.E.z(2)  = Variant.Solution.qez2;
@@ -99,40 +126,63 @@ Tire.Pacejka.q.H.z(3)  = Variant.Solution.qhz3;
 Tire.Pacejka.q.H.z(4)  = Variant.Solution.qhz4;
 
 Tire.Pacejka.p.P.z(1)  = Variant.Solution.ppz1;
-Tire.Pacejka.p.P.z(2)  = Variant.Solution.ppz2; 
+Tire.Pacejka.p.P.z(2)  = Variant.Solution.ppz2/10000; 
 
 %% Local Functions
-    function Fyo = FyoEvaluation
-        % Note Function is evaluated for null camber
-        Fyo.Cy = Tire.Pacejka.p.C.y(1) .* ones( size( [Raw.Slip] ) );
+    function [By, Cy, Kya, Hy, Vy, Fyo] = FyoEvaluation
+        % Fyo is Evaluated for Null Camber
+        Cy = Tire.Pacejka.p.C.y(1) .* ones( size( [Raw.Slip] ) );
         
-        Fyo.Dy = (Tire.Pacejka.p.D.y(1) + Tire.Pacejka.p.D.y(2).*[Raw.dFz]) .* ...
+        Dy = (Tire.Pacejka.p.D.y(1) + Tire.Pacejka.p.D.y(2).*[Raw.dFz]) .* ...
             (1 + Tire.Pacejka.p.P.y(3).*[Raw.dPi] + Tire.Pacejka.p.P.y(4).*[Raw.dPi].^2) .* ...
             (1 - Tire.Pacejka.p.D.y(3).*0.^2).*[Raw.Load];
         
-        Fyo.Kya = Tire.Pacejka.p.K.y(1) .* Tire.Pacejka.Fzo .* ( 1 + Tire.Pacejka.p.P.y(1).*[Raw.dPi] ) .* ...
+        Kya = Tire.Pacejka.p.K.y(1) .* Tire.Pacejka.Fzo .* ( 1 + Tire.Pacejka.p.P.y(1).*[Raw.dPi] ) .* ...
             ( 1 - Tire.Pacejka.p.K.y(3).*abs(0) ) .* sin( Tire.Pacejka.p.K.y(4) .* ...
             atan( ([Raw.Load]./Tire.Pacejka.Fzo) ./ ...
             ( ( Tire.Pacejka.p.K.y(2) + Tire.Pacejka.p.K.y(5).*0.^2 ) .* ...
             ( 1 + Tire.Pacejka.p.P.y(2).*[Raw.dPi] ) ) ) );
         
-        Fyo.Kyg0 = [Raw.Load].*(Tire.Pacejka.p.K.y(6) + Tire.Pacejka.p.K.y(7).*[Raw.dFz]) .* ...
+        Kyg0 = [Raw.Load].*(Tire.Pacejka.p.K.y(6) + Tire.Pacejka.p.K.y(7).*[Raw.dFz]) .* ...
             (1 + Tire.Pacejka.p.P.y(5).*[Raw.dPi]);
         
-        Fyo.By = Fyo.Kya ./ (Fyo.Cy .* Fyo.Dy);
+        By = Kya ./ (Cy .* Dy);
         
-        Fyo.Vyg = [Raw.Load].*(Tire.Pacejka.p.V.y(3) + Tire.Pacejka.p.V.y(4).*[Raw.dFz]).*0;
+        Vyg = [Raw.Load].*(Tire.Pacejka.p.V.y(3) + Tire.Pacejka.p.V.y(4).*[Raw.dFz]).*0;
         
-        Fyo.Vy = [Raw.Load].*(Tire.Pacejka.p.V.y(1) + Tire.Pacejka.p.V.y(2).*[Raw.dFz]) + Fyo.Vyg;
+        Vy = [Raw.Load].*(Tire.Pacejka.p.V.y(1) + Tire.Pacejka.p.V.y(2).*[Raw.dFz]) + Vyg;
         
-        Fyo.Hy = (Tire.Pacejka.p.H.y(1) + Tire.Pacejka.p.H.y(2).*[Raw.dFz]) .* (Fyo.Kyg0.*0 - Fyo.Vyg) ./ Fyo.Kya;
+        Hy = (Tire.Pacejka.p.H.y(1) + Tire.Pacejka.p.H.y(2).*[Raw.dFz]) .* (Kyg0.*0 - Vyg) ./ Kya;
         
-        Fyo.Ey = ( Tire.Pacejka.p.E.y(1) + Tire.Pacejka.p.E.y(2).*[Raw.dFz] ) .* ...
+        Ey = ( Tire.Pacejka.p.E.y(1) + Tire.Pacejka.p.E.y(2).*[Raw.dFz] ) .* ...
             ( 1 + Tire.Pacejka.p.E.y(5).*0.^2 - ...
-            ( Tire.Pacejka.p.E.y(3) + Tire.Pacejka.p.E.y(4).*0 ).*sign([Raw.Slip] + Fyo.Hy) );
+            ( Tire.Pacejka.p.E.y(3) + Tire.Pacejka.p.E.y(4).*0 ).*sign([Raw.Slip] + Hy) );
 
-        Fyo.Fyo = Fyo.Dy.*sin( Fyo.Cy.*atan( (1-Fyo.Ey).*Fyo.By.*([Raw.Slip] + Fyo.Hy) + ...
-            Fyo.Ey.*atan(Fyo.By.*([Raw.Slip] + Fyo.Hy) ) ) ) + Fyo.Vy;
+        Fyo = Dy.*sin( Cy.*atan( (1-Ey).*By.*([Raw.Slip] + Hy) + ...
+            Ey.*atan(By.*([Raw.Slip] + Hy) ) ) ) + Vy;
+        
+        % Other Required Parameters Evaluated with Camber
+        Dy = (Tire.Pacejka.p.D.y(1) + Tire.Pacejka.p.D.y(2).*[Raw.dFz]) .* ...
+            (1 + Tire.Pacejka.p.P.y(3).*[Raw.dPi] + Tire.Pacejka.p.P.y(4).*[Raw.dPi].^2) .* ...
+            (1 - Tire.Pacejka.p.D.y(3).*[Raw.Inclination].^2).*[Raw.Load];
+        
+        Kya = Tire.Pacejka.p.K.y(1) .* Tire.Pacejka.Fzo .* ( 1 + Tire.Pacejka.p.P.y(1).*[Raw.dPi] ) .* ...
+            ( 1 - Tire.Pacejka.p.K.y(3).*abs([Raw.Inclination]) ) .* sin( Tire.Pacejka.p.K.y(4) .* ...
+            atan( ([Raw.Load]./Tire.Pacejka.Fzo) ./ ...
+            ( ( Tire.Pacejka.p.K.y(2) + Tire.Pacejka.p.K.y(5).*[Raw.Inclination].^2 ) .* ...
+            ( 1 + Tire.Pacejka.p.P.y(2).*[Raw.dPi] ) ) ) );
+        
+        Kyg0 = [Raw.Load].*(Tire.Pacejka.p.K.y(6) + Tire.Pacejka.p.K.y(7).*[Raw.dFz]) .* ...
+            (1 + Tire.Pacejka.p.P.y(5).*[Raw.dPi]);
+        
+        By = Kya ./ (Cy .* Dy);
+        
+        Vyg = [Raw.Load].*(Tire.Pacejka.p.V.y(3) + Tire.Pacejka.p.V.y(4).*[Raw.dFz]).*[Raw.Inclination];
+        
+        Vy = [Raw.Load].*(Tire.Pacejka.p.V.y(1) + Tire.Pacejka.p.V.y(2).*[Raw.dFz]) + Vyg;
+        
+        Hy = (Tire.Pacejka.p.H.y(1) + Tire.Pacejka.p.H.y(2).*[Raw.dFz]) .* ...
+            (Kyg0.*[Raw.Inclination] - Vyg) ./ Kya;
     end
 
     function [Solution, Log] = Runfmincon( Objective, x0, Constr, n )
@@ -166,10 +216,10 @@ Tire.Pacejka.p.P.z(2)  = Variant.Solution.ppz2;
         % Optimization Options
         Opts = optimoptions( 'fmincon', ...
             'Algorithm', 'sqp', ...
-            'MaxFunctionEvaluations', 10000, ...
+            'MaxFunctionEvaluations', 10000000, ...
             'MaxIterations', 10000, ...
             'Display', 'off', ...
-            'PlotFcn', {@optimplotx, @optimplotfval}, ...
+            'PlotFcn', {@optimplotx, @optimplotfval, @optimplotconstrviolation}, ...
             'OutputFcn', @OptimLogging );
         
         % Solving Optimization Problem(s)
@@ -196,19 +246,21 @@ Tire.Pacejka.p.P.z(2)  = Variant.Solution.ppz2;
         end
     end
 
-    function Et = EtBound( qbz1, qbz2, qbz3, qbz5, qbz6, ...
-            qcz1, ...
-            qez1, qez2, qez3, qez4, qez5, ...
-            dFz, Inclination )
-        
+    function Et = EtBound( qez1, qez2, qez3, qez4, qez5, dFz, Inc )
         Et = (qez1 + qez2.*dFz + qez3.*dFz.^2) .* ...
-            (1 + (qez4 + qez5.*Inclination).*(2/pi).* ...
-            atan( (qbz1 + qbz2.*dFz + qbz3.*dFz^2) .* ...
-            (1 + qbz5.*abs(Inclination) + qbz6.*Inclination^2) .* ...
-            qcz1 .* deg2rad(45) ) );
+            (1 + (qez4 + qez5.*Inc ) );
     end
 
-    function MeanAbsoluteError = ErrorMzo( ...
+    function Dr = DrBound( qdz6, qdz7, qdz8, qdz9, qdz10, qdz11, ppz2, Fz, Pi, Inc)
+        dFz = (Fz - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo;
+        dPi = (Pi - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
+        
+        Dr = Tire.Pacejka.Ro .* Fz .* ( ( qdz6 + qdz7.*dFz ) + ...
+            ( ( qdz8 + qdz9.*dFz ) .* ( 1 + ppz2.*dPi ) + ...
+            ( qdz10 + qdz11.*dFz ) .* abs(Inc) ).*Inc );
+    end
+
+    function RMSE = ErrorMzo( ...
             qbz1, qbz2, qbz3, qbz5, qbz6, qbz10, ...
             qcz1, ...
             qdz1, qdz2, qdz3, qdz4, qdz6, qdz7, qdz8, qdz9, qdz10, qdz11, ...
@@ -231,24 +283,24 @@ Tire.Pacejka.p.P.z(2)  = Variant.Solution.ppz2;
             (1 + (qez4 + qez5.*[Raw.Inclination]).*(2/pi).* ...
             atan( Bt .* Ct .* deg2rad([Raw.Slip]) ) );
         
-        Br = qbz10 .* Fyo.By .* Fyo.Cy;
+        Br = qbz10 .* By .* Cy;
         
         Cr = 1;
         
-        Dr = Tire.Pacejka.Ro .* [Raw.Load] .* ( ( qdz6 + qdz7.*[Raw.dFz] ) + ...
-            ( ( qdz8 + qdz9.*[Raw.dFz] ) .* ( 1 + ppz2.*[Raw.dPi] ) + ...
-            ( qdz10 + qdz11.*[Raw.dFz] ) .* abs([Raw.Inclination]) ).*[Raw.Inclination] );
+        Dr = Tire.Pacejka.Ro .* [Raw.Load] .* ( ( qdz6/10000 + qdz7/10000.*[Raw.dFz] ) + ...
+            ( ( qdz8/10000 + qdz9/10000.*[Raw.dFz] ) .* ( 1 + ppz2/10000.*[Raw.dPi] ) + ...
+            ( qdz10/10000 + qdz11/10000.*[Raw.dFz] ) .* abs([Raw.Inclination]) ).*[Raw.Inclination] ) .* cos([Raw.Slip]);
         
-        Hf = Fyo.Hy + Fyo.Vy ./ Fyo.Kya;
+        Hf = Hy + Vy ./ Kya;
         
         % Evaluate Functions & Error
-        t0 = Dt.*cos( Ct.*atan( (1-Et).*(Bt.*([Raw.Slip]+Ht) + ...
-            Et.*atan( Bt.*([Raw.Slip]+Ht) ) ) ) ) .* cos( [Raw.Slip] );
+        t0 = Dt.*cos( Ct.*atan( (1-Et).*(Bt.*([Raw.Slip]+Ht)) + ...
+            Et.*atan( Bt.*([Raw.Slip]+Ht) ) ) ) .* cos([Raw.Slip]);
         
-        Mzro = Dr .* cos( Cr.*atan( Br.*([Raw.Slip]+Hf) ) ) .* cos( [Raw.Slip] );
+        Mzro = Dr .* cos( Cr.*atan( Br.*([Raw.Slip]+Hf) ) ) .* cos([Raw.Slip]);
         
-        Mzo = -t0 .* Fyo.Fyo + Mzro;
+        Mzo = -t0 .* Fyo + Mzro;
         
-        MeanAbsoluteError = mean(abs([Raw.Moment] - Mzo));
+        RMSE = sqrt( mean( ([Raw.Moment] - Mzo).^2 ) );
     end
 end

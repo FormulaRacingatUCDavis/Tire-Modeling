@@ -90,40 +90,18 @@ for p = 1 : numel( Case.Pressure )
 end
 
 %% Filtering Data & Operating Conditions
-for n = 1 : 3
-    for i = size(Nominal,n): -1 : 1
-        switch n
-            case 1
-                if isempty( [Nominal(i,:,:).Residual] )
-                    Case.Pressure(i) = [];
-                    Mesh(i,:,:)      = [];
-                    Raw(i,:,:)       = [];
-                    Nominal(i,:,:)   = [];
-                end
-            case 2
-                if isempty( [Nominal(:,i,:).Residual] )
-                    Case.Load(i)   = [];
-                    Mesh(:,i,:)    = [];
-                    Raw(:,i,:)     = [];
-                    Nominal(:,i,:) = [];
-                end
-            case 3
-                if isempty( [Nominal(:,:,i).Residual] )
-                    Case.Inclination(i) = [];
-                    Mesh(:,:,i)         = [];
-                    Raw(:,:,i)          = [];
-                    Nominal(:,:,i)      = [];
-                end
-        end
-    end
-end
+Mesh(    ind2sub(size(Raw), find(cellfun(@isempty, {Nominal.Ct}))) ) = [];
+Raw(     ind2sub(size(Raw), find(cellfun(@isempty, {Nominal.Ct}))) ) = [];
+Nominal(                         cellfun(@isempty, {Nominal.Ct})   ) = [];
+
+Mesh(    ind2sub(size(Raw), find(cellfun(@isnan, {Nominal.Ct}))) ) = [];
+Raw(     ind2sub(size(Raw), find(cellfun(@isnan, {Nominal.Ct}))) ) = [];
+Nominal(                         cellfun(@isnan, {Nominal.Ct})   ) = [];
 
 %% Variant Fitting
 Response = PureAligningResponseSurfaces( Mesh, Nominal, Tire );
   
-[ Variant, Tire ] = PureAligningVariant( Raw, Response.x0, Tire );
+[ Variant, Tire ] = PureAligningVariant( Raw, Nominal, Response.x0, Tire );
 
 %% Plotting Function
 PureAligningPlotting( Mesh, Raw, Nominal, Response, Variant, Tire );
-
-a=1;

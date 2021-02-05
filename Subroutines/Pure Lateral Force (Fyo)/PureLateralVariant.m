@@ -1,6 +1,6 @@
 function [ Variant, Tire ] = PureLateralVariant( Raw, x0, Tire )
 %% Optimization Variables
-pcy1 = optimvar( 'pcy1', 'Lowerbound',  0   , 'Upperbound',  5    );
+pcy1 = optimvar( 'pcy1', 'Lowerbound',  0.5 , 'Upperbound',  1.5  );
 
 pdy1 = optimvar( 'pdy1', 'Lowerbound',  0   , 'Upperbound', 10    );
 pdy2 = optimvar( 'pdy2', 'Lowerbound',- 5   , 'Upperbound',  0    );
@@ -14,14 +14,24 @@ pey5 = optimvar( 'pey5', 'Lowerbound',-Inf  , 'Upperbound', Inf   );
 
 pky1 = optimvar( 'pky1', 'Lowerbound',-25   , 'Upperbound',- 0.1  );
 pky2 = optimvar( 'pky2', 'Lowerbound',  0.1 , 'Upperbound',  5    );
-pky3 = optimvar( 'pky3', 'Lowerbound',- 5   , 'Upperbound',  5    );
-pky4 = optimvar( 'pky4', 'Lowerbound',  0.05, 'Upperbound',  2.5  );
+pky3 = optimvar( 'pky3', 'Lowerbound',  0   , 'Upperbound',  5    );
+pky4 = optimvar( 'pky4', 'Lowerbound',  1.75, 'Upperbound',  2.25 );
 pky5 = optimvar( 'pky5', 'Lowerbound',- 5   , 'Upperbound',  5    );
-pky6 = optimvar( 'pky6', 'Lowerbound',-Inf  , 'Upperbound',  0    );
-pky7 = optimvar( 'pky7', 'Lowerbound',-Inf  , 'Upperbound',  5    );
+
+if x0.pky6 > 0
+   pky6 = optimvar( 'pky6', 'Lowerbound', 0, 'Upperbound', 2*x0.pky6 );
+else
+   pky6 = optimvar( 'pky6', 'Lowerbound', 2*x0.pky6, 'Upperbound', 0 ); 
+end
+
+if x0.pky7 > 0
+   pky7 = optimvar( 'pky7', 'Lowerbound', 0, 'Upperbound', 2*x0.pky7 );
+else
+   pky7 = optimvar( 'pky7', 'Lowerbound', 2*x0.pky7, 'Upperbound', 0 ); 
+end
 
 phy1 = optimvar( 'phy1', 'Lowerbound',- 5   , 'Upperbound',  5    );
-phy2 = optimvar( 'phy2', 'Lowerbound',- 5   , 'Upperbound',  5    );
+phy2 = optimvar( 'phy2', 'Lowerbound',- 2   , 'Upperbound',  5    );
 
 pvy1 = optimvar( 'pvy1', 'Lowerbound',- 5   , 'Upperbound',  5    );
 pvy2 = optimvar( 'pvy2', 'Lowerbound',- 5   , 'Upperbound',  5    );

@@ -77,7 +77,8 @@ if strcmpi( Figure.Mode, 'Debug' )
              'Nominal Fit Coefficient' }, 'Interpreter', 'latex' );
          
     ax2 = subplot(5,1,2);
-    fplot( @(Fz) Ex(Fz, 1), [0 2500], 'm' ); hold on;
+    fplot( @(Fz) Ex(Fz,  1), [0 2500], 'm' ); hold on;
+    fplot( @(Fz) Ex(Fz, -1), [0 2500], 'm' ); hold on;
     scatter( [Mesh(:).Load], [Nominal(:).E], 'k.' ); 
     ylabel( 'Curvature: $E_{x}$' )
     xlabel( 'Normal Load: $F_{z}$' )

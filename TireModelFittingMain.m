@@ -26,7 +26,7 @@ set(groot,'defaultLegendInterpreter','latex');
 %%% Default Directories
 Directory.Tool  = fileparts( matlab.desktop.editor.getActiveFilename );
 Directory.Data  = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'Tire-Data'];
-Directory.Save  = [Directory.Tool, '\Models'];
+Directory.Model = [Directory.Tool, '\Models'];
 Directory.Media = [Directory.Tool, '\Media'];
 
 addpath( genpath( Directory.Tool ) );
@@ -35,9 +35,6 @@ addpath( genpath( Directory.Data ) );
 %%% Figure Structure
 Figure.Mode  = 'Debug';
 Figure.State = 'minimized';
-
-%%% Initializing Tire Model
-Tire = ModelParameterSetup;
 
 %% Data Import
 % Imports and bins the FSAE TTC test data into Data and Bin structures which 
@@ -80,21 +77,23 @@ end
 
 clear i
 
+%% Initialize Tire Model
+Tire = FRUCDTire( input( ['Enter Tire Model Name in Following Format: ', ...
+    '{Manufacturer}_{Compound}_{Diameter}x{Width}-{Rim Diameter}x{Rim Width}\n'], 's' ), ...
+    [Data.Source], []);
+
 %% Contact Patch Load Modeling
 %%% Steady State, Pure Slip Force & Aligning Moment Fitting
 Tire = PureLongitudinalFitting( Tire, Data, Bin ); % Longitudinal Force ( Fxo )
 
 Tire = PureLateralFitting( Tire, Data, Bin ); % Lateral Force ( Fyo )
 
-% load('TestData_1_27_21_17_15.mat')
-
-%Tire = PureAligningFitting( Tire, Data, Bin ); % Aligning Moment ( Mzo )
+Tire = PureAligningFitting( Tire, Data, Bin ); % Aligning Moment ( Mzo )
 
 %%% Steady State, Combined Slip Force Modeling
 % This is currently undeveloped due to data limitations. Instead, combined tire forces
 % can be evaluated using the Modified-Nicolas-Comstock (MNC) Model on the pure slip 
 % models. It is implemented within the FRUCDTire Class Definition.
-Model = FRUCDTire([], [], [], Tire.Pacejka, [], [], []);
 
 %%% Steady State, Combined Slip Moment Fitting
 % Tire = CombinedAligningFitting( Tire, Data, Bin ); % Aligning Moment (Mz)
@@ -106,12 +105,12 @@ Model = FRUCDTire([], [], [], Tire.Pacejka, [], [], []);
 %%% Transient Response
 % Tire = RelaxationLengthFitting( Tire, Data, Bin );
 
-return
-
 %% Radial Deflection Modeling
-% Cornering Stiffness Modeling
+% Vertical Stiffness Modeling
 
 %% Thermal Modeling
-
+% Heat Generation Modeling
 
 %% Exporting Model
+save( [Directory.Media, '\', Tire.Name, '_Figures'], 'Figure' )
+save( [Directory.Model, '\', Tire.Name], 'Tire' )

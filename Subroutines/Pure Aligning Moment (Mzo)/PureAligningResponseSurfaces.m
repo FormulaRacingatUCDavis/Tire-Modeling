@@ -46,7 +46,7 @@ Ct.Surface = @(Pi, Fz, Gam, x0) x0.qcz1 + 0*(Pi + Fz + Gam);
 %% Fitting D_{t} Surface
 % Initial Vector 
 Dt0.qdz1 = 1;
-Dt0.qdz2 = -6;
+Dt0.qdz2 = -1;
 Dt0.qdz3 = 0;
 Dt0.qdz4 = 0;
 
@@ -153,14 +153,14 @@ x0.qbz10 = mean( [Nominal.qbz10] );
 
 %% Fitting D_{r} Surface
 % Initial Vector 
-Dr0.qdz6 = 1;
-Dr0.qdz7 = 0.1;
-Dr0.qdz8 = 1;
-Dr0.qdz9 = 0.1;
+Dr0.qdz6  = 0;
+Dr0.qdz7  = 0;
+Dr0.qdz8  = 0;
+Dr0.qdz9  = 0;
 Dr0.qdz10 = 0;
 Dr0.qdz11 = 0;
 
-Dr0.ppz2 = 0;
+Dr0.ppz2  = 0;
 
 % Optimization Variables
 qdz6 = optimvar( 'qdz6' );
@@ -274,31 +274,27 @@ Response.Dr = Dr;
         end
     end
 
-    function MeanSquareError = ErrorDt( qdz1, qdz2, qdz3, qdz4, ppz1 )
+    function RMSE = ErrorDt( qdz1, qdz2, qdz3, qdz4, ppz1 )
         DtSurface = Tire.Pacejka.Ro .* ([Mesh.Load]./Tire.Pacejka.Fzo) .* ...
             ( qdz1 + qdz2.*[Mesh.dFz] ) .* ( 1 - ppz1.*[Mesh.dPi] ) .* ...
             ( 1 + qdz3.*abs([Mesh.Inclination]) + qdz4.*[Mesh.Inclination].^2 );
         
-        MeanSquareError= mean( ( [Nominal.Dt] - DtSurface ).^2 );
+        RMSE = sqrt( mean( ([Nominal.Dt] - DtSurface).^2 ) );
     end
 
-    function MeanAbsoluteError = ErrorEt( qez1, qez2, qez3, qez4, qez5 )
+    function RMSE = ErrorEt( qez1, qez2, qez3, qez4, qez5 )
         EtSurface = (qez1 + qez2.*[Mesh.dFz] + qez3.*[Mesh.dFz].^2) .* ...
             (1 + (qez4 + qez5.*[Mesh.Inclination]).*(2/pi).* ...
             atan( Bt.Solution([Mesh.dFz], [Mesh.Inclination]).*x0.qcz1.*5 ) );
         
-        MeanAbsoluteError= mean( abs( [Nominal.Et] - EtSurface ) );
+        RMSE = sqrt( mean( ([Nominal.Et] - EtSurface).^2 ) );
     end
     
-    function MeanSquareError = ErrorDr( qdz6, qdz7, qdz8, qdz9, qdz10, qdz11, ppz2 )
+    function RMSE = ErrorDr( qdz6, qdz7, qdz8, qdz9, qdz10, qdz11, ppz2 )
         DrSurface = Tire.Pacejka.Ro .* [Mesh.Load] .* ( ( qdz6 + qdz7.*[Mesh.dFz] ) + ...
             ( ( qdz8 + qdz9.*[Mesh.dFz] ) .* ( 1 + ppz2.*[Mesh.dPi] ) + ...
             ( qdz10 + qdz11.*[Mesh.dFz] ) .* abs([Mesh.Inclination]) ).*[Mesh.Inclination] );
         
-        MeanSquareError= mean( ( [Nominal.Dr] - DrSurface ).^2 );
+        RMSE = sqrt( mean( ([Nominal.Dr] - DrSurface).^2 ) );
     end
-
 end
-
-
-

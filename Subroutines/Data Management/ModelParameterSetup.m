@@ -3,7 +3,7 @@ function Tire = ModelParameterSetup( )
 
 %% Pacejka Coefficients
 % Nominal Conditions
-Tire.Pacejka.Fzo = 3000; % Nominal Tire.Pacejka Load [N] (Chosen as 450lbs)
+Tire.Pacejka.Fzo = 3000; % Nominal Tire.Pacejka Load [N] (Chosen as 675lbs)
 Tire.Pacejka.Pio = 10; % Nominal Tire.Pacejka Pressure [psi]
 Tire.Pacejka.Ro = 8*2.54/100; % Nominal Tire.Pacejka Radius [m]
 

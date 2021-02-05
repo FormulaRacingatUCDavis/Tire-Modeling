@@ -2,63 +2,148 @@
 %% Evaluating Pure Lateral Force Fit (Fyo)
 [Fyo, By, Cy, Kya, Hy, Vy] = FyoEval( Tire );
 
-%% Preprocess Raw Data
-[Data.Slip, Data.Moment] = prepareCurveData( Raw.Slip, Raw.Moment );
+%% Optimization Variables
+Bt = optimvar( 'Bt', 'Lowerbound',  0   , 'Upperbound', 10    );
+Ct = optimvar( 'Ct', 'Lowerbound',  0.9 , 'Upperbound',  1.1  );
+Dt = optimvar( 'Dt', 'Lowerbound', 0.005, 'Upperbound', Inf   );
+Et = optimvar( 'Et', 'Lowerbound',- 25  , 'Upperbound',  0.95 );
+Ht = optimvar( 'Ht', 'Lowerbound',- 0.04, 'Upperbound',  0.04 );
 
-% Sort for Monotonicity
-[Data.Slip, SortIdx] = sort( Data.Slip );
-Data.Moment = Data.Moment( SortIdx );
+qbz10 = optimvar( 'qbz10', 'Lowerbound', 0.01, 'Upperbound', 2 );
+Dr = optimvar( 'Dr', 'Lowerbound',-max(abs(Raw.Moment))/20, 'Upperbound', max(abs(Raw.Moment))/20 );
 
-%% Fit Type
-Fit.Type = fittype( ['-(Dt*cos( Ct*atan((1-Et)*(Bt*(Slip+Ht)) + Et*atan(Bt*(Slip+Ht))))*cos(Slip)) * ', ... % Pneumatic Trail Function
-    ... % Negative \alpha_{y} Fyo
-    '( (Slip <= ', num2str(Fyo.Hy), ')*(', num2str(Fyo.Dy), '*sin(', num2str(Fyo.Cy), '*atan((1-', num2str(Fyo.Ey(1)), ...
-    ')*(', num2str(Fyo.By), '*(Slip+', num2str(Fyo.Hy), '))+', num2str(Fyo.Ey(1)), ...
-    '*atan(', num2str(Fyo.By), '*(Slip+', num2str(Fyo.Hy), ')))) +', num2str(Fyo.Vy), ') + ' , ...
-    ... % Positive \alpha_{y} Fyo
-    '(Slip > ', num2str(Fyo.Hy), ')*(', num2str(Fyo.Dy), '*sin(', num2str(Fyo.Cy), '*atan((1-', num2str(Fyo.Ey(2)), ...
-    ')*(', num2str(Fyo.By), '*(Slip+', num2str(Fyo.Hy), '))+', num2str(Fyo.Ey(2)), ...
-    '*atan(', num2str(Fyo.By), '*(Slip+', num2str(Fyo.Hy), ')))) +', num2str(Fyo.Vy), ') ) + ', ...
-    ... % Residual Torque Function
-    '(Dr*cos(atan(qbz10*', num2str(Fyo.By*Fyo.Cy), '*(Slip+', num2str(Fyo.Hy+Fyo.Vy/Fyo.Kya), ')))*cos(Slip))'], ...
-    ... % Fit Options
-    'independent', 'Slip', 'dependent', 'Moment' );
+%% Optimization Objective
+Obj = fcn2optimexpr( @ErrorMzo, Bt, Ct, Dt, Et, Ht, qbz10, Dr );
 
-%% Optimization Options
-Fit.Opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
-Fit.Opts.Display = 'Off';
+%% Solving Optimization Problem
+x0.Bt = 1;
+x0.Ct = 1;
+x0.Dt = 0.05;
+x0.Et = -2;
+x0.Ht = 0;
 
-Fit.Opts.MaxFunEvals = 10000;
-Fit.Opts.MaxIter = 10000;
+x0.qbz10 = 1;
+x0.Dr = 0;
 
-% Coefficients           Bt  Ct                     Dr  Dt   Et Ht qbz10
-Fit.Opts.StartPoint = [0.25   1                  0.005 0.1 0.25  0   1];
-Fit.Opts.Lower =      [   0   1 -max(abs(Data.Moment))   0  -10 -5   0];
-Fit.Opts.Upper =      [  50 1.1  max(abs(Data.Moment)) Inf    1  5  50];
+[Fit.Solution, Fit.Log] = Runfmincon( Obj, x0, [], 1 );
 
-%% Fit model to data
-[Fit.Result, Fit.GoF] = fit( Data.Slip, Data.Moment, Fit.Type, Fit.Opts );
+%% Clearing Optimization Figure
+delete( findobj( 'Type', 'figure', 'Name', 'Optimization PlotFcns' ) );
 
-%% Allocate Results
-Nominal.Bt = Fit.Result.Bt;
-Nominal.Ct = Fit.Result.Ct;
-Nominal.Dt = Fit.Result.Dt;
-Nominal.Et = Fit.Result.Et;
-Nominal.Ht = Fit.Result.Ht;
+%% Allocating Solution
+Nominal.Bt = Fit.Solution.Bt;
+Nominal.Ct = Fit.Solution.Ct;
+Nominal.Dt = Fit.Solution.Dt;
+Nominal.Et = Fit.Solution.Et;
+Nominal.Ht = Fit.Solution.Ht;
 
-Nominal.qbz10 = Fit.Result.qbz10;
+Nominal.qbz10 = Fit.Solution.qbz10;
 Nominal.Cr = 1;
-Nominal.Dr = Fit.Result.Dr;
-Nominal.Hf = Fyo.Hy + Fyo.Vy/Fyo.Kya;
+Nominal.Dr = Fit.Solution.Dr;
+Nominal.Hf = Hy( Mesh.Pressure, Mesh.Load, Mesh.Inclination) + ...
+             Vy( Mesh.Load, Mesh.Inclination) ./ Kya( Mesh.Pressure, Mesh.Load, Mesh.Inclination);
+         
+Nominal.Residual = ( Raw.Moment - MzoEval( Raw.Slip ) )';
 
-Nominal.Residual = ( Data.Moment - Fit.Result( Data.Slip ) )';
-
+%{
 figure( 'Name', 'Aligning Moment Test', 'NumberTitle', 'off' )
-plot( Data.Slip, Data.Moment, 'k.', Data.Slip, Fit.Result( Data.Slip ), 'g-.', Data.Slip, Nominal.Residual, 'r.' )
+yyaxis left
+scatter( rad2deg(Raw.Slip), Raw.Moment, 'k.'); hold on;
+fplot( @(Slip) MzoEval( deg2rad(Slip) ), [-15 15], 'g-.')
+scatter( rad2deg(Raw.Slip), Nominal.Residual, 'r.' )
+yyaxis right
+fplot( @(Slip) Fyo(Mesh.Pressure, Mesh.Load, Mesh.Inclination, deg2rad(Slip)), [-15 15], 'b' )
 pause(0.25)
 delete( gcf )
+%}
 
 %% Local Functions
+     function [Solution, Log] = Runfmincon( Obj, x0, Constr, n )
+        % Initializing Logs
+        Log(n).x = [];
+        Log(n).fval = [];
+        
+        % Creating Array of Initial Vectors (Latin Hypercube Sampling)
+        if nargin > 3 && n > 1
+            Jitter = lhsdesign( n-1, numel(fieldnames(x0)) ) - 0.5;
+            
+            Initial = (struct2array(x0)/2) .* Jitter + struct2array(x0);
+            Initial(:, find( ~struct2array(x0) ) ) = ...
+                Jitter( :, find( ~struct2array(x0) ) ) .* 0.2; %#ok<FNDSB>
+            
+            Variables = fieldnames( x0 );
+            for ii = 1 : n-1
+                for jj = 1 : numel( Variables )
+                    x0(ii+1).(Variables{jj}) = Initial(ii, jj);
+                end
+            end
+        end
+        
+        % Optimization Problem
+        if isempty(Constr)
+            Prob = optimproblem( 'Objective', Obj );
+        else
+            Prob = optimproblem( 'Objective', Obj, 'Constraints', Constr );
+        end
+        
+        % Optimization Options
+        Opts = optimoptions( 'fmincon', ...
+            'Algorithm', 'sqp', ...
+            'MaxFunctionEvaluations', 10000, ...
+            'MaxIterations', 10000, ...
+            'Display', 'off', ...
+            'PlotFcn', {@optimplotx, @optimplotfval}, ...
+            'OutputFcn', @OptimLogging );
+        
+        % Solving Optimization Problem(s)
+        for ii = 1 : n
+            try
+                [Solution(ii), Feval(ii)] = solve( Prob, x0(ii), ...
+                    'solver', 'fmincon', 'options', Opts ); %#ok<AGROW>
+            catch
+                continue
+            end
+        end
+
+        % Selecting Optimal Solution
+        [~, MinIdx] = min( Feval );
+        Solution = Solution(MinIdx);
+        
+        function stop = OptimLogging( x, optimValues, state )
+            stop = false;
+            
+            if strcmp(state, 'iter')
+                Log(ii).x = [Log(ii).x x];
+                Log(ii).fval = [Log(ii).fval optimValues.fval];
+            end
+        end
+     end
+
+    function Residual = ErrorMzo( Bt, Ct, Dt, Et, Ht, qbz10, Dr )
+        t0 = Dt.*cos( Ct.*atan( (1 - Et) .* Bt.*(Raw.Slip + Ht) + ...
+            Et.*atan( Bt.*(Raw.Slip + Ht) ) ) ) .* cos(Raw.Slip);
+
+        Hf = Hy( Raw.Pressure, Raw.Load, Raw.Inclination) + ...
+            Vy( Raw.Load, Raw.Inclination) ./ Kya( Raw.Pressure, Raw.Load, Raw.Inclination);
+
+        Mzr0 = Dr.*cos( atan( qbz10.*By( Raw.Pressure, Raw.Load, Raw.Inclination).*Cy .* ...
+            (Raw.Slip + Hf) ) ) .* cos(Raw.Slip) .* cos(Raw.Slip);
+
+        Mz0 = -t0 .* Fyo( Raw.Pressure, Raw.Load, 0, Raw.Slip ) + Mzr0;
+
+        Residual = sqrt( mean( (Raw.Moment - Mz0).^2 ) );
+    end
+    
+    function Mz0 = MzoEval( Slip )
+        t0 = Nominal.Dt.*cos( Nominal.Ct.*atan( (1 - Nominal.Et) .* Nominal.Bt.*(Slip + Nominal.Ht) + ...
+            Nominal.Et.*atan( Nominal.Bt.*(Slip + Nominal.Ht) ) ) ) .* cos(Slip);
+
+        Mzr0 = Nominal.Dr.*cos( atan( Nominal.qbz10.*By( Mesh.Pressure, Mesh.Load, Mesh.Inclination).*Cy .* ...
+            (Slip + Nominal.Hf) ) ) .* cos(Slip);
+
+        Mz0 = -t0 .* Fyo( Mesh.Pressure, Mesh.Load, 0, Slip ) + Mzr0;
+    end
+
     function [Fyo, By, Cy, Kya, Hy, Vy] = FyoEval( Tire )
         % Operating Condition Functions
         dFz = @(Fz) (Fz - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo;
@@ -89,12 +174,12 @@ delete( gcf )
         
         Ey = @(Fz, Gam, Slip, Hy) ( Tire.Pacejka.p.E.y(1) + Tire.Pacejka.p.E.y(2).*dFz(Fz) ) .* ...
             ( 1 + Tire.Pacejka.p.E.y(5).*Gam.^2 - ...
-            ( Tire.Pacejka.p.E.y(3) + Tire.Pacejka.p.E.y(4).*Gam ).*sign(deg2rad(Slip) + Hy) );
+            ( Tire.Pacejka.p.E.y(3) + Tire.Pacejka.p.E.y(4).*Gam ).*sign(Slip + Hy) );
 
         Fyo = @(Pi, Fz, Gam, Slip) Dy(Pi, Fz, Gam) .* ...
             sin( Cy .* atan( (1-Ey(Fz, Gam, Slip, Hy(Pi, Fz, Gam) )) .* ...
-            By(Pi, Fz, Gam).*(deg2rad(Slip) + Hy(Pi, Fz, Gam) ) + ...
+            By(Pi, Fz, Gam).*(Slip + Hy(Pi, Fz, Gam) ) + ...
             Ey(Fz, Gam, Slip, Hy(Pi, Fz, Gam) ).*atan( ...
-            By(Pi, Fz, Gam).*(deg2rad(Slip) + Hy(Pi, Fz, Gam) ) ) ) ) + Vy(Fz, Gam);
+            By(Pi, Fz, Gam).*(Slip + Hy(Pi, Fz, Gam) ) ) ) ) + Vy(Fz, Gam);
     end
 end

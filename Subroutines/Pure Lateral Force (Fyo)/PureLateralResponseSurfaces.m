@@ -1,4 +1,4 @@
-function [ Response ] = PureLateralResponseSurfaces( Mesh, Nominal, Tire )
+function [ Response ] = PureLateralResponseSurfaces( Raw, Mesh, Nominal, Tire )
 
 %% Defining Operating Condition Functions
 dPi = @(Pi) (Pi - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
@@ -53,15 +53,18 @@ E0.pey2 = 0;
 E0.pey5 = -0.01;
 
 % Optimization Variables
-pey1 = optimvar( 'pey1' );
+pey1 = optimvar( 'pey1', 'UpperBound', 1 );
 pey2 = optimvar( 'pey2' );
 pey5 = optimvar( 'pey5', 'UpperBound', 0 );
 
 % Optimization Objective
 Obj = fcn2optimexpr( @ErrorEy, pey1, pey2, pey5 );
 
+% Optimization Constraint
+Constr = pey1 - pey2 <= 1;
+
 % Solving Optimization Problem
-[E.Solution, E.Log] = Runfmincon( Obj, E0, [], 3 );
+[E.Solution, E.Log] = Runfmincon( Obj, E0, Constr, 3 );
 
 % Allocating Solution
 x0.pey1 = E.Solution.pey1;
@@ -148,27 +151,42 @@ V.Surface = @(Pi, Fz, Gam, x0) Fz .* ( ( x0.pvy1 + x0.pvy2.*dFz(Fz) ) + ...
 
 clear pvy1 pvy2 pvy3 pvy4 V0
 
-%% Fitting H_{y} Surface
-% Initial Vector 
-H0.phy1 = -0.2;
-H0.phy2 = -0.2;
+%% Fitting K_{yg0} Surface
+% Initial Vector
+Kyg0.pky6 = 0;
+Kyg0.pky7 = 0;
 
-H0.pky6 = -0.15;
-H0.pky7 = -0.15;
-
-H0.ppy5 = 0;
+Kyg0.ppy5 = 0;
 
 % Optimization Variables
-phy1 = optimvar( 'phy1', 'Lowerbound', -5, 'Upperbound', 5 );
-phy2 = optimvar( 'phy2', 'Lowerbound', -5, 'Upperbound', 5 );
-
 pky6 = optimvar( 'pky6', 'Lowerbound', -5, 'Upperbound', 5 );
 pky7 = optimvar( 'pky7', 'Lowerbound', -5, 'Upperbound', 5 );
 
 ppy5 = optimvar( 'ppy5', 'Lowerbound', -5, 'Upperbound', 5 );
 
 % Optimization Objective
-Obj = fcn2optimexpr( @ErrorHy, phy1, phy2, pky6, pky7, ppy5 );
+Obj = fcn2optimexpr( @ErrorKyg, pky6, pky7, ppy5 );
+
+% Solving Optimization Problem
+[Kyg.Solution, Kyg.Log] = Runfmincon( Obj, Kyg0, [], 3 ); 
+
+% Allocating Solution
+x0.pky6 = Kyg.Solution.pky6;
+x0.pky7 = Kyg.Solution.pky7;
+
+x0.ppy5 = Kyg.Solution.ppy5;
+
+%% Fitting H_{y} Surface
+% Initial Vector 
+H0.phy1 = 0;
+H0.phy2 = 0;
+
+% Optimization Variables
+phy1 = optimvar( 'phy1', 'Lowerbound', -5, 'Upperbound', 5 );
+phy2 = optimvar( 'phy2', 'Lowerbound', -5, 'Upperbound', 5 );
+
+% Optimization Objective
+Obj = fcn2optimexpr( @ErrorHy, phy1, phy2 );
 
 % Solving Optimization Problem
 [H.Solution, H.Log] = Runfmincon( Obj, H0, [], 3 ); 
@@ -176,11 +194,6 @@ Obj = fcn2optimexpr( @ErrorHy, phy1, phy2, pky6, pky7, ppy5 );
 % Allocating Solution
 x0.phy1 = H.Solution.phy1;
 x0.phy2 = H.Solution.phy2;
-
-x0.pky6 = H.Solution.pky6;
-x0.pky7 = H.Solution.pky7;
-
-x0.ppy5 = H.Solution.ppy5;
 
 H.Surface = @(Pi, Fz, Gam, x0) ( x0.phy1 + x0.phy2.*dFz(Fz) ) + ...
     Fz.*Gam .* ( ( x0.pky6 + x0.pky7.*dFz(Fz) ) .* ( 1 + x0.ppy5.*dPi(Pi) ) - ...
@@ -296,10 +309,30 @@ Response.V = V;
         
         MeanSquareError = mean( ( [Nominal.V] - VySurface ).^2 );
     end
+    
+    function MeanSquareError = ErrorKyg( pky6, pky7, ppy5 )
+        Data.Slip        = [Raw.Slip];
+        Data.Load        = [Raw.Load];
+        Data.dFz         = [Raw.dFz];
+        Data.Inclination = [Raw.Inclination];
+        Data.dPi         = [Raw.dPi];
+        Data.Force       = [Raw.Force];
+        
+        Data.Load        = Data.Load(        abs(Data.Slip) < deg2rad(0.2) );
+        Data.dFz         = Data.dFz(         abs(Data.Slip) < deg2rad(0.2) );
+        Data.Inclination = Data.Inclination( abs(Data.Slip) < deg2rad(0.2) );
+        Data.dPi         = Data.dPi(         abs(Data.Slip) < deg2rad(0.2) );
+        Data.Force       = Data.Force(       abs(Data.Slip) < deg2rad(0.2) );
+        
+        KygSurface = Data.Load.*Data.Inclination .* ...
+            ( pky6 + pky7.*Data.dFz ) .* ( 1 + ppy5.*Data.dPi );
+        
+        MeanSquareError = mean( ( Data.Force - KygSurface ).^2 );
+    end
 
-    function MeanSquareError = ErrorHy( phy1, phy2, pky6, pky7, ppy5 )
+    function MeanSquareError = ErrorHy( phy1, phy2 )
         HySurface = ( phy1 + phy2.*[Mesh.dFz] ) + [Mesh.Load].*[Mesh.Inclination] .* ...
-            ( ( pky6 + pky7.*[Mesh.dFz] ) .* ( 1 + ppy5.*[Mesh.dPi] ) - ...
+            ( ( x0.pky6 + x0.pky7.*[Mesh.dFz] ) .* ( 1 + x0.ppy5.*[Mesh.dPi] ) - ...
             ( x0.pvy3 + x0.pvy4.*[Mesh.dFz] ) ) ./ ...
             K.Surface( [Mesh.Pressure], [Mesh.Load], [Mesh.Inclination], x0 );
         

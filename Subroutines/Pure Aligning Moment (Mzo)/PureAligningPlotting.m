@@ -7,44 +7,56 @@ global Figure
 %% Evaluate Variant Fit
 [By, Bt, Dt, Et, Ht, Br, Dr, Hf, t0, Mzro, Mzo] = VariantEval( Tire );
 
+Pressure    = unique( [Mesh.Pressure]    );
+Load        = unique( [Mesh.Load]        );
+Inclination = unique( [Mesh.Inclination] );
+
 %% Operating Case Plots
-for p = 1 : size( Nominal, 1 )
+for p = 1 : numel( Pressure )
     Figure.Mzo.Nominal(p) = figure( ...
-        'Name'       , ['Aligning Nominal Fits, Pressure (p): ', num2str(Mesh(p,1,1).Pressure), ' [psi]'], ...
-        'NumberTitle', 'off', ...
-        'Visible'    , 'on' );
+        'Name'       , ['Aligning Nominal Fits, Pressure (p): ', num2str(Pressure(p)), ' [psi]'], ...
+        'NumberTitle', 'off' , ...
+        'Visible'    , 'on'  );
+end
+
+for i = 1 : numel( Nominal )
+    p = find( Mesh(i).Pressure    == Pressure    );
+    z = find( Mesh(i).Load        == Load        );
+    c = find( Mesh(i).Inclination == Inclination );
+   
+    figure( Figure.Mzo.Nominal(p) )
+   
+    subplot( numel(Inclination), numel(Load), ...
+        sub2ind( [numel(Load), numel(Inclination)], z, c ) );
     
-    for z = 1 : size( Nominal, 2 )
-        for c = 1 : size( Nominal, 3 )
-            subplot( size( Nominal, 3 ), size( Nominal, 2 ), ...
-                sub2ind( [size( Nominal, 2 ), size( Nominal, 3 )], z, c ) );
-        
-            plot( rad2deg(Raw(p,z,c).Slip), Raw(p,z,c).Moment, 'k.' ); hold on;
-            
-            fplot( @(Slip) Mzo( Mesh(p,z,c).Pressure, Mesh(p,z,c).Load, ...
-                Mesh(p,z,c).Inclination, Slip), [-15 15], 'g' )
-            
-            plot( rad2deg(Raw(p,z,c).Slip), Nominal(p,z,c).Residual, 'r.')
-            plot( rad2deg(Raw(p,z,c).Slip), Raw(p,z,c).Moment - ...
-                Mzo( Mesh(p,z,c).Pressure   , Mesh(p,z,c).Load, ...
-                     Mesh(p,z,c).Inclination, Raw(p,z,c).Slip), 'y.')
-            
-            xlabel( 'Slip Angle ($\alpha$) [$deg$]' )
-            ylabel( 'Aligning Moment ($M_{z}$) [$N-m$]' )
-            title( { ['Normal Load ($F_{z}$): $', num2str(round(Mesh(p,z,c).Load,1)), '$ [$N$]'], ...
-                ['Inclination ($\gamma$): $', num2str(Mesh(p,z,c).Inclination), '$ [$deg$]'] } )
-            
-            if all([p z c] == ones(3,1))
-                legend( {'Raw Data'        , 'Variant Fit'     ,...
-                         'Nominal Residual', 'Variant Residual'} )
-            end
-        end
+    plot( rad2deg(Raw(i).Slip), Raw(i).Moment, 'k.' ); hold on;
+    
+    fplot( @(Slip) Mzo( Mesh(i).Pressure, Mesh(i).Load, ...
+        Mesh(i).Inclination, deg2rad(Slip) ), [-15 15], 'g' )
+
+    plot( rad2deg(Raw(i).Slip), Nominal(i).Residual, 'r.')
+    plot( rad2deg(Raw(i).Slip), Raw(i).Moment - ...
+        Mzo( Mesh(i).Pressure   , Mesh(i).Load, ...
+             Mesh(i).Inclination, Raw(i).Slip), 'y.')
+
+    xlabel( 'Slip Angle ($\alpha$) [$deg$]' )
+    ylabel( 'Aligning Moment ($M_{z}$) [$Nm$]' )
+    title( { ['Normal Load ($F_{z}$): $', num2str(round(Mesh(i).Load,1)), '$ [$N$]'], ...
+        ['Inclination ($\gamma$): $', num2str(Mesh(i).Inclination), '$ [$deg$]'] } )
+
+    if all([z c] == ones(3,1))
+        legend( {'Raw Data', 'Variant Fit',...
+                 'Nominal Residual', 'Variant Residual'} )
     end
+end
+
+for p = 1 : numel( Pressure )
+    figure( Figure.Mzo.Nominal(p) )  
     
     sgtitle( {'Nominal P6 Pacejka Fits', ...
-        ['Pressure ($P_{i}$): $', num2str(Mesh(p,1,1).Pressure), '$ [$psi$]'] } )
+        ['Pressure ($P_{i}$): $', num2str(Mesh(i).Pressure), '$ [$psi$]'] } )
     
-    Figure.Mzo.Cases(p).WindowState = 'minimized';
+    Figure.Mzo.Nominal(p).WindowState = Figure.State;
 end
 
 %% Response Surface Plotting
@@ -95,8 +107,8 @@ if strcmpi( Figure.Mode, 'Debug' )
     linkaxes( [ax1, ax2, ax3, ax4], 'x' )
     
     subplot(20,2,33:2:39)
-    fsurf(@(Fz, Slip) t0(12, Fz, 0, Slip), [0 2500 -15 15])
-    ylabel( 'Shift: $H_{t}$' )
+    fsurf(@(Fz, Slip) t0(12, Fz, 0, deg2rad(Slip)), [0 2500 -15 15])
+    ylabel( 'Slip: $\alpha$' )
     xlabel( 'Normal Load: $F_{z}$' )
     zlabel( 'Trail: $t_{0}$' )
     
@@ -120,11 +132,11 @@ if strcmpi( Figure.Mode, 'Debug' )
              'Nominal Fit Coefficient' }, 'Interpreter', 'latex' );
          
     ax6 = subplot(20,2,12:2:20);
-    fplot( @(Fz) Dr(10, Fz, 0), [0 2500], 'b'   ); hold on;
-    fplot( @(Fz) Dr(12, Fz, 0), [0 2500], 'm'   );
-    fplot( @(Fz) Dr(12, Fz, 2), [0 2500], 'm--' );
-    fplot( @(Fz) Dr(12, Fz, 4), [0 2500], 'm:'  );
-    fplot( @(Fz) Dr(14, Fz, 0), [0 2500], 'r'   );
+    fplot( @(Fz) Dr(10, Fz, 0, 0), [0 2500], 'b'   ); hold on;
+    fplot( @(Fz) Dr(12, Fz, 0, 0), [0 2500], 'm'   );
+    fplot( @(Fz) Dr(12, Fz, 2, 0), [0 2500], 'm--' );
+    fplot( @(Fz) Dr(12, Fz, 4, 0), [0 2500], 'm:'  );
+    fplot( @(Fz) Dr(14, Fz, 0, 0), [0 2500], 'r'   );
 
     scatter( [Mesh(:).Load], [Nominal(:).Dr], 'k.' ); 
     ylabel( 'Peak: $D_{r}$' )
@@ -138,14 +150,14 @@ if strcmpi( Figure.Mode, 'Debug' )
     fplot( @(Fz) Hf(14, Fz, 0), [0 2500], 'r'   );
 
     scatter( [Mesh(:).Load], [Nominal(:).Hf], 'k.' ); 
-    ylabel( 'Shift: $H_{f}$' )
-    xlabel( 'Normal Load: $F_{z}$' )    
     
+    xlabel( 'Normal Load: $F_{z}$' )    
+    ylabel( 'Shift: $H_{f}$' )    
     linkaxes( [ax5, ax6, ax7], 'x' );
     
     subplot(20,2,32:2:40)
-    fsurf(@(Fz, Slip) Mzro(12, Fz, 0, Slip), [0 2500 -15 15])
-    ylabel( 'Shift: $H_{t}$' )
+    fsurf(@(Fz, Slip) Mzro(12, Fz, 0, deg2rad(Slip)), [0 2500 -15 15])
+    ylabel( 'Slip: $\alpha$' )
     xlabel( 'Normal Load: $F_{z}$' )
     zlabel( 'Residual: $M_{zr0}$' )
 
@@ -157,21 +169,22 @@ Figure.Mzo.Surfaces = figure( 'Name'       , 'Aligning Moment Surfaces', ...
                               'NumberTitle', 'off', ...
                               'Visible'    , 'on' );
     
-for p = 1 : size( Raw, 1 )
-    for c = 1 : size( Raw, 3 )
-        subplot( size( Raw, 3 ), size( Raw, 1 ), ...
-            sub2ind( [size( Raw, 1 ), size( Raw, 3 )], p, c ) );
+for i = 1 : numel( Nominal )
+    p = find( Mesh(i).Pressure    == Pressure    );
+    c = find( Mesh(i).Inclination == Inclination );
+   
+    subplot( numel(Inclination), numel(Pressure), ...
+        sub2ind( [numel(Pressure), numel(Inclination)], p, c ) );
         
-        plot3( [Raw(p,:,c).Load], rad2deg([Raw(p,:,c).Slip]), [Raw(p,:,c).Moment], 'k.' ); hold on;
-        fsurf( @(Fz, Slip) Mzo( Mesh(p,1,c).Pressure, Fz, ...
-            Mesh(p,1,c).Inclination, Slip ), [0 2500 -15 15] )
+        plot3( [Raw(i).Load], rad2deg([Raw(i).Slip]), [Raw(i).Moment], 'k.' ); hold on;
+        fsurf( @(Fz, Slip) Mzo( Mesh(i).Pressure, Fz, ...
+            Mesh(i).Inclination, deg2rad(Slip) ), [0 2500 -15 15] )
         
         xlabel( 'Normal Load ($F_{z}$) [$N$]' )
         ylabel( 'Slip Angle ($\alpha$) [$deg$]' )
         zlabel( 'Aligning Moment ($M_{z}$) [$N-m$]' )
-        title( { ['Pressure ($P_{i}$): $', num2str(Mesh(p,1,c).Pressure), '$ [$psi$]'], ...
-                ['Inclination ($\gamma$): $', num2str(Mesh(p,1,c).Inclination), '$ [$deg$]'] } )
-    end
+        title( { ['Pressure ($P_{i}$): $', num2str(Mesh(i).Pressure), '$ [$psi$]'], ...
+                ['Inclination ($\gamma$): $', num2str(Mesh(i).Inclination), '$ [$deg$]'] } )
 end
 
 sgtitle( 'Pure Aligning MF6.1 Pacejka Fit' )
@@ -183,7 +196,7 @@ Figure.Mzo.Surfaces.WindowState = 'minimized';
         dFz = @(Fz) (Fz - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo;
         dPi = @(Pi) (Pi - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
         
-        % Lateral Force Evaluation
+        % Lateral Force Evaluation (Inclination = 0)
         Cy = Tire.Pacejka.p.C.y(1);
         
         Dy = @(Pi, Fz, Gam) (Tire.Pacejka.p.D.y(1) + Tire.Pacejka.p.D.y(2).*dFz(Fz)) .* ...
@@ -197,7 +210,7 @@ Figure.Mzo.Surfaces.WindowState = 'minimized';
         
         Kyg0 = @(Pi, Fz) Fz.*(Tire.Pacejka.p.K.y(6) + Tire.Pacejka.p.K.y(7).*dFz(Fz) ) .* (1 + Tire.Pacejka.p.P.y(5).*dPi(Pi) );
         
-        By = @(Pi, Fz, Gam) Kya(Pi, Fz, 0) ./ ( Cy.*Dy(Pi, Fz, 0) );
+        By = @(Pi, Fz, Gam) Kya(Pi, Fz, Gam) ./ ( Cy.*Dy(Pi, Fz, Gam) );
         
         Vyg = @(Fz, Gam) Fz.*(Tire.Pacejka.p.V.y(3) + Tire.Pacejka.p.V.y(4).*dFz(Fz) ).*Gam;
         
@@ -208,13 +221,13 @@ Figure.Mzo.Surfaces.WindowState = 'minimized';
         
         Ey = @(Fz, Gam, Slip, Hy) ( Tire.Pacejka.p.E.y(1) + Tire.Pacejka.p.E.y(2).*dFz(Fz) ) .* ...
             ( 1 + Tire.Pacejka.p.E.y(5).*Gam.^2 - ...
-            ( Tire.Pacejka.p.E.y(3) + Tire.Pacejka.p.E.y(4).*Gam ).*sign(deg2rad(Slip) + Hy) );
+            ( Tire.Pacejka.p.E.y(3) + Tire.Pacejka.p.E.y(4).*Gam ).*sign(Slip + Hy) );
 
         Fyo = @(Pi, Fz, Gam, Slip) Dy(Pi, Fz, Gam) .* ...
             sin( Cy .* atan( (1-Ey(Fz, Gam, Slip, Hy(Pi, Fz, Gam) )) .* ...
-            By(Pi, Fz, Gam).*(deg2rad(Slip) + Hy(Pi, Fz, Gam) ) + ...
+            By(Pi, Fz, Gam).*(Slip + Hy(Pi, Fz, Gam) ) + ...
             Ey(Fz, Gam, Slip, Hy(Pi, Fz, Gam) ).*atan( ...
-            By(Pi, Fz, Gam).*(deg2rad(Slip) + Hy(Pi, Fz, Gam) ) ) ) ) + Vy(Fz, Gam);
+            By(Pi, Fz, Gam).*(Slip + Hy(Pi, Fz, Gam) ) ) ) ) + Vy(Fz, Gam);
         
         % Pneumatic Trail & Residual Moment
         Bt = @(Fz, Gam) (Tire.Pacejka.q.B.z(1) + Tire.Pacejka.q.B.z(2).*dFz(Fz) + Tire.Pacejka.q.B.z(3).*dFz(Fz).^2) .* ...
@@ -231,27 +244,27 @@ Figure.Mzo.Surfaces.WindowState = 'minimized';
         
         Et = @(Fz, Gam, Slip) (Tire.Pacejka.q.E.z(1) + Tire.Pacejka.q.E.z(2).*dFz(Fz) + Tire.Pacejka.q.E.z(3).*dFz(Fz).^2) .* ...
             (1 + (Tire.Pacejka.q.E.z(4) + Tire.Pacejka.q.E.z(5).*Gam).*(2/pi).* ...
-            atan( Bt(Fz, Gam) .* Ct .* deg2rad(Slip) + Ht(Fz, Gam) ) );
+            atan( Bt(Fz, Gam) .* Ct .* ( Slip + Ht(Fz, Gam) ) ) );
         
         Br = @(Pi, Fz, Gam) Tire.Pacejka.q.B.z(10) .* By(Pi, Fz, Gam) .* Cy;
         
         Cr = 1;
         
-        Dr = @(Pi, Fz, Gam) Tire.Pacejka.Ro .* Fz .* ( ( Tire.Pacejka.q.D.z(6) + Tire.Pacejka.q.D.z(7).*dFz(Fz) ) + ...
+        Dr = @(Pi, Fz, Gam, Slip) Tire.Pacejka.Ro .* Fz .* ( ( Tire.Pacejka.q.D.z(6) + Tire.Pacejka.q.D.z(7).*dFz(Fz) ) + ...
             ( ( Tire.Pacejka.q.D.z(8) + Tire.Pacejka.q.D.z(9).*dFz(Fz) ) .* ( 1 + Tire.Pacejka.p.P.z(2).*dPi(Pi) ) + ...
-            ( Tire.Pacejka.q.D.z(10) + Tire.Pacejka.q.D.z(11).*dFz(Fz) ) .* abs(Gam) ).*Gam );
+            ( Tire.Pacejka.q.D.z(10) + Tire.Pacejka.q.D.z(11).*dFz(Fz) ) .* abs(Gam) ).*Gam ) .* cos(Slip);
         
         Hf = @(Pi, Fz, Gam) Hy(Pi, Fz, Gam) + Vy(Fz, Gam) ./ Kya(Pi, Fz, Gam);
         
         % Evaluate Functions & Error
         t0 = @(Pi, Fz, Gam, Slip) Dt(Pi, Fz, Gam) .* cos( Ct .* ...
-            atan( (1-Et(Fz, Gam, Slip)).*(Bt(Fz, Gam).*(deg2rad(Slip)+Ht(Fz, Gam)) + ...
-            Et(Fz, Gam, Slip).*atan( Bt(Fz, Gam).*(deg2rad(Slip)+Ht(Fz,Gam)) ) ) ) ) .* cos( deg2rad(Slip) );
+            atan( (1-Et(Fz, Gam, Slip)).*(Bt(Fz, Gam).*(Slip+Ht(Fz, Gam))) + ...
+            Et(Fz, Gam, Slip).*atan( Bt(Fz, Gam).*(Slip+Ht(Fz,Gam)) ) ) ) .* cos(Slip);
         
-        Mzro = @(Pi, Fz, Gam, Slip) Dr(Pi, Fz, Gam) .* cos( Cr .* ...
-            atan( Br(Pi, Fz, Gam).*(deg2rad(Slip)+Hf(Pi, Fz, Gam)) ) ) .* cos( deg2rad(Slip) );
+        Mzro = @(Pi, Fz, Gam, Slip) Dr(Pi, Fz, Gam, Slip) .* cos( Cr .* ...
+            atan( Br(Pi, Fz, Gam).*(Slip+Hf(Pi, Fz, Gam)) ) ) .* cos(Slip);
         
         Mzo = @(Pi, Fz, Gam, Slip) -t0(Pi, Fz, Gam, Slip) .* ...
-            Fyo(Pi, Fz, Gam, Slip) + Mzro(Pi, Fz, Gam, Slip);
+            Fyo(Pi, Fz, 0, Slip) + Mzro(Pi, Fz, Gam, Slip);
     end
 end

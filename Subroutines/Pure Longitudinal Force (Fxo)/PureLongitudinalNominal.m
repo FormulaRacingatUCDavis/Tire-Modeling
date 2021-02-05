@@ -69,16 +69,16 @@ Nominal.Residual = FxoNomResidual( Nominal.C, Nominal.D, Nominal.E, ...
         x0.E = ( B0*xm0 - tand( pi/(2*x0.C) ) ) / ( B0*xm0 - atand(B0*xm0) );
         
         %% Bounding
-        lb.C = 0.1;
+        lb.C = 0.5;
         lb.D = 0;
         lb.E = -Inf;
         lb.K = 0;
         lb.H = -Inf;
         lb.V = -Inf;
         
-        ub.C = 10;
+        ub.C = 1.5;
         ub.D = 1.5*max( abs( LongitudinalForce ) );
-        ub.E = 1;
+        ub.E = 0.95;
         ub.K = Inf;
         ub.H = Inf;
         ub.V = Inf;

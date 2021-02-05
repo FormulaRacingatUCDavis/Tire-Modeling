@@ -73,7 +73,7 @@ end
 %% Nominal Fitting
 Nominal = struct( 'C0', NaN, 'D0', NaN, 'E0', NaN, 'K0', NaN, 'H0', NaN, 'V0', NaN, ...
                   'C' , NaN, 'D' , NaN, 'E' , NaN, 'K' , NaN, 'H' , NaN, 'V' , NaN, 'Residual', [] );
-Nominal( size(Mesh,1), size(Mesh,2), size(Mesh,3) ).Residual = [];
+Nominal( size(Mesh,1) * size(Mesh,2) * size(Mesh,3) ).Residual = [];
 
 for p = 1 : numel( Case.Pressure )
     for z = 1 : numel( Case.Load )
@@ -82,42 +82,22 @@ for p = 1 : numel( Case.Pressure )
                 continue
             end
             
-            Nominal(p,z,c) = PureLateralNominal( Raw(p,z,c) );
+            Nominal( sub2ind(size(Raw), p, z, c) ) = PureLateralNominal( Raw(p,z,c) );
         end
     end
 end
 
 %% Filtering Data & Operating Conditions
-for n = 1 : 3
-    for i = size(Nominal,n): -1 : 1
-        switch n
-            case 1
-                if isempty( [Nominal(i,:,:).Residual] )
-                    Case.Pressure(i) = [];
-                    Mesh(i,:,:)      = [];
-                    Raw(i,:,:)       = [];
-                    Nominal(i,:,:)   = [];
-                end
-            case 2
-                if isempty( [Nominal(:,i,:).Residual] )
-                    Case.Load(i)   = [];
-                    Mesh(:,i,:)    = [];
-                    Raw(:,i,:)     = [];
-                    Nominal(:,i,:) = [];
-                end
-            case 3
-                if isempty( [Nominal(:,:,i).Residual] )
-                    Case.Inclination(i) = [];
-                    Mesh(:,:,i)         = [];
-                    Raw(:,:,i)          = [];
-                    Nominal(:,:,i)      = [];
-                end
-        end
-    end
-end
+Mesh(    ind2sub(size(Raw), find(cellfun(@isempty, {Nominal.C}))) ) = [];
+Raw(     ind2sub(size(Raw), find(cellfun(@isempty, {Nominal.C}))) ) = [];
+Nominal(                         cellfun(@isempty, {Nominal.C})   ) = [];
+
+Mesh(    ind2sub(size(Raw), find(cellfun(@isnan, {Nominal.C}))) ) = [];
+Raw(     ind2sub(size(Raw), find(cellfun(@isnan, {Nominal.C}))) ) = [];
+Nominal(                         cellfun(@isnan, {Nominal.C})   ) = [];
 
 %% Variant Fitting
-Response = PureLateralResponseSurfaces( Mesh, Nominal, Tire );
+Response = PureLateralResponseSurfaces( Raw, Mesh, Nominal, Tire );
   
 [ Variant, Tire ] = PureLateralVariant( Raw, Response.x0, Tire );
 

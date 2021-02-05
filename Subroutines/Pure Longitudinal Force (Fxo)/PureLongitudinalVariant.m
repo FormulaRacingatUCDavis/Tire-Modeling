@@ -1,25 +1,25 @@
 function [ Variant, Tire ] = PureLongitudinalVariant( Raw, x0, Tire )
 %% Optimization Variables
-pcx1 = optimvar( 'pcx1', 'Lowerbound',  0   , 'Upperbound',  5   );
+pcx1 = optimvar( 'pcx1', 'Lowerbound',  0.9 , 'Upperbound',  1.1 );
 
-pdx1 = optimvar( 'pdx1', 'Lowerbound',  0   , 'Upperbound',  5   );
-pdx2 = optimvar( 'pdx2', 'Lowerbound',- 5   , 'Upperbound',- 0.05);
-pdx3 = optimvar( 'pdx3', 'Lowerbound',- 5   , 'Upperbound',  5   );
+pdx1 = optimvar( 'pdx1', 'Lowerbound',  0   , 'Upperbound',  2.5 );
+pdx2 = optimvar( 'pdx2', 'Lowerbound',-Inf  , 'Upperbound',- 0.1 );
+pdx3 = optimvar( 'pdx3', 'Lowerbound',  0   , 'Upperbound',  5   );
 
-pex1 = optimvar( 'pex1', 'Lowerbound',- 3   , 'Upperbound',  3   );
-pex2 = optimvar( 'pex2', 'Lowerbound',- 0.75, 'Upperbound',  1   );
-pex3 = optimvar( 'pex3', 'Lowerbound',- 1   , 'Upperbound',  1   );
-pex4 = optimvar( 'pex4', 'Lowerbound',- 3   , 'Upperbound',  3   );
+pex1 = optimvar( 'pex1', 'Lowerbound',- 5   , 'Upperbound',  5   );
+pex2 = optimvar( 'pex2', 'Lowerbound',- 5   , 'Upperbound',  5   );
+pex3 = optimvar( 'pex3', 'Lowerbound',- 2   , 'Upperbound',  5   );
+pex4 = optimvar( 'pex4', 'Lowerbound',- 5   , 'Upperbound',  5   );
 
-pkx1 = optimvar( 'pkx1', 'Lowerbound',  0.1 , 'Upperbound', Inf  );
+pkx1 = optimvar( 'pkx1', 'Lowerbound',  0   , 'Upperbound', Inf  );
 pkx2 = optimvar( 'pkx2', 'Lowerbound',-Inf  , 'Upperbound', Inf  );
 pkx3 = optimvar( 'pkx3', 'Lowerbound',- 5   , 'Upperbound',  5   );
 
 phx1 = optimvar( 'phx1', 'Lowerbound',- 5   , 'Upperbound',  5   );
 phx2 = optimvar( 'phx2', 'Lowerbound',- 5   , 'Upperbound',  5   );
 
-pvx1 = optimvar( 'pvx1', 'Lowerbound',- 5   , 'Upperbound',  5   );
-pvx2 = optimvar( 'pvx2', 'Lowerbound',- 1.5 , 'Upperbound',  0   );
+pvx1 = optimvar( 'pvx1', 'Lowerbound',- 0.03, 'Upperbound',  0.03);
+pvx2 = optimvar( 'pvx2', 'Lowerbound',- 0.1 , 'Upperbound',  0.1 );
 
 ppx1 = optimvar( 'ppx1', 'Lowerbound',- 5   , 'Upperbound',  5   );
 ppx2 = optimvar( 'ppx2', 'Lowerbound',- 5   , 'Upperbound',  5   );
@@ -36,17 +36,14 @@ Obj = fcn2optimexpr( @ErrorFyo, pcx1, ...
     ppx1, ppx2, ppx3, ppx4 );
 
 %% Optimization Constraint
-[Operating.dFz, Operating.Inclination] = meshgrid( (0:10:2500-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo, 0:0.5:5 );
+Constr(1) = pex1 .* ( 1 - pex4 ) <= 0.95;
+Constr(2) = pex1 .* ( 1 + pex4 ) <= 0.95;
 
-Constr = optimineq( 2*numel(Operating.dFz) );
+Constr(3) = ( pex1 - pex2 + pex3 ) .* ( 1 - pex4 ) <= 0.95;
+Constr(4) = ( pex1 - pex2 + pex3 ) .* ( 1 + pex4 ) <= 0.95;
 
-for i = 1 : numel(Operating.dFz)
-    Constr(i) = ( pex1 + pex2.*Operating.dFz(i) + pex3.*Operating.dFz(i).^2 ) .* ...
-        ( 1 - pex4.*Operating.Inclination(i) ) <= 0.9;
-    
-    Constr( i+numel(Operating.dFz) ) = ( pex1 + pex2.*Operating.dFz(i) + pex3.*Operating.dFz(i).^2 ) .* ...
-        ( 1 + pex4.*Operating.Inclination(i) ) <= 0.9;
-end
+Constr(5) = ( pex1 - (pex2.^2)./(2*pex3) + (pex2.^2)./(4*pex3) ) .* ( 1 - pex4 ) <= 0.95;
+Constr(6) = ( pex1 - (pex2.^2)./(2*pex3) + (pex2.^2)./(4*pex3) ) .* ( 1 + pex4 ) <= 0.95;
 
 %% Solving Optimization Problem
 [Variant.Solution, Variant.Log] = Runfmincon( Obj, x0, Constr, 3 );

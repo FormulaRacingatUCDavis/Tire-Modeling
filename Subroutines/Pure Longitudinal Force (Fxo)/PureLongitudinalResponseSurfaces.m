@@ -49,19 +49,23 @@ clear pdx1 pdx2 pdx3 ppx3 ppx4 D0
 %% Fitting E_{x} Surface
 % Initial Vector 
 E0.pex1 = 0.1;
-E0.pex2 = 0.1;
-E0.pex3 = 0;
+E0.pex2 = 0;
+E0.pex3 = -0.1;
 
 % Optimization Variables
-pex1 = optimvar( 'pex1' );
-pex2 = optimvar( 'pex2' );
-pex3 = optimvar( 'pex3' );
+pex1 = optimvar( 'pex1', 'Lowerbound',- 5   , 'Upperbound',  1   );
+pex2 = optimvar( 'pex2', 'Lowerbound',- 2   , 'Upperbound',  1   );
+pex3 = optimvar( 'pex3', 'Lowerbound',- 2   , 'Upperbound',- 0.01);
 
 % Optimization Objective
 Obj = fcn2optimexpr( @ErrorEx, pex1, pex2, pex3 );
 
+% Optimization Constraint
+Constr(1) = pex1 - pex2 + pex3 <= 1;
+Constr(2) = pex1 - (pex2.^2)./(2*pex3) + (pex2.^2)./(4*pex3) <= 1;
+
 % Solving Optimization Problem
-[E.Solution, E.Log] = Runfmincon( Obj, E0, [], 3 );
+[E.Solution, E.Log] = Runfmincon( Obj, E0, Constr, 3 );
 
 % Allocating Solution
 x0.pex1 = E.Solution.pex1;
@@ -228,36 +232,36 @@ Response.V = V;
         end
     end
 
-    function MeanSquareError = ErrorDx( pdx1, pdx2, pdx3, ppx3, ppx4 )
+    function RMSE = ErrorDx( pdx1, pdx2, pdx3, ppx3, ppx4 )
         DxSurface = (pdx1 + pdx2.*[Mesh.dFz]) .* ...
             (1 + ppx3.*[Mesh.dPi] + ppx4.*[Mesh.dPi].^2) .* ...
             (1 - pdx3.*[Mesh.Inclination].^2).*[Mesh.Load];
         
-        MeanSquareError= mean( ( [Nominal.D] - DxSurface ).^2 );
+        RMSE = sqrt( mean( ([Nominal.D] - DxSurface).^2 ) );
     end
 
-    function MeanAbsoluteError = ErrorEx( pex1, pex2, pex3 )
+    function RMSE = ErrorEx( pex1, pex2, pex3 )
         ExSurface = (pex1 + pex2.*[Mesh.dFz] + pex3.*[Mesh.dFz].^2);
         
-        MeanAbsoluteError= mean( abs( [Nominal.E] - ExSurface ) );
+        RMSE = sqrt(mean( ([Nominal.E] - ExSurface).^2 ) );
     end
 
-    function MeanSquareError = ErrorKxk( pkx1, pkx2, pkx3, ppx1, ppx2 )
+    function RMSE = ErrorKxk( pkx1, pkx2, pkx3, ppx1, ppx2 )
         KxkSurface = [Mesh.Load] .* ( pkx1 + pkx2.*[Mesh.dFz] ) .* ...
             exp( pkx3.*[Mesh.dFz] ) .* ( 1 + ppx1.*[Mesh.dPi] + ppx2.*[Mesh.dPi].^2 );
         
-        MeanSquareError= mean( ( [Nominal.K] - KxkSurface ).^2 );
+        RMSE = sqrt( mean( ([Nominal.K] - KxkSurface).^2 ) );
     end
 
-    function MeanSquareError = ErrorVx( pvx1, pvx2 )
+    function RMSE = ErrorVx( pvx1, pvx2 )
         VxSurface = [Mesh.Load] .* ( pvx1 + pvx2.*[Mesh.dFz] );
         
-        MeanSquareError= mean( ( [Nominal.V] - VxSurface ).^2 );
+        RMSE = sqrt( mean( ([Nominal.V] - VxSurface).^2 ) );
     end
 
-    function MeanSquareError = ErrorHx( phx1, phx2 )
+    function RMSE = ErrorHx( phx1, phx2 )
         HxSurface = phx1 + phx2.*[Mesh.dFz];
         
-        MeanSquareError= mean( ( [Nominal.H] - HxSurface ).^2 );
+        RMSE = sqrt( mean( ([Nominal.H] - HxSurface ).^2 ) );
     end
 end
