@@ -33,7 +33,7 @@ qdz11  = optimvar( 'qdz11' , 'Lowerbound',-Inf , 'Upperbound', Inf );
 
 qez1  = optimvar( 'qez1' , 'Lowerbound',-20   , 'Upperbound',- 1    );
 qez2  = optimvar( 'qez2' , 'Lowerbound',-20   , 'Upperbound',  0    );
-qez3  = optimvar( 'qez3' , 'Lowerbound',-25   , 'Upperbound',  0    );
+qez3  = optimvar( 'qez3' , 'Lowerbound',-25   , 'Upperbound',- 0.001);
 qez4  = optimvar( 'qez4' , 'Lowerbound',- 1   , 'Upperbound',  1    );
 qez5  = optimvar( 'qez5' , 'Lowerbound',- 1   , 'Upperbound',  1    );
 
@@ -224,12 +224,12 @@ Tire.Pacejka.p.P.z(2)  = Variant.Solution.ppz2/10000;
         
         % Solving Optimization Problem(s)
         for ii = 1 : n
-            try
+            % try
                 [Solution(ii), Feval(ii)] = solve( Prob, x0(ii), ...
                     'solver', 'fmincon', 'options', Opts ); %#ok<AGROW>
-            catch
-                continue
-            end
+            % catch
+            %     continue
+            % end
         end
         
         % Selecting Optimal Solution
@@ -247,8 +247,12 @@ Tire.Pacejka.p.P.z(2)  = Variant.Solution.ppz2/10000;
     end
 
     function Et = EtBound( qez1, qez2, qez3, qez4, qez5, dFz, Inc )
-        Et = (qez1 + qez2.*dFz + qez3.*dFz.^2) .* ...
-            (1 + (qez4 + qez5.*Inc ) );
+        if (dFz > 0) | (dFz < -1)
+            Et = 0;
+        else
+            Et = (qez1 + qez2.*dFz + qez3.*dFz.^2) .* ...
+                (1 + (qez4 + qez5.*Inc ) ); 
+        end
     end
 
     function Dr = DrBound( qdz6, qdz7, qdz8, qdz9, qdz10, qdz11, ppz2, Fz, Pi, Inc)

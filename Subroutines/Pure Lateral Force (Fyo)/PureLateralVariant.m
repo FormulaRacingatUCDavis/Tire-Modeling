@@ -54,7 +54,7 @@ Obj = fcn2optimexpr( @ErrorFyo, pcy1, ...
     ppy1, ppy2, ppy3, ppy4, ppy5 );
 
 %% Optimization Constraint
-[dFz, Inclination] = meshgrid( ((0:50:2500)-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo, 0:0.1:5 );
+[dFz, Inclination] = meshgrid( ((0:100:2500)-Tire.Pacejka.Fzo)./Tire.Pacejka.Fzo, 0:0.5:5 );
 
 Constr = optimineq( 2*numel( dFz ) );
 

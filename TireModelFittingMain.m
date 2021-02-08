@@ -1,15 +1,15 @@
 clc; clear; clear('global'); close all;
 
 %% FRUCD Tire Model Fitting Tool Main Script
-% This script fits a Pacejka contact patch tire model and radial deflection 
-% models to Calspan TTC Data Sets and creates an instance of the FRUCDTire 
-% class for use in vehicle models.
+% This script fits a Pacejka contact patch tire model, radial deflection 
+% models, and estimates thermal parameters from Calspan TTC data sets and 
+% creates an instance of the FRUCDTire class for use in vehicle models.
 % 
 % Use MATLAB, SI Unit Calspan TTC Data Sets
 % 
 % Authors: 
-% - Blake Christierson (Sep. 2018 - Jun. 2021) 
-% - Carlos Lopez       (Jan. 2019 -          )
+% - Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
+% - Carlos Lopez                                    [Jan 2019 -         ]
 
 %% Initialization
 % Sets up the model structure and adds relevant directories for saving and 
@@ -24,13 +24,16 @@ set(groot,'defaultAxesTickLabelInterpreter','latex');
 set(groot,'defaultLegendInterpreter','latex');
 
 %%% Default Directories
-Directory.Tool  = fileparts( matlab.desktop.editor.getActiveFilename );
-Directory.Data  = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'Tire-Data'];
+Directory.Tool       = fileparts( matlab.desktop.editor.getActiveFilename );
+Directory.Data       = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'Tire-Data'];
+Directory.Resources  = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'MATLAB-Resources'];
+
 Directory.Model = [Directory.Tool, '\Models'];
 Directory.Media = [Directory.Tool, '\Media'];
 
-addpath( genpath( Directory.Tool ) );
-addpath( genpath( Directory.Data ) );
+addpath( genpath( Directory.Tool      ) );
+addpath( genpath( Directory.Data      ) );
+addpath( genpath( Directory.Resources ) );
 
 %%% Figure Structure
 Figure.Mode  = 'Debug';
@@ -41,6 +44,7 @@ Figure.State = 'minimized';
 % are utilized throughout the rest of the fitting process to select data from 
 % desired operating conditions. 
 
+%{
 TestName = {'Transient'                 , ...
             'Cornering 1'               , ...
             'Cornering 2'               , ...
@@ -78,9 +82,13 @@ end
 clear i
 
 %% Initialize Tire Model
-Tire = FRUCDTire( input( ['Enter Tire Model Name in Following Format: ', ...
-    '{Manufacturer}_{Compound}_{Diameter}x{Width}-{Rim Diameter}x{Rim Width}\n'], 's' ), ...
-    [Data.Source], []);
+ModelName = inputdlg( ['Enter Tire Model Name in Following Format: ', ...
+    '{Manufacturer} {Compound} {Diameter}x{Width}-{Rim Diameter}x{Rim Width}'], ...
+    '', 1, {'Tire'} );
+
+Tire = FRUCDTire( ModelName{1}, [Data.Source], []);
+
+clear ModelName
 
 %% Contact Patch Load Modeling
 %%% Steady State, Pure Slip Force & Aligning Moment Fitting
@@ -106,12 +114,22 @@ Tire = PureAligningFitting( Tire, Data, Bin ); % Aligning Moment ( Mzo )
 % Tire = RelaxationLengthFitting( Tire, Data, Bin );
 
 %% Radial Deflection Modeling
-% Vertical Stiffness Modeling
+%%% Vertical Stiffness Modeling
+Tire = RadialDeflection( Tire, Data ); % Radial Deflection (Re, Rl)
 
 %% Thermal Modeling
 % Heat Generation Modeling
 
 %% Exporting Model
-return
-save( [Directory.Media, '\', Tire.Name, '_Figures'], 'Figure' )
-save( [Directory.Model, '\', Tire.Name], 'Tire' )
+%}
+load( 'TestData_02_08_21_00_30.mat' );
+
+SaveModel = questdlg( 'Save Model?', '', 'Yes', 'No', 'No' );
+
+if strcmpi( SaveModel, 'Yes' )
+    save( [Directory.Model, '\', Tire.Name], 'Tire' )
+    
+    ExportTireFigures( Tire, Data, Bin, Figure, Directory );
+end
+
+clear SaveModel

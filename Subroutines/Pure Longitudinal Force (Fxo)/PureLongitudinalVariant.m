@@ -36,14 +36,14 @@ Obj = fcn2optimexpr( @ErrorFyo, pcx1, ...
     ppx1, ppx2, ppx3, ppx4 );
 
 %% Optimization Constraint
-Constr(1) = pex1 .* ( 1 - pex4 ) <= 0.95;
-Constr(2) = pex1 .* ( 1 + pex4 ) <= 0.95;
+Constr(1) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, 0,  1 ) <= 0.95;
+Constr(2) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, 0, -1 ) <= 0.95;
 
-Constr(3) = ( pex1 - pex2 + pex3 ) .* ( 1 - pex4 ) <= 0.95;
-Constr(4) = ( pex1 - pex2 + pex3 ) .* ( 1 + pex4 ) <= 0.95;
+Constr(3) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, -1,  1 ) <= 0.95;
+Constr(4) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, -1, -1 ) <= 0.95;
 
-Constr(5) = ( pex1 - (pex2.^2)./(2*pex3) + (pex2.^2)./(4*pex3) ) .* ( 1 - pex4 ) <= 0.95;
-Constr(6) = ( pex1 - (pex2.^2)./(2*pex3) + (pex2.^2)./(4*pex3) ) .* ( 1 + pex4 ) <= 0.95;
+Constr(5) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, -pex2./(2*pex3),  1 ) <= 0.95;
+Constr(6) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, -pex2./(2*pex3), -1 ) <= 0.95;
 
 %% Solving Optimization Problem
 [Variant.Solution, Variant.Log] = Runfmincon( Obj, x0, Constr, 3 );
@@ -132,6 +132,14 @@ Tire.Pacejka.p.P.x(4) = Variant.Solution.ppx4;
                 Log(ii).x = [Log(ii).x x];
                 Log(ii).fval = [Log(ii).fval optimValues.fval];
             end
+        end
+    end
+
+    function Ex = ExBound( pex1, pex2, pex3, pex4, dFz, Sign )
+        if dFz > 0 | dFz < -1
+            Ex = 0;
+        else
+            Ex = ( pex1 + pex2.*dFz + pex3.*dFz.^2 ) .* ( 1 + pex4 .* sign(Sign) );
         end
     end
 

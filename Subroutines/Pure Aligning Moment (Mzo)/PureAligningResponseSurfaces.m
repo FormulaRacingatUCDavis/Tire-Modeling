@@ -124,7 +124,7 @@ Et0.qez5 = 0;
 % Optimization Variables
 qez1 = optimvar( 'qez1', 'Lowerbound', -5, 'Upperbound', 5 );
 qez2 = optimvar( 'qez2', 'Lowerbound', -5, 'Upperbound', 5 );
-qez3 = optimvar( 'qez3', 'Lowerbound', -5, 'Upperbound', 5 );
+qez3 = optimvar( 'qez3', 'Lowerbound', -5, 'Upperbound',-0.001);
 qez4 = optimvar( 'qez4', 'Lowerbound', -5, 'Upperbound', 5 );
 qez5 = optimvar( 'qez5', 'UpperBound', 0 );
 

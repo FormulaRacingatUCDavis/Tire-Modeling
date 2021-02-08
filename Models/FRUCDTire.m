@@ -10,6 +10,7 @@ classdef FRUCDTire
     properties
         Name
         Date
+        Time
         Source
         Notes
         Pacejka
@@ -20,15 +21,16 @@ classdef FRUCDTire
     methods
         function obj = FRUCDTire(Name, Source, Notes)
             if nargin > 0
-                obj.Name    = Name;                            % Tire Name
-                obj.Date    = datestr(now,'yyyy-mm-dd_HH_MM'); % Generation Date & Time
-                obj.Source  = Source;                          % Data Sources     
-                obj.Notes   = Notes;                           % Notes About Model
+                obj.Name    = Name;                      % Tire Name
+                obj.Date    = datestr(now,'dd-mm-yyyy'); % Generation Date
+                obj.Time    = datestr(now,'HH:MM PM'  ); % Generation Time
+                obj.Source  = Source;                    % Data Sources     
+                obj.Notes   = Notes;                     % Notes About Model
                 
-                obj.Pacejka = PacejkaParameters();             % Pacejka Parameters
-                obj.Radius  = RadiusParameters();              % Radius Parameters
-                obj.Mass    = [];                              % Mass Parameters
-                obj.Thermal = [];                              % Thermal Parameters
+                obj.Pacejka = PacejkaParameters();       % Pacejka Parameters
+                obj.Radius  = RadiusParameters();        % Radius Parameters
+                obj.Mass    = MassParameters();          % Mass Parameters
+                obj.Thermal = ThermalParameters();       % Thermal Parameters
             end
             
             function Pacejka = PacejkaParameters()
@@ -123,6 +125,17 @@ classdef FRUCDTire
             function Radius = RadiusParameters()
                 Radius.Effective = [];
                 Radius.Loaded    = [];
+            end
+            
+            function Mass = MassParameters()
+                Mass.m  = 0;            % Wheel Package Mass [kg]
+                Mass.I  = zeros(3,3);   % Wheel Pacakge Inertia Tensor [kg-m^2]
+                
+                Mass.Is = 0;            % Spin Inertia (Spindle, Rotor, Rim, ...) [kg-m^2]
+            end
+            
+            function Thermal = ThermalParameters()
+                Thermal = [];
             end
         end    
         
