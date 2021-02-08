@@ -182,7 +182,7 @@ for i = 1 : numel( Nominal )
         
         xlabel( 'Normal Load ($F_{z}$) [$N$]' )
         ylabel( 'Slip Angle ($\alpha$) [$deg$]' )
-        zlabel( 'Aligning Moment ($M_{z}$) [$N-m$]' )
+        zlabel( 'Aligning Moment ($M_{z}$) [$Nm$]' )
         title( { ['Pressure ($P_{i}$): $', num2str(Mesh(i).Pressure), '$ [$psi$]'], ...
                 ['Inclination ($\gamma$): $', num2str(Mesh(i).Inclination), '$ [$deg$]'] } )
 end

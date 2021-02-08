@@ -127,7 +127,8 @@ load( 'TestData_02_08_21_00_30.mat' );
 SaveModel = questdlg( 'Save Model?', '', 'Yes', 'No', 'No' );
 
 if strcmpi( SaveModel, 'Yes' )
-    save( [Directory.Model, '\', Tire.Name], 'Tire' )
+    save( [Directory.Model, '\', ...
+        strrep(strrep(Tire.Name, '.', ''),' ', '_')], 'Tire' )
     
     ExportTireFigures( Tire, Data, Bin, Figure, Directory );
 end

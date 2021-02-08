@@ -36,7 +36,9 @@ a = 1;
 
     function ExportDeveloperFigure( Figure )
         for i = 1 : numel( Figure )
+            Figure(i).WindowState = 'maximize';
             saveas( Figure(i), [ExportPath, '\Developer Figures\', Figure(i).Name], 'png' );
+            Figure(i).WindowState = 'minimize';
         end
     end
 end
