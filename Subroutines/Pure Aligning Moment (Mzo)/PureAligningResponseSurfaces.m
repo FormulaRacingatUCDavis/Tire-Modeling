@@ -1,4 +1,4 @@
-function [ Response ] = PureAligningResponseSurfaces( Mesh, Nominal, Tire )
+function [ Response ] = PureAligningResponseSurfaces( Tire, Mesh, Nominal )
 
 %% Defining Operating Condition Functions
 dPi = @(Pi) (Pi - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;

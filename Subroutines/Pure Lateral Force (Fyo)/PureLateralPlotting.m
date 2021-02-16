@@ -1,8 +1,5 @@
-function [] = PureLateralPlotting( Mesh, Raw, Nominal, ~, ~, Tire )
+function [] = PureLateralPlotting( Tire, Raw, Mesh, Nominal, ~, ~, Figure )
 % Plots Results from Pure Lateral (Fyo) MF6.1 Fitting
-
-%% Declare Global Variables
-global Figure
 
 %% Evaluate Variant Surface
 [Dy, Ey, Kya, Kyg0, Vy, Hy, Fyo] = VariantEval( Tire );

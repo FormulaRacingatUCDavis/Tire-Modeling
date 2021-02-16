@@ -1,4 +1,4 @@
-function Tire = PureLateralFitting( Tire, Data, Bin )
+function Tire = PureLateralFitting( Tire, Data, Bin, Figure )
 % Executes all of the fitting procedures for pure slip lateral force
 % generation. All equations are referenced from the 3rd Edition of 'Tyre &
 % Vehicle Dynamics' by Pajecka.
@@ -46,8 +46,7 @@ for i = [2 3]
     for p = 1 : numel( Case.Pressure )       
         for z = 1 : numel( Case.Load ) 
             for c = 1 : numel( Case.Inclination )
-                Idx.Valid = Bin(i).Pressure(p,:) & Bin(i).Load(z,:) & ...
-                    Bin(i).Inclination(c,:) & Bin(i).Gain.Slip.Angle & ...
+                Idx.Valid = Bin(i).Pressure(p,:) & Bin(i).Load(z,:) & Bin(i).Inclination(c,:) & ...
                     Bin(i).Slip.Ratio( find( Bin(i).Values.Slip.Ratio == 0 ), : ); 
                 
                 if sum( Idx.Valid ) < 50
@@ -97,9 +96,9 @@ Raw(     ind2sub(size(Raw), find(cellfun(@isnan, {Nominal.C}))) ) = [];
 Nominal(                         cellfun(@isnan, {Nominal.C})   ) = [];
 
 %% Variant Fitting
-Response = PureLateralResponseSurfaces( Raw, Mesh, Nominal, Tire );
+Response = PureLateralResponseSurfaces( Tire, Raw, Mesh, Nominal );
   
-[ Variant, Tire ] = PureLateralVariant( Raw, Response.x0, Tire );
+[ Variant, Tire ] = PureLateralVariant( Tire, Raw, Response );
 
 %% Plotting Function
-PureLateralPlotting( Mesh, Raw, Nominal, Response, Variant, Tire );
+PureLateralPlotting( Tire, Raw, Mesh, Nominal, Response, Variant, Figure );

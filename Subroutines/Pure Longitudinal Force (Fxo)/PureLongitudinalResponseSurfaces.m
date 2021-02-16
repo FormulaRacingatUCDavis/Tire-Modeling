@@ -1,4 +1,21 @@
-function [ Response ] = PureLongitudinalResponseSurfaces( Mesh, Nominal, Tire )
+function [ Response ] = PureLongitudinalResponseSurfaces( Tire, Mesh, Nominal )
+%% PureLongitudinalResponseSurfaces - Fits Parameter Responses to Nominal Results
+% Fits response surfaces for C,D,K,E,H,V to initialize full variant pure
+% slip curve fit.
+% 
+% Inputs:
+%   Tire    - Tire Model
+%   Mesh    - Experimental Operating Conditions
+%   Nominal - Fitted P6 Parameters
+%
+% Inputs:
+%   Response - Fitted Response Surface Parameters
+%
+% Author(s): 
+% Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
+% Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
+% 
+% Last Updated: 15-Feb-2021
 
 %% Defining Operating Condition Functions
 dPi = @(Pi) (Pi - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;

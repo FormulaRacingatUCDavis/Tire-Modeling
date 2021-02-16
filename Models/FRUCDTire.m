@@ -1,11 +1,33 @@
 %% FRUCD Wheel & Tire Class Definition
 % Defines wheel & tire parameters for use in vehicle simulation and
-% provides methods for evaluating certain properties.
+% provides methods for evaluating certain properties. The tire operates in
+% the SAE Z-up coordinate system.
 %
 % Main Methods:
-% - FRUCDTire: Instance Generation
-% - ContactPatchLoads: Evaluates Model for Fx, Fy, Mz, Mx, and My
-% - RadialDeflection: Evaluates Model for Re, Rl
+% - FRUCDTire         : Instance Generation
+% - ContactPatchLoads : Evaluates Model for F_x, F_y, M_z, M_x, and M_y
+% - RadialDisplacement: Evaluates Loaded & Effective Radius (r_l & r_e)
+%
+% Variables:
+% - Slip Angle        : alpha [deg]
+% - Slip Ratio        : kappa [   ]
+% - Inflation Pressure: P_i   [kPa]
+% - Inclination Angle : gamma [deg]
+% - Tire Velocity     : v     [m/s]
+% - Normal Load       : F_z   [N  ]
+% - Longitudinal Force: F_x   [N  ]
+% - Lateral Force     : F_y   [N  ]
+% - Aligning Moment   : M_z   [Nm ]
+% - Overturning Moment: M_x   [Nm ]
+% - Rolling Resistance: M_y   [Nm ]
+% - Effective Radius  : r_e   [mm ]
+% - Loaded Radius     : r_l   [mm ]
+%
+% Author(s):
+% Blake Christierson (bechristierson@ucdavis.edu)
+%
+% Last Updated: 14-Feb-2021
+
 classdef FRUCDTire
     properties
         Name
@@ -35,9 +57,9 @@ classdef FRUCDTire
             
             function Pacejka = PacejkaParameters()
                 %%% Nominal Conditions
-                Pacejka.Fzo = 3000;      % Nominal Pacejka Load [N] (Chosen as 675lbs)
-                Pacejka.Pio = 10;        % Nominal Pacejka Pressure [psi]
-                Pacejka.Ro = 8*2.54/100; % Nominal Pacejka Radius [m]
+                Pacejka.Fzo = 3000;      % Nominal Pacejka Load     [N] 
+                Pacejka.Pio = 70;        % Nominal Pacejka Pressure [kPa]
+                Pacejka.Ro = 8*2.54/100; % Nominal Pacejka Radius   [m]
 
                 % Scaling Factors (Lambdas)
                 Pacejka.L.F.zo = 1; 

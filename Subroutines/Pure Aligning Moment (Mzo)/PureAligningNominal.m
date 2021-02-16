@@ -1,4 +1,4 @@
- function [Nominal] = PureAligningNominal( Mesh, Raw, Tire )
+ function [Nominal] = PureAligningNominal( Tire, Raw, Mesh )
 %% Evaluating Pure Lateral Force Fit (Fyo)
 [Fyo, By, Cy, Kya, Hy, Vy] = FyoEval( Tire );
 

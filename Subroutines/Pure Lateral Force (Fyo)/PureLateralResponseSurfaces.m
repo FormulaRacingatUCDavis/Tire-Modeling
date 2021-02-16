@@ -1,4 +1,4 @@
-function [ Response ] = PureLateralResponseSurfaces( Raw, Mesh, Nominal, Tire )
+function [ Response ] = PureLateralResponseSurfaces( Tire, Raw, Mesh, Nominal )
 
 %% Defining Operating Condition Functions
 dPi = @(Pi) (Pi - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;

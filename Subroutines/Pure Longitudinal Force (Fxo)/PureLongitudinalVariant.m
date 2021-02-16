@@ -1,4 +1,21 @@
-function [ Variant, Tire ] = PureLongitudinalVariant( Raw, x0, Tire )
+function [ Variant, Tire ] = PureLongitudinalVariant( Tire, Raw, Response )
+% Inputs:
+%   Tire     - Tire Model
+%   Raw      - Raw Data for a Given Experimental Operating Condition
+%   Response - Fitted Response Surface Parameters
+%
+% Inputs:
+%   Variant - Full Variant Fit 
+%   Tire    - Tire Model w/ Pure Slip Longitudinal Force Model
+%
+% Author(s): 
+% Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
+% Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
+% 
+% Last Updated: 15-Feb-2021
+
+x0 = Response.x0;
+
 %% Optimization Variables
 pcx1 = optimvar( 'pcx1', 'Lowerbound',  0.9 , 'Upperbound',  1.1 );
 

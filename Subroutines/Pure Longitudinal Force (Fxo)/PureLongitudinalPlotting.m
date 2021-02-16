@@ -1,8 +1,5 @@
-function [] = PureLongitudinalPlotting( Mesh, Raw, Nominal, ~, ~, Tire )
+function PureLongitudinalPlotting( Tire, Raw, Mesh, Nominal, ~, ~, Figure )
 % Plots Results from Pure Longitudinal (Fxo) MF6.1 Fitting
-
-%% Declare Global Variables
-global Figure
 
 %% Evaluate Variant
 [Dx, Ex, Kxk, Vx, Hx, Fxo] = VariantEval( Tire );

@@ -1,8 +1,5 @@
-function [] = PureAligningPlotting( Mesh, Raw, Nominal, ~, ~, Tire )
+function [] = PureAligningPlotting( Tire, Raw, Mesh, Nominal, ~, ~, Figure )
 % Plots Results from Pure Aligning (Mzo) MF6.1 Fitting
-
-%% Declare Global Variables
-global Figure
 
 %% Evaluate Variant Fit
 [By, Bt, Dt, Et, Ht, Br, Dr, Hf, t0, Mzro, Mzo] = VariantEval( Tire );

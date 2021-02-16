@@ -1,17 +1,27 @@
-function Tire = PureLongitudinalFitting( Tire, Data, Bin )
+function Tire = PureLongitudinalFitting( Tire, Data, Bin, Figure )
+%% PureLongitudinalFitting - Fits Pure Slip Longitudinal Force Pacejka Model 
 % Executes all of the fitting procedures for pure slip longitudinal force
 % generation. All equations are referenced from the 3rd Edition of 'Tyre &
 % Vehicle Dynamics' by Pajecka.
-%   The fitting process first fits the nominal coefficients to all cases. 
-%   Statistical analysis is then done to set upper and lower bounds of 
-%   these coefficients during full load variance fitting at neutral camber. 
-%   These are then used to fit camber variance. In the future this may be
-%   modified for pressure variance. 
-
-% Nominal Fit for Primaries (C,D,E,K,S_H,S_V)
-% Fit Surface Variant Inclination & Pressure
-% Fit Primary Curves for Bounds & Initial
-% Constrained High Dimensional fmincon()
+%   The fitting process first fit the P6 form of the Pacejka Model and then 
+%   fits a response surface to each of the primary parameters. The response
+%   surface parameters are then used to initialize and bound the full
+%   variant fit.
+%
+% Inputs:
+%   Tire      - Tire Model
+%   Data      - Parsed FSAE TTC Data
+%   Bin       - Logical Binnings for Separating Operating Conditions
+%   Figure    - Stores Model Figures
+%
+% Inputs:
+%   Tire      - Tire Model w/ Pure Slip Longitudinal Force Model
+%
+% Author(s): 
+% Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
+% Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
+% 
+% Last Updated: 15-Feb-2021
 
 %% Operating Condition Space
 Case.Pressure    = Bin(5).Values.Pressure;    % Pressure Bin Values Storage
@@ -46,12 +56,11 @@ for i = [5 6]
     for p = 1 : numel( Case.Pressure )       
         for z = 1 : numel( Case.Load ) 
             for c = 1 : numel( Case.Inclination )
-                Idx.Valid = Bin(i).Pressure(p,:) & Bin(i).Load(z,:) & ...
-                    Bin(i).Inclination(c,:) & Bin(i).Gain.Slip.Ratio & ...
+                Idx.Valid = Bin(i).Pressure(p,:) & Bin(i).Load(z,:) & Bin(i).Inclination(c,:) & ...
                     Bin(i).Slip.Angle( find( Bin(i).Values.Slip.Angle == 0 ), : );
                 
                 if sum( Idx.Valid ) < 50
-                    continue % SKip Sparse Bins
+                    continue % Skip Sparse Bins
                 elseif (i == 6) && (Case.Pressure(p) == 12)
                     continue % Skip Tire Aging Sweep at 12 psi in Cornering 2
                 end
@@ -88,38 +97,18 @@ for p = 1 : numel( Case.Pressure )
 end
 
 %% Filtering Data & Operating Conditions
-for n = 1 : 3
-    for i = size(Nominal,n): -1 : 1
-        switch n
-            case 1
-                if isempty( [Nominal(i,:,:).Residual] )
-                    Case.Pressure(i) = [];
-                    Mesh(i,:,:)      = [];
-                    Raw(i,:,:)       = [];
-                    Nominal(i,:,:)   = [];
-                end
-            case 2
-                if isempty( [Nominal(:,i,:).Residual] )
-                    Case.Load(i)   = [];
-                    Mesh(:,i,:)    = [];
-                    Raw(:,i,:)     = [];
-                    Nominal(:,i,:) = [];
-                end
-            case 3
-                if isempty( [Nominal(:,:,i).Residual] )
-                    Case.Inclination(i) = [];
-                    Mesh(:,:,i)         = [];
-                    Raw(:,:,i)          = [];
-                    Nominal(:,:,i)      = [];
-                end
-        end
-    end
-end
+Mesh(    ind2sub(size(Raw), find(cellfun(@isempty, {Nominal.C}))) ) = [];
+Raw(     ind2sub(size(Raw), find(cellfun(@isempty, {Nominal.C}))) ) = [];
+Nominal(                         cellfun(@isempty, {Nominal.C})   ) = [];
+
+Mesh(    ind2sub(size(Raw), find(cellfun(@isnan, {Nominal.C}))) ) = [];
+Raw(     ind2sub(size(Raw), find(cellfun(@isnan, {Nominal.C}))) ) = [];
+Nominal(                         cellfun(@isnan, {Nominal.C})   ) = [];
 
 %% Variant Fitting
-Response = PureLongitudinalResponseSurfaces( Mesh, Nominal, Tire );
+Response = PureLongitudinalResponseSurfaces( Tire, Mesh, Nominal );
   
-[ Variant, Tire ] = PureLongitudinalVariant( Raw, Response.x0, Tire );
+[ Variant, Tire ] = PureLongitudinalVariant( Tire, Raw, Response );
 
 %% Plotting Function
-PureLongitudinalPlotting( Mesh, Raw, Nominal, Response, Variant, Tire );
+PureLongitudinalPlotting( Tire, Raw, Mesh, Nominal, Response, Variant, Figure );

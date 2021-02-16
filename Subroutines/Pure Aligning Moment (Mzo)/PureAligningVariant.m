@@ -1,4 +1,4 @@
-function [ Variant, Tire ] = PureAligningVariant( Raw, Nominal, x0, Tire )
+function [ Variant, Tire ] = PureAligningVariant( Tire, Raw, Nominal, Response )
 
 %% Evaluate Fyo
 [By, Cy, Kya, Hy, Vy, Fyo] = FyoEvaluation;
@@ -79,7 +79,9 @@ for i = 1:numel(Fz)
     Constr(i+9+numel(Fz)) = min([Nominal.Dr]) - ...
         fcn2optimexpr( @DrBound, qdz6, qdz7, qdz8, qdz9, qdz10, qdz11, ppz2, Fz(i), Pi(i), Inc(i) ) <= 0;
 end
-%% Solving Optimization Problem
+
+%% Setting Initialization
+x0 = Response.x0;
 x0.qdz6  = 0;
 x0.qdz7  = 0;
 x0.qdz8  = 0;
@@ -88,6 +90,7 @@ x0.qdz10 = 0;
 x0.qdz11 = 0;
 x0.ppz2 = 0;
 
+%% Solving Optimization Problem
 [Variant.Solution, Variant.Log] = Runfmincon( Obj, x0, Constr, 3 );
 
 %% Clearing Optimization Figure

@@ -1,4 +1,19 @@
 function [Nominal] = PureLongitudinalNominal( Raw )
+%% PureLongitudinalNominal - Fits P6 Pure Slip Longitudinal Force Model
+% Fits a P6 Pacejka model to each operating condition to generate data for
+% the response surfaces.
+%
+% Inputs:
+%   Raw - Raw Data for a Given Experimental Operating Condition
+%
+% Inputs:
+%   Nominal - P6 Fitted Curve
+%
+% Author(s): 
+% Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
+% Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
+% 
+% Last Updated: 15-Feb-2021
 
 %% Defining Initial Point
 [x0, lb, ub] = FxoInitialBounds( Raw.Slip, Raw.Force );

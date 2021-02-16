@@ -1,5 +1,17 @@
 function Data = DataImport( FileID, TestName )
-% Loads Calspan TTC Run Data Into Structure
+%% DataImport - Loads Calspan TTC Run Data Into Structure 
+% Inputs:
+%   FileID   - Calspan TTC File Path
+%   TestName - Experimental Routine
+% 
+% Outputs:
+%   Data     - Parsed FSAE TTC Data
+%
+% Author(s): 
+% Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
+% Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
+% 
+% Last Updated: 15-Feb-2021
 
 [PathName , FileName , Ext ] = fileparts(FileID);
 
@@ -27,13 +39,13 @@ if strcmp( Ext, '.mat')
     
     Data.Time = Raw.ET'; % ET: Elapsed Time [s]
     
-    Data.Pressure    = Raw.P' * 0.145037737730217; % P: Pressure [psi]
-    Data.Inclination = Raw.IA'; % IA: Inclination Angle [deg]
-    Data.Velocity    = Raw.V';  % V: Road Velocity [m/s]
-    Data.Omega       = Raw.N';  % N: Wheel Rotational Speed [rpm]
+    Data.Pressure    = Raw.P';        % P : Pressure          [kPa]
+    Data.Inclination = Raw.IA';       % IA: Inclination Angle [deg]
+    Data.Velocity    = Raw.V' ./ 3.6; % V : Road Velocity     [m/s]
+    Data.Omega       = Raw.N';        % N : Rotational Speed  [rpm]
     
     Data.Slip.Angle = -deg2rad(Raw.SA'); % SA: Slip Angle [rad]
-    Data.Slip.Ratio = Raw.SL';  % SL: Slip Ratio []
+    Data.Slip.Ratio = Raw.SL';           % SL: Slip Ratio []
     
     Data.Force(1,:) = Raw.FX;  % FX: Longitudinal Force [N]
     Data.Force(2,:) = -Raw.FY; % FY: Lateral Force      [N] 

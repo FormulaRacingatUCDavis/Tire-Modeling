@@ -1,4 +1,4 @@
-function Tire = PureAligningFitting( Tire, Data, Bin )
+function Tire = PureAligningFitting( Tire, Data, Bin, Figure )
 % Executes all of the fitting procedures for pure slip aligning moment
 % generation. All equations are referenced from the 3rd Edition of 'Tyre &
 % Vehicle Dynamics' by Pajecka.
@@ -46,13 +46,12 @@ for i = [2 3]
     for p = 1 : numel( Case.Pressure )       
         for z = 1 : numel( Case.Load ) 
             for c = 1 : numel( Case.Inclination )
-                Idx.Valid = Bin(i).Pressure(p,:) & Bin(i).Load(z,:) & ...
-                    Bin(i).Inclination(c,:) & Bin(i).Gain.Slip.Angle & ...
-                    ( abs(Data(i).Slip.Angle) < deg2rad(11) ) & ...
-                    Bin(i).Slip.Ratio( find( Bin(i).Values.Slip.Ratio == 0 ), : ); 
+                Idx.Valid = Bin(i).Pressure(p,:) & Bin(i).Load(z,:) & Bin(i).Inclination(c,:) & ...
+                    Bin(i).Slip.Ratio( find( Bin(i).Values.Slip.Ratio == 0 ), : ) & ...
+                    ( abs(Data(i).Slip.Angle) < deg2rad(11) ); 
                 
                 if sum( Idx.Valid ) < 50
-                    continue % SKip Sparse Bins
+                    continue % Skip Sparse Bins
                 elseif (i == 3) && (Case.Pressure(p) == 12)
                     continue % Skip Tire Aging Sweep at 12 psi in Cornering 2
                 end
@@ -84,7 +83,7 @@ for p = 1 : numel( Case.Pressure )
                 continue
             end
             
-            Nominal(p,z,c) = PureAligningNominal( Mesh(p,z,c), Raw(p,z,c), Tire );
+            Nominal(p,z,c) = PureAligningNominal( Tire, Raw(p,z,c), Mesh(p,z,c) );
         end
     end
 end
@@ -99,9 +98,9 @@ Raw(     ind2sub(size(Raw), find(cellfun(@isnan, {Nominal.Ct}))) ) = [];
 Nominal(                         cellfun(@isnan, {Nominal.Ct})   ) = [];
 
 %% Variant Fitting
-Response = PureAligningResponseSurfaces( Mesh, Nominal, Tire );
+Response = PureAligningResponseSurfaces( Tire, Mesh, Nominal );
   
-[ Variant, Tire ] = PureAligningVariant( Raw, Nominal, Response.x0, Tire );
+[ Variant, Tire ] = PureAligningVariant( Tire, Raw, Nominal, Response );
 
 %% Plotting Function
-PureAligningPlotting( Mesh, Raw, Nominal, Response, Variant, Tire );
+PureAligningPlotting( Tire, Raw, Mesh, Nominal, Response, Variant, Figure );

@@ -1,26 +1,40 @@
 function Bin = DataBinning( Data )
+%% DataBinning - Separates Experimental Operating Conditions
 % This function creates logical bins to separate the total data in the
 % separate experimental conditions.
+% 
+% Inputs:
+%   Data - Parsed FSAE TTC Data
+% 
+% Outputs:
+%   Bin  - Logical Binnings for Separating Operating Conditions
+%
+% Author(s): 
+% Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
+% Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
+% 
+% Last Updated: 15-Feb-2021
 
 %%% Conversion Functions
-lbf2N = @(lbf) lbf.*4.4482216152605;
-mph2kmh = @(mph) mph.*1.6093440;
+lbf2N   = @(lbf) lbf .* 4.44822;
+mph2kmh = @(mph) mph .* 1.60934;
+psi2kPa = @(psi) psi .* 6.89476;
 
 %%% Bin Values
 % Derived from Round 6-8 FSAE TTC Content Guides
-Values.Pressure    = [ 8 10 12 14 ]'; % Pressure Bins [psi]
-Values.Load        = lbf2N([ 50 100 150 200 250 350 ])'; % Normal Force Bins [N]
-Values.Inclination = [ -2 0 2 4 ]'; % Inclination Bins [deg]
-Values.Velocity    = mph2kmh([ 0 2 15 25 45 ])'; % Belt Speed Bins [kph]
-Values.Slip.Angle  = deg2rad([ -1 0 1 6]'); % Slip Angle Bins [deg]
-Values.Slip.Ratio  = 0; % Slip Ratio Bins [ ]
+Values.Pressure    = psi2kPa([  8,  10,  12  14,        ]'); % Pressure Bins     [kPa]
+Values.Load        = lbf2N(  [ 50, 100, 150 200, 250 350]'); % Normal Force Bins [N]
+Values.Inclination =         [- 2,   0,   2   4,        ]' ; % Inclination Bins  [deg]
+Values.Velocity    = mph2kmh([  0,   2,  15  25,  45    ]'); % Belt Speed Bins   [kph]
+Values.Slip.Angle  = deg2rad([- 1,   0,   1,  6         ]'); % Slip Angle Bins   [deg]
+Values.Slip.Ratio  =            0;                           % Slip Ratio Bins   [ ]
 
-Tolerance.Pressure    = min( diff(Values.Pressure   ) ) / 3; % Pressure Tolerance [psi]
-Tolerance.Load        = min( diff(Values.Load       ) ) / 3; % Normal Force Tolerance [N]
-Tolerance.Inclination = min( diff(Values.Inclination) ) / 3; % Inclination Tolerance [deg]
-Tolerance.Velocity    = min( diff(Values.Velocity   ) ) / 3; % Belt Velocity Tolerance [kph]
-Tolerance.Slip.Angle  = min( diff(Values.Slip.Angle ) ) / 10; % Slip Angle Tolerance [deg]
-Tolerance.Slip.Ratio  = Tolerance.Slip.Angle     * 0.15 / 12; % Slip Ratio Tolerance [deg]
+Tolerance.Pressure    = min( diff(Values.Pressure   ) ) / 3;  % Pressure Tolerance      [psi]
+Tolerance.Load        = min( diff(Values.Load       ) ) / 3;  % Normal Force Tolerance  [N]
+Tolerance.Inclination = min( diff(Values.Inclination) ) / 3;  % Inclination Tolerance   [deg]
+Tolerance.Velocity    = min( diff(Values.Velocity   ) ) / 3;  % Belt Velocity Tolerance [kph]
+Tolerance.Slip.Angle  = min( diff(Values.Slip.Angle ) ) / 10; % Slip Angle Tolerance    [deg]
+Tolerance.Slip.Ratio  = Tolerance.Slip.Angle     * 0.15 / 12; % Slip Ratio Tolerance    [ ]
 
 % Bin Creation
 Bin.Pressure = ( Data.Pressure > (Values.Pressure - Tolerance.Pressure) ) & ...
@@ -40,16 +54,6 @@ Bin.Slip.Angle = ( Data.Slip.Angle > Values.Slip.Angle - Tolerance.Slip.Angle ) 
 
 Bin.Slip.Ratio = ( Data.Slip.Ratio > Values.Slip.Ratio - Tolerance.Slip.Ratio ) & ...
                  ( Data.Slip.Ratio < Values.Slip.Ratio + Tolerance.Slip.Ratio ); 
-
-Bin.Gain.Slip.Angle        = ( diff( abs( Data.Slip.Angle ) ) >= 0);
-Bin.Gain.Slip.Angle(end+1) = Bin.Gain.Slip.Angle(end);
-
-Bin.Gain.Slip.Ratio        = ( diff( abs( Data.Slip.Ratio ) ) >= 0);
-Bin.Gain.Slip.Ratio(end+1) = Bin.Gain.Slip.Ratio(end);
-
-if strcmp( Data.TestName, 'Transient' )
-    a = 1;
-end
 
 % Eliminating Sparse Bins
 for i = 1 : length( Values.Pressure )
@@ -75,6 +79,7 @@ for i = 1 : length( Values.Velocity )
          Bin.Velocity(i,:) = false( size( Bin.Velocity(i,:) ) );
     end    
 end
+
 Bin.Values = Values;
 Bin.Tolerance = Tolerance;
 

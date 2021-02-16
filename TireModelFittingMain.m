@@ -1,22 +1,29 @@
-clc; clear; clear('global'); close all;
+clc; clear; close all;
 
-%% FRUCD Tire Model Fitting Tool Main Script
+%% TireModelFittingMain - FRUCD Tire Modeling Main Script
 % This script fits a Pacejka contact patch tire model, radial deflection 
 % models, and estimates thermal parameters from Calspan TTC data sets and 
 % creates an instance of the FRUCDTire class for use in vehicle models.
 % 
-% Use MATLAB, SI Unit Calspan TTC Data Sets
+% Inputs:
+%   - SI Unit Calspan TTC Data Sets [via uigetfile()]
 % 
-% Authors: 
-% - Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
-% - Carlos Lopez                                    [Jan 2019 -         ]
+% Outputs:
+%   Directory - Data, Model, and Figure Path Locations
+%   Data      - Parsed FSAE TTC Data
+%   Bin       - Logical Binnings for Separating Operating Conditions
+%   Tire      - Tire Model
+%   Figure    - Stores Model Figures
+%
+% Author(s): 
+% Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
+% Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
+% 
+% Last Updated: 14-Feb-2021
 
 %% Initialization
 % Sets up the model structure and adds relevant directories for saving and 
 % storing results.
-
-%%% Global Variables
-global Directory Figure
 
 %%% Figure Interpreter
 set(groot,'defaulttextinterpreter','latex');
@@ -44,7 +51,6 @@ Figure.State = 'minimized';
 % are utilized throughout the rest of the fitting process to select data from 
 % desired operating conditions. 
 
-%{
 TestName = {'Transient'                 , ...
             'Cornering 1'               , ...
             'Cornering 2'               , ...
@@ -82,8 +88,8 @@ end
 clear i
 
 %% Initialize Tire Model
-ModelName = inputdlg( ['Enter Tire Model Name in Following Format: ', ...
-    '{Manufacturer} {Compound} {Diameter}x{Width}-{Rim Diameter}x{Rim Width}'], ...
+ModelName = inputdlg( sprintf('%s\n%s','Enter Tire Model Name in Following Format: ', ...
+    '{Manufacturer} {Compound} {Diameter}x{Width}-{Rim Diameter}x{Rim Width}'), ...
     '', 1, {'Tire'} );
 
 Tire = FRUCDTire( ModelName{1}, [Data.Source], []);
@@ -92,11 +98,11 @@ clear ModelName
 
 %% Contact Patch Load Modeling
 %%% Steady State, Pure Slip Force & Aligning Moment Fitting
-Tire = PureLongitudinalFitting( Tire, Data, Bin ); % Longitudinal Force ( Fxo )
+Tire = PureLongitudinalFitting( Tire, Data, Bin, Figure ); % Longitudinal Force ( Fxo )
 
-Tire = PureLateralFitting( Tire, Data, Bin ); % Lateral Force ( Fyo )
+Tire = PureLateralFitting( Tire, Data, Bin, Figure ); % Lateral Force ( Fyo )
 
-Tire = PureAligningFitting( Tire, Data, Bin ); % Aligning Moment ( Mzo )
+Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
 
 %%% Steady State, Combined Slip Force Modeling
 % This is currently undeveloped due to data limitations. Instead, combined tire forces
@@ -104,14 +110,14 @@ Tire = PureAligningFitting( Tire, Data, Bin ); % Aligning Moment ( Mzo )
 % models. It is implemented within the FRUCDTire Class Definition.
 
 %%% Steady State, Combined Slip Moment Fitting
-% Tire = CombinedAligningFitting( Tire, Data, Bin ); % Aligning Moment (Mz)
+% Tire = CombinedAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment (Mz)
 
-% Tire = OverturningFitting( Tire, Data, Bin ); % Overturning Moment (Mx)
+% Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
 
-% Tire = ResistanceModeling( Tire, Data, Bin ); % Rolling Resistance (My)
+% Tire = ResistanceModeling( Tire, Data, Bin, Figure ); % Rolling Resistance (My)
 
 %%% Transient Response
-% Tire = RelaxationLengthFitting( Tire, Data, Bin );
+% Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure );
 
 %% Radial Deflection Modeling
 %%% Vertical Stiffness Modeling
@@ -121,9 +127,6 @@ Tire = RadialDeflection( Tire, Data ); % Radial Deflection (Re, Rl)
 % Heat Generation Modeling
 
 %% Exporting Model
-%}
-load( 'TestData_02_08_21_00_30.mat' );
-
 SaveModel = questdlg( 'Save Model?', '', 'Yes', 'No', 'No' );
 
 if strcmpi( SaveModel, 'Yes' )

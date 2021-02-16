@@ -1,4 +1,7 @@
-function [ Variant, Tire ] = PureLateralVariant( Raw, x0, Tire )
+function [ Variant, Tire ] = PureLateralVariant( Tire, Raw, Response )
+
+x0 = Response.x0;
+
 %% Optimization Variables
 pcy1 = optimvar( 'pcy1', 'Lowerbound',  0.5 , 'Upperbound',  1.5  );
 
