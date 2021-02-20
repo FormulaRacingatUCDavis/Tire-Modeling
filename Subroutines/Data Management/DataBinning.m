@@ -12,12 +12,13 @@ function Bin = DataBinning( Data )
 % Author(s): 
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
+% Leonardo Howard    (leohoward@ucdavis.edu     ) [Feb 2021 -         ]
 % 
-% Last Updated: 15-Feb-2021
+% Last Updated: 17-Feb-2021
 
 %%% Conversion Functions
 lbf2N   = @(lbf) lbf .* 4.44822;
-mph2kmh = @(mph) mph .* 1.60934;
+mph2mps = @(mph) mph .* 1.60934 ./ 3.6;
 psi2kPa = @(psi) psi .* 6.89476;
 
 %%% Bin Values
@@ -25,14 +26,14 @@ psi2kPa = @(psi) psi .* 6.89476;
 Values.Pressure    = psi2kPa([  8,  10,  12  14,        ]'); % Pressure Bins     [kPa]
 Values.Load        = lbf2N(  [ 50, 100, 150 200, 250 350]'); % Normal Force Bins [N]
 Values.Inclination =         [- 2,   0,   2   4,        ]' ; % Inclination Bins  [deg]
-Values.Velocity    = mph2kmh([  0,   2,  15  25,  45    ]'); % Belt Speed Bins   [kph]
+Values.Velocity    = mph2mps([  0,   2,  15  25,  45    ]'); % Belt Speed Bins   [m/s]
 Values.Slip.Angle  = deg2rad([- 1,   0,   1,  6         ]'); % Slip Angle Bins   [deg]
 Values.Slip.Ratio  =            0;                           % Slip Ratio Bins   [ ]
 
 Tolerance.Pressure    = min( diff(Values.Pressure   ) ) / 3;  % Pressure Tolerance      [psi]
 Tolerance.Load        = min( diff(Values.Load       ) ) / 3;  % Normal Force Tolerance  [N]
 Tolerance.Inclination = min( diff(Values.Inclination) ) / 3;  % Inclination Tolerance   [deg]
-Tolerance.Velocity    = min( diff(Values.Velocity   ) ) / 3;  % Belt Velocity Tolerance [kph]
+Tolerance.Velocity    = min( diff(Values.Velocity   ) ) / 3;  % Belt Velocity Tolerance [m/s]
 Tolerance.Slip.Angle  = min( diff(Values.Slip.Angle ) ) / 10; % Slip Angle Tolerance    [deg]
 Tolerance.Slip.Ratio  = Tolerance.Slip.Angle     * 0.15 / 12; % Slip Ratio Tolerance    [ ]
 
