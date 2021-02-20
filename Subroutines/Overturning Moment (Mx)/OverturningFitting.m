@@ -55,8 +55,9 @@ for i = [2 3]
                     continue % Skip Tire Aging Sweep at 12 psi in Cornering 2
                 end
                 
-                Raw(p,z,c).Slip  = Data(i).Slip.Angle(Idx.Valid); % Allocate Slip Angle Data
-                Raw(p,z,c).Force = Data(i).Force(2,Idx.Valid);    % Allocate Lateral Force Data
+                Raw(p,z,c).Slip   = Data(i).Slip.Angle(Idx.Valid); % Allocate Slip Angle Data
+                Raw(p,z,c).Force  = Data(i).Force(2,Idx.Valid);    % Allocate Lateral Force Data
+                Raw(p,z,c).Moment = Data(i).Moment(1, Idx.Valid);  % Allocate Overturning Moment Data
                 
                 Raw(p,z,c).Pressure    = Data(i).Pressure(Idx.Valid);    % Allocate Pressure Data
                 Raw(p,z,c).Load        = Data(i).Force(3,Idx.Valid);     % Allocate Normal Force Data
@@ -68,42 +69,12 @@ for i = [2 3]
         end
     end
 end
-%% Filtering Data & Operating Conditions
-for n = 1 : 3
-    for i = size(Nominal,n): -1 : 1
-        switch n
-            case 1
-                if isempty( [Nominal(i,:,:).Residual] )
-                    Case.Pressure(i) = [];
-                    Mesh(i,:,:)      = [];
-                    Raw(i,:,:)       = [];
-                    Nominal(i,:,:)   = [];
-                end
-            case 2
-                if isempty( [Nominal(:,i,:).Residual] )
-                    Case.Load(i)   = [];
-                    Mesh(:,i,:)    = [];
-                    Raw(:,i,:)     = [];
-                    Nominal(:,i,:) = [];
-                end
-            case 3
-                if isempty( [Nominal(:,:,i).Residual] )
-                    Case.Inclination(i) = [];
-                    Mesh(:,:,i)         = [];
-                    Raw(:,:,i)          = [];
-                    Nominal(:,:,i)      = [];
-                end
-        end
-    end
-end
+
 
 %% Variant Fitting 
-Response = OvertuningResponseSurfaces( Mesh, Nominal, Tire);
-
-[Variant, Tire ] = OverturningVariant( Raw, Response.x0, Tire);
+[Variant, Tire ] = OverturningVariant( Raw, Tire);
 
 %% Plotting Function
-
-OverturningPlotting( Mesh, Raw, Nominal, Response, Variant, Tire );
+OverturningPlotting( Mesh, Raw, Variant, Tire );
 
 end

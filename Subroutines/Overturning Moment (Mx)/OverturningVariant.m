@@ -1,5 +1,4 @@
 function [Variant, Tire] = OverturningVariant(Raw, x0, Tire)
-
 %% Optimization Variables
 qsx1  = optimvar( 'qsx1' , 'Lowerbound',  0   , 'Upperbound',  5    );
 qsx2  = optimvar( 'qsx2' , 'Lowerbound',  0   , 'Upperbound',  5    );
@@ -17,14 +16,15 @@ ppmx1 = optimvar('ppmx1', 'Lowerbound', 0 , 'Upperbound', 5);
 
 
 %% Optimization Objective 
-Obj = fcn2optimexpr(@ErrorMxo, qsx1,qsx2,qsx3,qsx4,qsx5,qsx6,qsx7, ...
-    qsx8, qsx9, qsx10, qsx11);
+Obj = fcn2optimexpr(@ErrorMx, qsx1,qsx2,qsx3,qsx4,qsx5,qsx6,qsx7, ...
+    qsx8, qsx9, qsx10, qsx11, ppmx1);
 
 %% Optimization Constraint
 Constr = optimineq( 0 );
 
 %% Solving Optimization Problem
-[Variant.Solution, Variant.Log] = Runfmincon( Obj, x0, Constr, 3);
+
+[Variant.Solution, Variant.Log] = Runfmincon( Obj, x0, Constr, 1);
 
 %% Clearing Optimization Figure
 delete( findobj('Type', 'figure', 'Name', 'optimization PlotFcns') );
@@ -107,18 +107,19 @@ Tire.Pacejka.p.p.mx(1) = Variant.Solution.ppmx1 ;
             end
         end
     end
-    function RMSE = ErrorMxo(qsx1, qsx2, qsx3, qsx4, qsx5, qsx6, qsx7, ...
-            qsx8, qsx9, qsx10, qsx11)
+    
+    function RMSE = ErrorMx(qsx1, qsx2, qsx3, qsx4, qsx5, qsx6, qsx7, ...
+            qsx8, qsx9, qsx10, qsx11, ppmx1)
+        
+      [~, Fy, ~, ~, ~] = Tire.ContactPatchLoads( obj, [Raw.Alpha], [Raw.Kappa], [Raw.Load], [Raw.Pressure] ...
+            , Inc, V, 1, Fidelity.Combined, 'MNC');
         
         Mx = Tire.Pacejka.Fzo .* [Raw.Load] .* (qsx1 - (qsx2 .* [Raw.Inclination])...
-            .* (1 + ppmx1 .* [Raw.dPi]) + qsx3 .* ( [Raw.Load]./[Tire.Pacejka.Fzo])...
+            .* (1 + ppmx1 .* [Raw.dPi]) + qsx3 .* ( Fy./[Tire.Pacejka.Fzo])...
             + qsx4 .* cos(qsx5 .* atan(qsx6 .* (Raw.Load./Tire.Pacejka.Fzo)).^2) ...
             .* sin(qsx7 .* [Raw.Inclination] + qsx8 .* atan(qsx9 .* ([Raw.Force]./ ...
             Tire.Pacejka.Fzo))) + qsx10 .* atan(qsx11 .* ([Raw.Load]./Tire.Pacejka.Fzo))...
             .* [Raw.Inclination]);
         RMSE = sqrt( mean( ([Raw.Moment] - Mx).^2) );
     end
-            
-
-
 end
