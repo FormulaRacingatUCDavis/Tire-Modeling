@@ -247,7 +247,7 @@ classdef FRUCDTire
                 % Evaluate Longitudinal Force​
                 switch Fidelity.Pure
                     case 'Linear'
-                        Fx0 = Kxk * Kappa;
+                        Fx0 = Kxk .* Kappa;
                     case 'Pacejka'
                         Fx0 = Dx .* sin( Cx .* atan( (1-Ex) .* Bx.*(Kappa + Hx) + ...
                             Ex.*atan( Bx.*(Kappa + Hx) ) ) ) + Vx;
@@ -297,7 +297,7 @@ classdef FRUCDTire
                 % Evaluate Lateral Force
                 switch Fidelity.Pure
                     case 'Linear'
-                        Fy0 = Kya * Alpha;
+                        Fy0 = Kya .* Alpha;
                     case 'Pacejka'
                         Fy0 = (Dy .* sin( Cy .* atan( (1-Ey) .* By.*( Alpha + Hy ) + ...
                             Ey .* atan( By.*( Alpha + Hy ) ) ) ) + Vy) .* (-1).^(mod(i+1,2));
