@@ -1,4 +1,6 @@
-function [Variant, Tire] = OverturningVariant(Raw, x0, Tire)
+function [Variant, Tire] = OverturningVariant(Raw, Tire)
+%% Overturning Variant = Fits q and p parameters from Overturning Equation
+
 %% Optimization Variables
 qsx1  = optimvar( 'qsx1' , 'Lowerbound',  0   , 'Upperbound',  5    );
 qsx2  = optimvar( 'qsx2' , 'Lowerbound',  0   , 'Upperbound',  5    );
@@ -14,6 +16,20 @@ qsx11 = optimvar( 'qsx11', 'Lowerbound',  0   , 'Upperbound',  5    );
 
 ppmx1 = optimvar('ppmx1', 'Lowerbound', 0 , 'Upperbound', 5);
 
+%% Optimization Initialization
+x0.qsx1  = 0;
+x0.qsx2  = 0;
+x0.qsx3  = 0;
+x0.qsx4  = 0;
+x0.qsx5  = 0;
+x0.qsx6  = 0;
+x0.qsx7  = 0;
+x0.qsx8  = 0;
+x0.qsx9  = 0;
+x0.qsx10 = 0;
+x0.qsx11 = 0;
+
+x0.ppmx1 = 0;
 
 %% Optimization Objective 
 Obj = fcn2optimexpr(@ErrorMx, qsx1,qsx2,qsx3,qsx4,qsx5,qsx6,qsx7, ...
@@ -23,7 +39,6 @@ Obj = fcn2optimexpr(@ErrorMx, qsx1,qsx2,qsx3,qsx4,qsx5,qsx6,qsx7, ...
 Constr = optimineq( 0 );
 
 %% Solving Optimization Problem
-
 [Variant.Solution, Variant.Log] = Runfmincon( Obj, x0, Constr, 1);
 
 %% Clearing Optimization Figure
@@ -111,13 +126,14 @@ Tire.Pacejka.p.p.mx(1) = Variant.Solution.ppmx1 ;
     function RMSE = ErrorMx(qsx1, qsx2, qsx3, qsx4, qsx5, qsx6, qsx7, ...
             qsx8, qsx9, qsx10, qsx11, ppmx1)
         
-      [~, Fy, ~, ~, ~] = Tire.ContactPatchLoads( obj, [Raw.Alpha], [Raw.Kappa], [Raw.Load], [Raw.Pressure] ...
-            , Inc, V, 1, Fidelity.Combined, 'MNC');
+      [~, Fy, ~, ~, ~] = Tire.ContactPatchLoads([Raw.Alpha], [Raw.Kappa], ...
+          [Raw.Load], [Raw.Pressure], [Raw.Inclination], 10, 1, ...
+          struct('Pure', 'Pacejka', 'Combined', 'MNC'));
         
         Mx = Tire.Pacejka.Fzo .* [Raw.Load] .* (qsx1 - (qsx2 .* [Raw.Inclination])...
-            .* (1 + ppmx1 .* [Raw.dPi]) + qsx3 .* ( Fy./[Tire.Pacejka.Fzo])...
-            + qsx4 .* cos(qsx5 .* atan(qsx6 .* (Raw.Load./Tire.Pacejka.Fzo)).^2) ...
-            .* sin(qsx7 .* [Raw.Inclination] + qsx8 .* atan(qsx9 .* ([Raw.Force]./ ...
+            .* (1 + ppmx1 .* [Raw.dPi]) + qsx3 .* ( Fy./Tire.Pacejka.Fzo)...
+            + qsx4 .* cos(qsx5 .* atan(qsx6 .* ([Raw.Load]./Tire.Pacejka.Fzo)).^2) ...
+            .* sin(qsx7 .* [Raw.Inclination] + qsx8 .* atan(qsx9 .* (Fy./ ...
             Tire.Pacejka.Fzo))) + qsx10 .* atan(qsx11 .* ([Raw.Load]./Tire.Pacejka.Fzo))...
             .* [Raw.Inclination]);
         RMSE = sqrt( mean( ([Raw.Moment] - Mx).^2) );

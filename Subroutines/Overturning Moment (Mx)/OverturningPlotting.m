@@ -8,7 +8,7 @@ global Figure
 [Mx] = VariantEval( Tire );
 
 %% Variant Surface Plotting
-Figure.Mx.Surfaces = figure( 'Name'       , 'Lateral Force Surfaces', ...
+Figure.Mx.Surfaces = figure( 'Name'       , 'Overturning Moment Surfaces', ...
                               'NumberTitle', 'off', ...
                               'Visible'    , 'on' );
 
@@ -17,13 +17,13 @@ for p = 1 : size( Raw, 1 )
         subplot( size( Raw, 3 ), size( Raw, 1 ), ...
             sub2ind( [size( Raw, 1 ), size( Raw, 3 )], p, c ) );
         
-        plot3( [Raw(p,:,c).Load], rad2deg([Raw(p,:,c).Slip]), [Raw(p,:,c).Force], 'k.' ); hold on;
+        plot3( [Raw(p,:,c).Load], rad2deg([Raw(p,:,c).Alpha]), [Raw(p,:,c).Load], 'k.' ); hold on;
         fsurf( @(Fz, Slip) Mx( Mesh(p,1,c).Pressure, Fz, ...
             Mesh(p,1,c).Inclination, Slip ), [0 2500 -15 15] )
         
         xlabel( 'Normal Load ($F_{z}$) [$N$]' )
         ylabel( 'Slip Angle ($\alpha$) [$deg$]' )
-        zlabel( 'Lateral Force ($F_{y}$) [$N$]' )
+        zlabel( 'Overturning Moment ($M_{x}$) [$N$]' )
         title( { ['Pressure ($P_{i}$): $'    , num2str(Mesh(p,1,c).Pressure)   , '$ [$psi$]'], ...
                  ['Inclination ($\gamma$): $', num2str(Mesh(p,1,c).Inclination), '$ [$deg$]'] } )
     end
@@ -31,7 +31,6 @@ end
 
 sgtitle( 'Overturning MF6.1 Pacejka Fit' )
 Figure.Mx.Surfaces.WindowState = Figure.State;
-
 %% Local Functions
 
 function [Mx] = VariantEval( Tire )

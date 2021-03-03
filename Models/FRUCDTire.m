@@ -255,9 +255,10 @@ classdef FRUCDTire
 
                 % Evaluate Null Slip Ratio
                 if strcmpi( Fidelity.Combined, 'MNC' )
-                    Opts = optimoptions( 'fsolve', 'Display', 'off', 'Algorithm', 'Levenberg-Marquardt' );
-                    Kappa0 = fsolve( @(k) Dx .* sin( Cx .* atan( (1-Ex) .* Bx.*(k + Hx) + ...
-                         Ex.*atan( Bx.*(k + Hx) ) ) ) + Vx, zeros(size(Dx)), Opts );
+                    Kappa0 = ((Fx0 .* Hx)./Kxk) + Vx;
+  %                  Opts = optimoptions( 'fsolve', 'Display', 'off', 'Algorithm', 'Levenberg-Marquardt' );
+   %                 Kappa0 = fsolve( @(k) Dx .* sin( Cx .* atan( (1-Ex) .* Bx.*(k + Hx) + ...
+   %                      Ex.*atan( Bx.*(k + Hx) ) ) ) + Vx, zeros(size(Dx)), Opts );
                 else
                     Kappa0 = [];
                 end
@@ -305,9 +306,11 @@ classdef FRUCDTire
 
                 % Evaluate Null Slip Angle
                 if strcmpi( Fidelity.Combined, 'MNC' )
-                    Opts = optimoptions( 'fsolve', 'Display', 'off', 'Algorithm', 'Levenberg-Marquardt' );
-                    Alpha0 = fsolve( @(a) (Dy .* sin( Cy .* atan( (1-Ey) .* By.*(a +Hy) + ...
-                            Ey.*atan( By.*(a + Hy) ) ) ) + Vy) .* (-1).^(mod(i+1,2)), zeros(size(Dy)), Opts );
+                    Alpha0 = ((Fy0 .* Hy)./Kya) + Vy;
+%                  Opts = optimoptions( 'fsolve', 'Display', 'off', 'Algorithm', 'Levenberg-Marquardt' );
+%                    Alpha0 = fsolve( @(a) (Dy .* sin( Cy .* atan( (1-Ey) .* By.*(a +Hy) + ...
+%                           Ey.*atan( By.*(a + Hy) ) ) ) + Vy) .* (-1).^(mod(i+1,2)), zeros(size(Dy)), Opts );
+                      
                 else
                     Alpha0 = [];
                 end
