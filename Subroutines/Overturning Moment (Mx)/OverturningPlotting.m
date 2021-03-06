@@ -1,7 +1,10 @@
 function [] = OverturningPlotting(Mesh, Raw, ~, ~, Tire)
-% Plots Results from Overturning (Mx) Fitting
+%% Overturning Plotting = Plots Results from Overturning (Mx) Fitting
+% Plots Variant Values from fitting process for Overturning Process for the
+% equations given in Pacejka's "Tire and Vehicle Dynamics" [3rd Edition] in
+% section 4.3.2 (page 176). 
 
-%% Devlare Global Variables 
+%% Declare Global Variables 
 global Figure
 
 %% Evaluate Variant Surface
@@ -17,9 +20,9 @@ for p = 1 : size( Raw, 1 )
         subplot( size( Raw, 3 ), size( Raw, 1 ), ...
             sub2ind( [size( Raw, 1 ), size( Raw, 3 )], p, c ) );
         
-        plot3( [Raw(p,:,c).Load], rad2deg([Raw(p,:,c).Alpha]), [Raw(p,:,c).Load], 'k.' ); hold on;
-        fsurf( @(Fz, Slip) Mx( Mesh(p,1,c).Pressure, Fz, ...
-            Mesh(p,1,c).Inclination, Slip ), [0 2500 -15 15] )
+        plot3( [Raw(p,:,c).Load], rad2deg([Raw(p,:,c).Alpha]), [Raw(p,:,c).Moment], 'k.' ); hold on;
+        fsurf( @(Fz, Alpha) Mx( Mesh(p,1,c).Pressure, Fz, ...
+            Mesh(p,1,c).Inclination, Alpha ), [1 2500 -15 15] )
         
         xlabel( 'Normal Load ($F_{z}$) [$N$]' )
         ylabel( 'Slip Angle ($\alpha$) [$deg$]' )
@@ -36,6 +39,8 @@ Figure.Mx.Surfaces.WindowState = Figure.State;
 function [Mx] = VariantEval( Tire )
         dPi = @(Pi) (Pi - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
         
+        
+       
         Mx.Surface = @(Fz, Gam, Pi, x0) (Tire.Pacejka.Ro * Tire.Pacejka.Fzo) * ... 
             ( x0.qsx1 - ((x0.qsx2 * Gam) * (1 + x0.ppMx1 * dPi(Pi))) +(x0.qsx3 * ...
             (Fy(Fz, Gam, Pi, x0)./Tire.Pacejka.Fzo)) + (x0.qsx4 * cos(x0.qsx5 * ...
