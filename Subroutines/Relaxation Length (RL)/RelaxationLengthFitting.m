@@ -21,7 +21,7 @@ function Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure )
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Leonardo Howard    (leohoward@ucdavis.edu     ) [Feb 2021 -         ]
 % 
-% Last Updated: 10-Mar-2021
+% Last Updated: 13-Mar-2021
 
 %% Operating Condition Space
 Case.Pressure    = Bin(1).Values.Pressure;    % Pressure Bin Values Storage
@@ -74,23 +74,38 @@ for j = 1: numel (Raw)
     Idx.IsRolling = find( Raw(j).Velocity > ( Bin(1).Tolerance.Velocity ./ 3 ) );   
 end
 %% Segmenting Velocity Based on Slope and Time Duration
-for j = 1: numel (Rw)   
+for j = 1: numel (Raw)   
     %currently writing different for loops to divide steps
     
-    %plot(diff(Idx.IsZero)) to identify where velocity is changing drastically
-    %scatter(Idx.IsZero, Raw(j).Force(Idx.IsZero) ./ Raw(j).Load(Idx.IsZero)) )
+    %plot(diff(Idx.IsRolling)) to identify where velocity is changing drastically
+    %scatter(Idx.IsRolling, Raw(j).Force(Idx.IsRolling) ./ Raw(j).Load(Idx.IsRolling)) )
     %to get a look at normalized force where this occur
     
-    %Next steps:
-    %Idx.IsPeaks = findpeaks();
-    %Use NPeaks
+    MinPeakProminenceScalarValue = mean( Raw(j).Velocity(Idx.IsRolling) - ...
+        ( Bin(1).Tolerance.Velocity ./ 3 ) );
+   
+    [pk, lc] = findpeaks(Raw(j).Velocity(Idx.IsRolling), Idx.IsRolling, ...
+        'MinPeakProminence', MinPeakProminenceScalarValue);
     
-    %{
-    Idx.IsSteadyState = find( Threshold(p,z).Velocity > ...
-        ( max( Threshold(p,z).Velocity ) - ( Bin(1).Tolerance.Velocity ./ 3 ) ) );
-        
-    SteadyState(p,z).Velocity = Threshold(p,z).Velocity(Idx.IsSteadyState);
-    %}
+    for i = 1: numel(pk)
+        if (i+1) <= numel(pk)
+            if pk(i) == pk(i+1)
+                pk(i+1) = [];
+                lc(i+1) = [];
+            end
+        end
+    end
+    
+    for i = 1: numel(lc)
+        if (i+1) <= numel(lc)
+            NumberOfVelocityDataPoints(i) = lc(i+1) - lc(i);
+        end
+    end
+    
+    %last edit note: next step is to find out how to find index of
+    %transients based on lc
+    MeanVelocityDataPoint = mean( NumberOfVelocityDataPoints );
+    Idx.TransientStart = lc(find( NumberOfVelocityDataPoints < MeanVelocityDataPoint ));
     
     %{
     locating the beginning of change in velocities (represented by 
@@ -99,10 +114,10 @@ for j = 1: numel (Rw)
     %}
     
     %{
-    IsSteadyState.Mean(p,z).Velocity = mean( Threshold(p,z).Velocity(Idx.IsSteadyState) );
-    IsSteadyState.Min(p,z).Velocity = min( Threshold(p,z).Velocity(Idx.IsSteadyState) );
-    IsSteadyState.DrasticChange(p,z).Velocity = IsSteadyState.Mean(p,z).Velocity - ...
-        IsSteadyState.Min(p,z).Velocity;
+    IsSteadyState.Mean(j).Velocity = mean( Raw(j).Velocity(Idx.IsRolling) );
+    IsSteadyState.Min(j).Velocity = min( Raw(j).Velocity(Idx.IsRolling) );
+    IsSteadyState.DrasticChange(j).Velocity = IIsSteadyState.Mean(j).Velocity - ...
+        IsSteadyState.Min(j).Velocity;
 
     for i = 1: numel( Idx.IsSteadyState )
         slope = SteadyState(p,z).Velocity(i+1) - SteadyState(p,z).Velocity(i);
@@ -128,6 +143,7 @@ for j = 1: numel (Rw)
     StartOfTransientStates(temp) = temp;
     end
     %}  
+    a=1;
 end
 %% Segmenting Velocity for Out Transients
 %{
