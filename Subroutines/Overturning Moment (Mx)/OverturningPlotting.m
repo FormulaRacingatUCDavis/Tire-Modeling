@@ -20,13 +20,13 @@ for p = 1 : size( Raw, 1 )
         plot3( [Raw(p,:,c).Load], rad2deg([Raw(p,:,c).Alpha]), [Raw(p,:,c).Moment], 'k.' ); hold on;
         fsurf( @(Fz, Alpha) Mx( Fz , Mesh(p,1,c).Inclination,...
             Mesh(p,1,c).Pressure, 1 , deg2rad(Alpha) ), [0 2500 -15 15] )
-%{        
+        
         xlabel( 'Normal Load ($F_{z}$) [$N$]' )
         ylabel( 'Alpha Angle ($\alpha$) [$deg$]' )
         zlabel( 'Overturning Moment ($M_{x}$) [$Nm$]' )
         title( { ['Pressure ($P_{i}$): $'    , num2str(Mesh(p,1,c).Pressure)   , '$ [$psi$]'], ...
                  ['Inclination ($\gamma$): $', num2str(Mesh(p,1,c).Inclination), '$ [$deg$]'] } )
- %}
+ 
     end
 end
 

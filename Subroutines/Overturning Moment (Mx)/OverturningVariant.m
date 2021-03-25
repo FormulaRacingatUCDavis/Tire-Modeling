@@ -6,13 +6,13 @@ qsx1  = optimvar( 'qsx1' , 'Lowerbound',  -15   , 'Upperbound',  15    );
 qsx2  = optimvar( 'qsx2' , 'Lowerbound',  -15   , 'Upperbound',  15    );
 qsx3  = optimvar( 'qsx3' , 'Lowerbound',  -15   , 'Upperbound',  15    );
 qsx4  = optimvar( 'qsx4' , 'Lowerbound',  -15   , 'Upperbound',  15    );
-qsx5  = optimvar( 'qsx5' , 'Lowerbound',  -15   , 'Upperbound',  15    );
-qsx6  = optimvar( 'qsx6' , 'Lowerbound',  -15   , 'Upperbound',  15    );
-qsx7  = optimvar( 'qsx7' , 'Lowerbound',  -15   , 'Upperbound',  15    );
-qsx8  = optimvar( 'qsx8' , 'Lowerbound',  -15   , 'Upperbound',  15    );
-qsx9  = optimvar( 'qsx9' , 'Lowerbound',  -15   , 'Upperbound',  15    );
+qsx5  = optimvar( 'qsx5' , 'Lowerbound',  1   , 'Upperbound',  15    );
+qsx6  = optimvar( 'qsx6' , 'Lowerbound',  1   , 'Upperbound',  15    );
+qsx7  = optimvar( 'qsx7' , 'Lowerbound',  1   , 'Upperbound',  15    );
+qsx8  = optimvar( 'qsx8' , 'Lowerbound',  1   , 'Upperbound',  15    );
+qsx9  = optimvar( 'qsx9' , 'Lowerbound',  1   , 'Upperbound',  15    );
 qsx10 = optimvar( 'qsx10', 'Lowerbound',  -15   , 'Upperbound',  15    );
-qsx11 = optimvar( 'qsx11', 'Lowerbound',  -15   , 'Upperbound',  15    );
+qsx11 = optimvar( 'qsx11', 'Lowerbound',  1   , 'Upperbound',  15    );
 
 ppmx1 = optimvar('ppmx1', 'Lowerbound', -15 , 'Upperbound', 15);
 
