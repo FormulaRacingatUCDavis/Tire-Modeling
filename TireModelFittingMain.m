@@ -127,6 +127,7 @@ load('C:\FSAE\GitHub\Tire-Modeling\Models\TestData_02_20_21_12_30.mat')
 % Heat Generation Modeling
 
 %% Exporting Model
+%{
 SaveModel = questdlg( 'Save Model?', '', 'Yes', 'No', 'No' );
 
 if strcmpi( SaveModel, 'Yes' )
@@ -137,3 +138,4 @@ if strcmpi( SaveModel, 'Yes' )
 end
 
 clear SaveModel
+%}

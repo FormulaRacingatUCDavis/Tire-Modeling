@@ -14,7 +14,7 @@ qsx9  = optimvar( 'qsx9' , 'Lowerbound',  -15   , 'Upperbound',  15    );
 qsx10 = optimvar( 'qsx10', 'Lowerbound',  -15   , 'Upperbound',  15    );
 qsx11 = optimvar( 'qsx11', 'Lowerbound',  -15   , 'Upperbound',  15    );
 
-ppmx1 = optimvar('ppmx1', 'Lowerbound', 0 , 'Upperbound', 15);
+ppmx1 = optimvar('ppmx1', 'Lowerbound', -15 , 'Upperbound', 15);
 
 %% Optimization Initialization
 x0.qsx1  = 0;
