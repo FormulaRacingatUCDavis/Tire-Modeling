@@ -50,7 +50,7 @@ Figure.State = 'minimized';
 % Imports and bins the FSAE TTC test data into Data and Bin structures which 
 % are utilized throughout the rest of the fitting process to select data from 
 % desired operating conditions. 
-%{
+
 TestName = {'Transient'                 , ...
             'Cornering 1'               , ...
             'Cornering 2'               , ...
@@ -103,7 +103,7 @@ Tire = PureLongitudinalFitting( Tire, Data, Bin, Figure ); % Longitudinal Force 
 Tire = PureLateralFitting( Tire, Data, Bin, Figure ); % Lateral Force ( Fyo )
 
 Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
-%}
+
 %%% Steady State, Combined Slip Force Modeling
 % This is currently undeveloped due to data limitations. Instead, combined tire forces
 % can be evaluated using the Modified-Nicolas-Comstock (MNC) Model on the pure slip 
@@ -111,8 +111,8 @@ Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
 
 %%% Steady State, Combined Slip Moment Fitting
 % Tire = CombinedAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment (Mz)
-load('C:\FSAE\GitHub\Tire-Modeling\Models\TestData_02_20_21_12_30.mat')
- Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
+
+%Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
 
 % Tire = ResistanceModeling( Tire, Data, Bin, Figure ); % Rolling Resistance (My)
 
