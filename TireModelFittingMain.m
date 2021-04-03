@@ -19,7 +19,7 @@ clc; clear; close all;
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % 
-% Last Updated: 14-Feb-2021
+% Last Updated: 4-APR-2021
 
 %% Initialization
 % Sets up the model structure and adds relevant directories for saving and 
@@ -35,7 +35,7 @@ Directory.Tool       = fileparts( matlab.desktop.editor.getActiveFilename );
 Directory.Data       = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'Tire-Data'];
 Directory.Resources  = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'MATLAB-Resources'];
 
-Directory.Model = [Directory.Tool, '\Models'];
+Directory.Model = [Directory.Tool, '\Vehicle Model Resources\Models'];
 Directory.Media = [Directory.Tool, '\Media'];
 
 addpath( genpath( Directory.Tool      ) );
@@ -127,7 +127,7 @@ Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
 % Heat Generation Modeling
 
 %% Exporting Model
-%{
+
 SaveModel = questdlg( 'Save Model?', '', 'Yes', 'No', 'No' );
 
 if strcmpi( SaveModel, 'Yes' )
@@ -138,4 +138,3 @@ if strcmpi( SaveModel, 'Yes' )
 end
 
 clear SaveModel
-%}
