@@ -79,12 +79,18 @@ scatter( Data(2).Camber, Data(2).Mu(2,:), 3, 'k.' )
 subplot(2,2,3); hold on;
 scatter( Data(2).Camber, Data(2).Temp.Tire(1,:)-Data(2).Temp.Tire(2,:) );
 
+<<<<<<< Updated upstream
 figure
 ax1 = subplot(2,1,1); hold on;
 scatter( Data(5).Temp.Tire(2,:), abs(Data(5).Mu(1,:)), 3, 'b.', ...
     'MarkerFaceAlpha', 0.05, 'MarkerEdgeAlpha', 0.01 )
 bnd = boundary( Data(5).Temp.Tire(2,:)', abs(Data(5).Mu(1,:)'), 0.5 );
 plot(  Data(5).Temp.Tire(2,bnd), abs(Data(5).Mu(1,bnd)), 'b' )
+=======
+return
+
+Tire = PureLateralFitting( Tire, Data, Bin, Figure ); % Lateral Force ( Fyo )
+>>>>>>> Stashed changes
 
 ax2 = subplot(2,1,2); hold on;
 scatter( Data(2).Temp.Tire(2,:), abs(Data(2).Mu(2,:)), 3, 'b.', ...
