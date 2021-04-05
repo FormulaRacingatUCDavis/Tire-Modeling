@@ -38,6 +38,22 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
 % 
 % Last Updated: 2-Apr-2021
 
+%%% Test Case
+if nargin == 0
+    Tire = load('Models/TestTire.m');
+    
+    SlipAngle = 5;
+    SlipRatio = 0.05;
+    
+    NormalLoad = 1000;
+    Pressure = 70;
+    Inclination = 1;
+    Velocity = 10;
+    
+    Idx = 1;
+    Model = struct( 'Pure', 'Pacejka', 'Combined', 'MNC' );
+end
+
 %%% Model Compatibility Check
 if ~ismember(Model.Pure, {'Linear', 'Pacejka'})
     error('Please choose either ''Linear'' or ''Pacejka'' for the pure slip model')
