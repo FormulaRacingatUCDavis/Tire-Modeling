@@ -17,10 +17,10 @@ function [ Variant, Tire ] = PureLongitudinalVariant( Tire, Raw, Response )
 x0 = Response.x0;
 
 %% Optimization Variables
-pcx1 = optimvar( 'pcx1', 'Lowerbound',  0.9 , 'Upperbound',  1.1 );
+pcx1 = optimvar( 'pcx1', 'Lowerbound',  0.5 , 'Upperbound',  1.5 );
 
-pdx1 = optimvar( 'pdx1', 'Lowerbound',  0   , 'Upperbound',  2.5 );
-pdx2 = optimvar( 'pdx2', 'Lowerbound',-Inf  , 'Upperbound',- 0.1 );
+pdx1 = optimvar( 'pdx1', 'Lowerbound',  0   , 'Upperbound',  x0.pdx1 );
+pdx2 = optimvar( 'pdx2', 'Lowerbound',- 5   , 'Upperbound',- 0.1 );
 pdx3 = optimvar( 'pdx3', 'Lowerbound',  0   , 'Upperbound',  5   );
 
 pex1 = optimvar( 'pex1', 'Lowerbound',- 5   , 'Upperbound',  5   );
@@ -28,8 +28,8 @@ pex2 = optimvar( 'pex2', 'Lowerbound',- 5   , 'Upperbound',  5   );
 pex3 = optimvar( 'pex3', 'Lowerbound',- 2   , 'Upperbound',  5   );
 pex4 = optimvar( 'pex4', 'Lowerbound',- 5   , 'Upperbound',  5   );
 
-pkx1 = optimvar( 'pkx1', 'Lowerbound',  0   , 'Upperbound', Inf  );
-pkx2 = optimvar( 'pkx2', 'Lowerbound',-Inf  , 'Upperbound', Inf  );
+pkx1 = optimvar( 'pkx1', 'Lowerbound',  0   , 'Upperbound', 25   );
+pkx2 = optimvar( 'pkx2', 'Lowerbound',- 0.1 , 'Upperbound',  0.1 );
 pkx3 = optimvar( 'pkx3', 'Lowerbound',- 5   , 'Upperbound',  5   );
 
 phx1 = optimvar( 'phx1', 'Lowerbound',- 5   , 'Upperbound',  5   );
@@ -53,14 +53,14 @@ Obj = fcn2optimexpr( @ErrorFyo, pcx1, ...
     ppx1, ppx2, ppx3, ppx4 );
 
 %% Optimization Constraint
-Constr(1) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, 0,  1 ) <= 0.95;
-Constr(2) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, 0, -1 ) <= 0.95;
+Constr(1) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, 0,  1 ) <= 0.99;
+Constr(2) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, 0, -1 ) <= 0.99;
 
-Constr(3) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, -1,  1 ) <= 0.95;
-Constr(4) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, -1, -1 ) <= 0.95;
+Constr(3) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, -1,  1 ) <= 0.99;
+Constr(4) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, -1, -1 ) <= 0.99;
 
-Constr(5) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, -pex2./(2*pex3),  1 ) <= 0.95;
-Constr(6) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, -pex2./(2*pex3), -1 ) <= 0.95;
+Constr(5) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, -pex2./(2*pex3),  1 ) <= 0.99;
+Constr(6) = fcn2optimexpr( @ExBound, pex1, pex2, pex3, pex4, -pex2./(2*pex3), -1 ) <= 0.99;
 
 %% Solving Optimization Problem
 [Variant.Solution, Variant.Log] = Runfmincon( Obj, x0, Constr, 3 );
@@ -153,7 +153,7 @@ Tire.Pacejka.p.P.x(4) = Variant.Solution.ppx4;
     end
 
     function Ex = ExBound( pex1, pex2, pex3, pex4, dFz, Sign )
-        if dFz > 0 | dFz < -1
+        if dFz > 0 || dFz < -1
             Ex = 0;
         else
             Ex = ( pex1 + pex2.*dFz + pex3.*dFz.^2 ) .* ( 1 + pex4 .* sign(Sign) );
