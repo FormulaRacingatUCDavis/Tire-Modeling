@@ -19,7 +19,7 @@ clc; clear; close all;
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % 
-% Last Updated: 4-APR-2021
+% Last Updated: 5-Apr-2021
 
 %% Initialization
 % Sets up the model structure and adds relevant directories for saving and 
@@ -92,7 +92,7 @@ ModelName = inputdlg( sprintf('%s\n%s','Enter Tire Model Name in Following Forma
     '{Manufacturer} {Compound} {Diameter}x{Width}-{Rim Diameter}x{Rim Width}'), ...
     '', 1, {'Tire'} );
 
-Tire = FRUCDTire( ModelName{1}, [Data.Source], []);
+Tire = TireParameters( ModelName{1}, [Data.Source], []);
 
 clear ModelName
 
@@ -112,7 +112,7 @@ Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
 %%% Steady State, Combined Slip Moment Fitting
 % Tire = CombinedAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment (Mz)
 
-%Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
+% Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
 
 % Tire = ResistanceModeling( Tire, Data, Bin, Figure ); % Rolling Resistance (My)
 
@@ -121,13 +121,12 @@ Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
 
 %% Radial Deflection Modeling
 %%% Vertical Stiffness Modeling
-%Tire = RadialDeflection( Tire, Data ); % Radial Deflection (Re, Rl)
+% Tire = RadialDeflection( Tire, Data ); % Radial Deflection (Re, Rl)
 
 %% Thermal Modeling
 % Heat Generation Modeling
 
 %% Exporting Model
-
 SaveModel = questdlg( 'Save Model?', '', 'Yes', 'No', 'No' );
 
 if strcmpi( SaveModel, 'Yes' )
