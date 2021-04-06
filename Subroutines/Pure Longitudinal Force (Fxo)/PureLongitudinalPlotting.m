@@ -4,50 +4,58 @@ function PureLongitudinalPlotting( Tire, Raw, Mesh, Nominal, ~, ~, Figure )
 %% Evaluate Variant
 [Dx, Ex, Kxk, Vx, Hx, Fxo] = VariantEval( Tire );
 
+Pressure    = unique( [Mesh.Pressure]    );
+Load        = unique( [Mesh.Load]        );
+Inclination = unique( [Mesh.Inclination] );
 %% Nominal Plotting
-for p = 1 : size( Nominal, 1 )
+for p = 1 : numel( Pressure )
     Figure.Fxo.Nominal(p) = figure( ...
-        'Name'       , ['Longitudinal Nominal Fits, P=', num2str(Mesh(p,1,1).Pressure), ' [psi]'], ...
-        'NumberTitle', 'off', ...
-        'Visible'    , 'on' );
+        'Name'       , ['Longitudinal Nominal Fits, P=', num2str(Pressure(p)), ' [psi]'], ...
+        'NumberTitle', 'off' , ...
+        'Visible'    , 'on'  );
+end
+
+for i = 1 : numel( Nominal )
+    p = find( Mesh(i).Pressure    == Pressure    );
+    z = find( Mesh(i).Load        == Load        );
+    c = find( Mesh(i).Inclination == Inclination );
+   
+    figure( Figure.Fxo.Nominal(p) )
+   
+    subplot( numel(Inclination), numel(Load), ...
+        sub2ind( [numel(Load), numel(Inclination)], z, c ) );
     
-    for z = 1 : size( Nominal, 2 )
-        for c = 1 : size( Nominal, 3 )
-            subplot( size( Nominal, 3 ), size( Nominal, 2 ), ...
-                sub2ind( [size( Nominal, 2 ), size( Nominal, 3 )], z, c ) );
-        
-            plot( Raw(p,z,c).Slip, Raw(p,z,c).Force, 'k.' ); hold on;
-            
-            fplot( NominalEval( Nominal(p,z,c).C, Nominal(p,z,c).D, ...
-                Nominal(p,z,c).E, Nominal(p,z,c).K, ...
-                Nominal(p,z,c).H, Nominal(p,z,c).V ), ...
-                [-0.25 0.25], 'g-.' )
-            fplot( @(Slip) Fxo( Mesh(p,z,c).Pressure, Mesh(p,z,c).Load, ...
-                Mesh(p,z,c).Inclination, Slip), [-0.25 0.25], 'g' )
-            
-            plot( Raw(p,z,c).Slip, Nominal(p,z,c).Residual, 'r.')
-            plot( Raw(p,z,c).Slip, Raw(p,z,c).Force - ...
-                Fxo( Mesh(p,z,c).Pressure   , Mesh(p,z,c).Load, ...
-                     Mesh(p,z,c).Inclination, Raw(p,z,c).Slip), 'y.')
-                 
-            xlabel( 'Slip Ratio ($\kappa$) [ ]' )
-            ylabel( 'Longitudinal Force ($F_{x}$) [$N$]' )
-            title( { ['Normal Load ($F_{z}$): $', num2str(round(Mesh(p,z,c).Load,1)), '$ [$N$]'], ...
-                ['Inclination ($\gamma$): $', num2str(Mesh(p,z,c).Inclination), '$ [$deg$]'] } )
-            
-            if all([p z c] == ones(3,1))
-                legend( {'Raw Data', 'Nominal Fit', 'Variant Fit',...
-                    'Nominal Residual', 'Variant Residual'} )
-            end
-        end
+    plot( Raw(i).Slip, Raw(i).Force, 'k.' ); hold on;
+    
+    fplot( NominalEval( Nominal(i).C, Nominal(i).D, Nominal(i).E, ...
+        Nominal(i).K, Nominal(i).H, Nominal(i).V ), [-0.25 0.25], 'g-.' )
+    fplot( @(Slip) Fxo( Mesh(i).Pressure, Mesh(i).Load, ...
+        Mesh(i).Inclination, Slip ), [-0.25 0.25], 'g' )
+
+    plot( Raw(i).Slip, Nominal(i).Residual, 'r.')
+    plot( Raw(i).Slip, Raw(i).Force - ...
+        Fxo( Mesh(i).Pressure   , Mesh(i).Load, ...
+             Mesh(i).Inclination, Raw(i).Slip), 'y.')
+
+    xlabel( 'Slip Ratio ($\kappa$) []' )
+    ylabel( 'Longitudinal Force ($F_{y}$) [$N$]' )
+    title( { ['Normal Load ($F_{z}$): $', num2str(round(Mesh(i).Load,1)), '$ [$N$]'], ...
+        ['Inclination ($\gamma$): $', num2str(Mesh(i).Inclination), '$ [$deg$]'] } )
+
+    if all([z c] == ones(3,1))
+        legend( {'Raw Data', 'Nominal Fit', 'Variant Fit',...
+                 'Nominal Residual', 'Variant Residual'} )
     end
+end
+
+for p = 1 : numel( Pressure )
+    figure( Figure.Fxo.Nominal(p) )  
     
     sgtitle( {'Nominal P6 Pacejka Fits', ...
-        ['Pressure ($P_{i}$): $', num2str(Mesh(p,1,1).Pressure), '$ [$psi$]'] } )
+        ['Pressure ($P_{i}$): $', num2str(Mesh(i).Pressure), '$ [$psi$]'] } )
     
     Figure.Fxo.Nominal(p).WindowState = Figure.State;
 end
-
 %% Response Surface Plotting
 if strcmpi( Figure.Mode, 'Debug' )
     Figure.Fxo.Response = figure( ...
@@ -106,27 +114,30 @@ if strcmpi( Figure.Mode, 'Debug' )
 end
 
 %% Variant Plotting
-Figure.Fxo.Variant = figure( 'Name', 'Longitudinal Force Surfaces', 'NumberTitle', 'off', 'Visible', 'on');
+Figure.Fxo.Surfaces = figure( 'Name'       , 'Longitudinal Force Surfaces', ...
+                              'NumberTitle', 'off', ...
+                              'Visible'    , 'on' );
 
-for p = 1 : size( Raw, 1 )
-    for c = 1 : size( Raw, 3 )
-        subplot( size( Raw, 3 ), size( Raw, 1 ), ...
-            sub2ind( [size( Raw, 1 ), size( Raw, 3 )], p, c ) );
+for i = 1 : numel( Nominal )
+    p = find( Mesh(i).Pressure    == Pressure    );
+    c = find( Mesh(i).Inclination == Inclination );
+   
+    subplot( numel(Inclination), numel(Pressure), ...
+        sub2ind( [numel(Pressure), numel(Inclination)], p, c ) );
+    
+    plot3( [Raw(i).Load], [Raw(i).Slip], [Raw(i).Force], 'k.' ); hold on;
+    fsurf( @(Fz, Slip) Fxo( Mesh(i).Pressure, Fz, ...
+        Mesh(i).Inclination, Slip ), [0 2500 -0.25 0.25] )
         
-        plot3( [Raw(p,:,c).Load], [Raw(p,:,c).Slip], [Raw(p,:,c).Force], 'k.' ); hold on;
-        fsurf( @(Fz, Slip) Fxo( Mesh(p,1,c).Pressure, Fz, ...
-            Mesh(p,1,c).Inclination, Slip ), [0 2500 -0.25 0.25] )
-        
-        xlabel( 'Normal Load ($F_{z}$) [$N$]' )
-        ylabel( 'Slip Ratio ($\kappa$) [ ]' )
-        zlabel( 'Longitudinal Force ($F_{x}$) [$N$]' )
-        title( { ['Pressure ($P_{i}$): $', num2str(Mesh(p,1,c).Pressure), '$ [$psi$]'], ...
-                ['Inclination ($\gamma$): $', num2str(Mesh(p,1,c).Inclination), '$ [$deg$]'] } )
-    end
+    xlabel( 'Normal Load ($F_{z}$) [$N$]' )
+    ylabel( 'Slip Ratio ($\kappa$) [$[]$]' )
+    zlabel( 'Longitudinal Force ($F_{x}$) [$N$]' )
+    title( { ['Pressure ($P_{i}$): $'    , num2str(Mesh(i).Pressure)   , '$ [$psi$]'], ...
+             ['Inclination ($\gamma$): $', num2str(Mesh(i).Inclination), '$ [$deg$]'] } )
 end
 
 sgtitle( 'Pure Longitudinal MF6.1 Pacejka Fit' )
-Figure.Fxo.Variant.WindowState = Figure.State;
+Figure.Fxo.Surfaces.WindowState = Figure.State;
 
 %% Local Functions
     function Fxo = NominalEval( C, D, E, K, H, V )
