@@ -21,7 +21,7 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
 %       .Combined - (char)        Combined Slip Model {'Pure', 'MNC', 'Pacejka'}
 %
 % Outputs:
-%   Fx - (n,1 numeric) Longitudinal Force {F_x} [N]
+%   Fx - (n,1 numeric) Longitudinal (Tractive) Force {F_x} [N]
 %   Fy - (n,1 numeric) Lateral Force      {F_y} [N]
 %   Mz - (n,1 numeric) Aligning Moment    {M_z} [N-m]
 %   Mx - (n,1 numeric) Overturning Moment {M_x} [N-m]
@@ -52,6 +52,14 @@ if nargin == 0
     
     Idx = 1;
     Model = struct( 'Pure', 'Pacejka', 'Combined', 'MNC' );
+    
+    [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
+        SlipAngle, SlipRatio, ...
+        NormalLoad, Pressure, Inclination, Velocity, ...
+        Idx, Model );
+    
+    warning('Executing SlipEstimation() Test Case')
+    return;
 end
 
 %%% Model Compatibility Check

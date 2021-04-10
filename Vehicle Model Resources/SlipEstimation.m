@@ -6,18 +6,18 @@ function [SlipAngle, SlipRatio, TireVel] = SlipEstimation( ...
 % handful of tire states.
 % 
 % Inputs:
-%   LongVel   - (1,1 numeric) Longitudinal Velocity [m/s]
-%   LatVel    - (1,1 numeric) Lateral Velocity      [m/s]
-%   YawVel    - (1,1 numeric) Yaw Rate              [rad/s]
-%   TirePos   - (n,3 numeric) [x,y,0] Tire Position [m]
-%   Steer     - (n,1 numeric) Tire Steer Angle      [deg]
-%   SpinRate  - (n,1 numeric) Tire Spin Rate        [rad/s]
-%   EffRadius - (n,1 numeric) Tire Effective Radius [m]
+%   LongVel   - (1,1 numeric) Longitudinal Velocity {x_dot}   [m/s]
+%   LatVel    - (1,1 numeric) Lateral Velocity      {y_dot}   [m/s]
+%   YawVel    - (1,1 numeric) Yaw Rate              {psi_dot} [rad/s]
+%   TirePos   - (n,3 numeric) [x,y,0] Tire Position {p}       [m]
+%   Steer     - (n,1 numeric) Tire Steer Angle      {delta}   [deg]
+%   SpinRate  - (n,1 numeric) Tire Spin Rate        {omega}   [rad/s]
+%   EffRadius - (n,1 numeric) Tire Effective Radius {r_e}     [m]
 % 
 % Outputs:
-%   SlipAngle - (n,1 numeric) Tire Slip Angle      [deg]
-%   SlipRatio - (n,1 numeric) Tire Slip Ratio      [ ]
-%   TireVel   - (n,1 numeric) Tire Center Velocity [m/s]
+%   SlipAngle - (n,1 numeric) Tire Slip Angle      {alpha} [deg]
+%   SlipRatio - (n,1 numeric) Tire Slip Ratio      {kappa} [ ]
+%   TireVel   - (n,1 numeric) Tire Center Velocity {v_c}   [m/s]
 %
 % Notes:
 %   Typically n=4; however, may be vectorized by stacking rows.
@@ -31,15 +31,29 @@ function [SlipAngle, SlipRatio, TireVel] = SlipEstimation( ...
 if nargin == 0
     LongVel = 10;
     LatVel = 2;
-    YawVel = 0.05;
-    TirePos = [0.84 0.66 0; 0.84 -0.66 0; -0.67 0.66 0; -0.67 -0.66 0];
+    YawVel = 0.1;
+    TirePos = [ 0.84  0.66 0; ...
+                0.84 -0.66 0; ...
+               -0.67  0.66 0; ...
+               -0.67 -0.66 0];
     
     Steer = [25; 20; -0.5; 0.5];
     
-    SpinRate = 80 .* ones(4,1);
+    SpinRate = 100 .* ones(4,1);
     EffRadius = 0.19 .* ones(4,1);
     
-    warning('Executing SlipEstimation() Test Case')
+    [SlipAngle, SlipRatio, TireVel] = SlipEstimation( ...
+        LongVel, LatVel, YawVel, TirePos, Steer, SpinRate, EffRadius);
+
+    fprintf('Executing SlipEstimation() Test Case: \n');
+    for i = 1:numel(SlipAngle)
+        fprintf('   Instance %i: \n', i);
+        fprintf('      alpha = %5.2f [deg] \n', SlipAngle(i));
+        fprintf('      kappa = %5.2f [ ] \n', SlipRatio(i));
+        fprintf('      v_c   = %5.2f [m/s] \n', TireVel(i));
+    end
+    
+    return;
 end
 
 %%% Number of Evaluations
