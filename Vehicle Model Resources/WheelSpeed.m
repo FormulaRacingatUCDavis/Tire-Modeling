@@ -1,5 +1,5 @@
 function [InputTorque, SpinAcc] = WheelSpeed( SpinRate,DriveTorque, ...
-    BrakeTorque, TractiveForce, EffRadius, Inertia, Damping, DifferentialEffec )
+    BrakeTorque, TractiveForce, EffRadius, Inertia, Damping )
 
 %% WheelSpeed - Wheel Torque Balance & Spin Acceleration
 % Calculates brake or drive torque required for steady state applications
@@ -24,49 +24,58 @@ function [InputTorque, SpinAcc] = WheelSpeed( SpinRate,DriveTorque, ...
 %
 % Author(s): 
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
-%Joseph Sanchez (jomsanchez@ucdavis.edu) [Sep 2020 - June 2022]
+% Joseph Sanchez     (jomsanchez@ucdavis.edu)     [Sep 2020 - Jun 2022]
+
 % Last Updated: 10-Apr-2021
 
-%%% Test Cases
+%% Test Cases
 if nargin == 0
     %%% Test Inputs
-    SpinRate = 80*ones(1,4); 
+    SpinRate = 20:20:100; 
     
-    DriveTorque = 20*ones(1,4); 
-    BrakeTorque = 0*ones(1,4); 
+    DriveTorque = 20*ones(size(SpinRate)); 
+    BrakeTorque = 0*ones(size(SpinRate)); 
     
-    TractiveForce = 300*ones(1,4);
-    EffRadius     = 0.19;
+    TractiveForce = 300*ones(size(SpinRate));
+    EffRadius     = 0.19*ones(size(SpinRate));
     
-    Inertia = 1;
-    Damping = 1;
-    DifferentialEffec = 1; 
- 
-    [InputTorque, SpinAcc] = WheelSpeed( SpinRate, DriveTorque, BrakeTorque, ...
-        TractiveForce, EffRadius, Inertia, Damping, DifferentialEffec);
-
-    fprintf('Executing WheelSpeed() Test Case: \n');
+    Inertia = 0.148;
+    Damping = 0.01;
+    
+    fprintf('Executing WheelSpeed() Test Cases: \n');
+    
+    %%% Steady State Test Cases
+    [InputTorque, ~] = WheelSpeed( SpinRate, [], [], ...
+        TractiveForce, EffRadius, Inertia, Damping );
+    
+    for i = 1:numel(InputTorque)
+        fprintf('   Steady State Instance %i: \n', i);
+        fprintf('      tau_i = %5.2f [N-m] \n', InputTorque(i));
+    end
+    
+    %%% Transient Test Cases
+    [~, SpinAcc] = WheelSpeed( SpinRate, DriveTorque, BrakeTorque, ...
+        TractiveForce, EffRadius, Inertia, Damping );  
+    
     for i = 1:numel(SpinAcc)
-        fprintf('   Instance %i: \n', i);
+        fprintf('   Transient Instance %i: \n', i);
         fprintf('      omega_dot = %5.2f [rad/s^2] \n', SpinAcc(i));
-
     end
     
      return;   
 end
 
-n = numel(SpinRate);
-SpinAcc = zeros(1,n);
-
-for i = 1:n
-
-SpinAcc(1:i) = (DifferentialEffec*DriveTorque(1:i) - ...
-    TractiveForce(1:i)*EffRadius - BrakeTorque(1:i) - ...
-    SpinRate(1:i)*Damping).*(1/Inertia);
-
-end
-
-InputTorque = 1;
-
+%% Computation
+if isempty( DriveTorque ) || isempty( BrakeTorque )
+    %%% Steady State Input Torque
+    InputTorque = TractiveForce.*EffRadius + Damping.*SpinRate;
+        
+    SpinAcc = NaN;
+else
+    %%% Transient Spin Acceleration
+    SpinAcc = ( DriveTorque - TractiveForce.*EffRadius - BrakeTorque - ...
+        Damping.*SpinRate ) ./ Inertia;
+    
+    InputTorque = NaN;
 end
 
