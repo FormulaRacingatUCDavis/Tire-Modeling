@@ -38,7 +38,7 @@ for i = 1 : numel( Nominal )
              Mesh(i).Inclination, Raw(i).Slip), 'y.')
 
     xlabel( 'Slip Ratio ($\kappa$) []' )
-    ylabel( 'Longitudinal Force ($F_{y}$) [$N$]' )
+    ylabel( 'Longitudinal Force ($F_{x}$) [$N$]' )
     title( { ['Normal Load ($F_{z}$): $', num2str(round(Mesh(i).Load,1)), '$ [$N$]'], ...
         ['Inclination ($\gamma$): $', num2str(Mesh(i).Inclination), '$ [$deg$]'] } )
 
@@ -130,7 +130,7 @@ for i = 1 : numel( Nominal )
         Mesh(i).Inclination, Slip ), [0 2500 -0.25 0.25] )
         
     xlabel( 'Normal Load ($F_{z}$) [$N$]' )
-    ylabel( 'Slip Ratio ($\kappa$) [$[]$]' )
+    ylabel( 'Slip Ratio ($\kappa$) []' )
     zlabel( 'Longitudinal Force ($F_{x}$) [$N$]' )
     title( { ['Pressure ($P_{i}$): $'    , num2str(Mesh(i).Pressure)   , '$ [$psi$]'], ...
              ['Inclination ($\gamma$): $', num2str(Mesh(i).Inclination), '$ [$deg$]'] } )
