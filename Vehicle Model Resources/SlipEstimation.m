@@ -27,7 +27,7 @@ function [SlipAngle, SlipRatio, TireVel] = SlipEstimation( ...
 %
 % Last Updated: 1-Apr-2021
 
-%%% Test Case
+%% Test Cases
 if nargin == 0
     LongVel = 10;
     LatVel = 2;
@@ -45,7 +45,7 @@ if nargin == 0
     [SlipAngle, SlipRatio, TireVel] = SlipEstimation( ...
         LongVel, LatVel, YawVel, TirePos, Steer, SpinRate, EffRadius);
 
-    fprintf('Executing SlipEstimation() Test Case: \n');
+    fprintf('Executing SlipEstimation() Test Cases: \n');
     for i = 1:numel(SlipAngle)
         fprintf('   Instance %i: \n', i);
         fprintf('      alpha = %5.2f [deg] \n', SlipAngle(i));
@@ -56,6 +56,7 @@ if nargin == 0
     return;
 end
 
+%% Computation
 %%% Number of Evaluations
 n = numel(Steer);
 
