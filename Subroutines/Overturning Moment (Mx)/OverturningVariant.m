@@ -1,6 +1,21 @@
 function [Variant, Tire] = OverturningVariant(Raw, Tire)
 %% Overturning Variant = Fits q and p parameters from Overturning Equation
+% Performs Fitting Process on q and p parameters for Overturning Moment
+% referenced in Pacejka's "Tire and Vehicle Dynamics" 3rd Edition in
+% Section 4.3.2. This will use a contrained fitting process in finding a
+% local minima using the fmincon function (although no contraints are used)
 
+% Inputs
+%   Raw     - Allocated Data
+%   Tire    - Tire Model
+
+% Outputs
+%   Variant - Parameters for Overturning Equation
+%   Tire    - Updated Tire Model
+
+% Authors
+% Carlos Lopez (calopez@ucdavis.edu) [Dec 2020 - June 2022]
+% Last Updated: 17- APR - 2021
 %% Optimization Variables
 qsx1  = optimvar( 'qsx1' , 'Lowerbound',-10   , 'Upperbound', 10    );
 qsx2  = optimvar( 'qsx2' , 'Lowerbound',- 5   , 'Upperbound',  5    );
@@ -58,8 +73,6 @@ Tire.Pacejka.q.S.x(10) = Variant.Solution.qsx10 ;
 Tire.Pacejka.q.S.x(11) = Variant.Solution.qsx11 ;
 
 Tire.Pacejka.p.p.mx(1) = Variant.Solution.ppmx1 ;
-
-
 
 %% Local Functions
     function [Solution, Log] = Runfmincon( Obj, x0, Constr, n )

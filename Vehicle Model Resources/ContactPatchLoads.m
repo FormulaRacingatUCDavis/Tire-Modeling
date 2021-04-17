@@ -36,7 +36,7 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % 
-% Last Updated: 2-Apr-2021
+% Last Updated: 16-Apr-2021
 
 
 %%% Test Case
@@ -62,7 +62,7 @@ if nargin == 0
         NormalLoad, Pressure, Inclination, Velocity, ...
         Idx, Model );
     
-    %{
+  %{  
 figure
     subplot(2,3,1)
     mesh( SlipRatio, NormalLoad, Fx )

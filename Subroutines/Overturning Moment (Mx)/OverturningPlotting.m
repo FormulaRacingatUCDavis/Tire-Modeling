@@ -4,6 +4,20 @@ function [] = OverturningPlotting(Mesh, Raw, Variant, Tire, Figure )
 % equations given in Pacejka's "Tire and Vehicle Dynamics" [3rd Edition] in
 % section 4.3.2 (page 176). 
 
+% Inputs 
+%   Mesh    - Operating Condition Space
+%   Raw     - Allocated Data
+%   Variant - Parameter Fit Values for Pacejka Coefficients
+%   Tire    - Tire Model
+%   Figure  - Stores Model Figures
+
+% Outputs
+%  Surface Plots of Overturning Fitting
+
+% Authors:
+% Carlos Lopez (calopez@ucdavis.edu) [Dec 2020 - June 2022]
+
+% Last Updated: 17- APR - 2021
 %% Evaluate Variant Surface
 [Mx] = VariantEval( Tire );
 
