@@ -21,7 +21,7 @@ function Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure )
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Leonardo Howard    (leohoward@ucdavis.edu     ) [Feb 2021 -         ]
 % 
-% Last Updated: 13-Mar-2021
+% Last Updated: 16-Apr-2021
 
 %% Operating Condition Space
 Case.Pressure    = Bin(1).Values.Pressure;    % Pressure Bin Values Storage
@@ -52,14 +52,16 @@ for p = 1 : numel( Case.Pressure )
         if numel( Idx.Valid ) < 50
             continue % Skip Sparse Bins
         end
-
+        
+        Raw(p,z).Time       = Data(1).Time(Idx.Valid);          % Allocate Time Data
         Raw(p,z).Slip       = Data(1).Slip.Angle(Idx.Valid);    % Allocate Slip Angle Data
         Raw(p,z).Force      = Data(1).Force(2,Idx.Valid);       % Allocate Lateral Force Data
+        Raw(p,z).Moment     = Data(1).Moment(3,Idx.Valid);      % Allocate Aligning Moment Data
+        
         Raw(p,z).Velocity   = Data(1).Velocity(Idx.Valid);      % Allocate Velocity Data
-
-        Raw(p,z).Pressure   = Data(1).Pressure(Idx.Valid);      % Allocate Pressure Data
         Raw(p,z).Load       = Data(1).Force(3,Idx.Valid);       % Allocate Normal Force Data
-
+        Raw(p,z).Pressure   = Data(1).Pressure(Idx.Valid);      % Allocate Pressure Data
+        
         Raw(p,z).dFz        = (Raw(p,z).Load     - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo;
         Raw(p,z).dPi        = (Raw(p,z).Pressure - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
     end
@@ -69,108 +71,37 @@ end
 Mesh(    ind2sub(size(Raw), find(cellfun(@isempty, {Raw.dFz}))) ) = [];
 Raw(     ind2sub(size(Raw), find(cellfun(@isempty, {Raw.dFz}))) ) = [];
 
-%% Velocity Thresholding, 
-for j = 1: numel (Raw)
-    Idx.IsRolling = find( Raw(j).Velocity > ( Bin(1).Tolerance.Velocity ./ 3 ) );   
+%% Velocity Thresholding
+for j = 1 : numel(Raw)
+    Idx.IsRolling = find( Raw(j).Velocity > ( Bin(1).Tolerance.Velocity ./ 3 ) ); 
+    
+%% Segmenting Velocity Based on Peak Locations
+    [~, Idx.Breaks] = ...
+        findpeaks( diff(Idx.IsRolling), 'NPeaks', 6, ...
+        'MinPeakDistance', ( length( Raw(j).Velocity(Idx.IsRolling) ) ./ 10 ) );
+    
+    for k = 1 : numel(Idx.Breaks)  
+        if k < numel(Idx.Breaks)   
+            IdxInterval(k) = Idx.Breaks(k+1) - Idx.Breaks(k);
+        end 
+    end 
+    
+    Idx.NewBreaks = Idx.Breaks( IdxInterval < mean( IdxInterval ) ); %need change in naming to appropriate!
+    
+    for k = 1 : numel(Idx.NewBreaks)  
+        Response(j,k).Idx = Idx.IsRolling( Idx.NewBreaks(k)+1 : ...
+            Idx.Breaks( find( Idx.Breaks == Idx.NewBreaks(k) )+1 ) );
+        
+        Response(j,k).Time      = Raw(j).Time( Response(j,k).Idx );      % Allocate Transient Time Data
+        Response(j,k).Slip      = Raw(j).Slip( Response(j,k).Idx );      % Allocate Transient Slip Angle Data
+        Response(j,k).Force     = Raw(j).Force( Response(j,k).Idx );     % Allocate Transient Force Data
+        Response(j,k).Moment    = Raw(j).Moment( Response(j,k).Idx );    % Allocate Transient Moment Data
+        
+        Response(j,k).Velocity  = Raw(j).Velocity( Response(j,k).Idx );  % Allocate Transient Velocity Data
+        Response(j,k).Load      = Raw(j).Load( Response(j,k).Idx );      % Allocate Transient Normal Force Data
+        Response(j,k).Pressure  = Raw(j).Pressure( Response(j,k).Idx );  % Allocate Transient Pressure Data
+    end
 end
-%% Segmenting Velocity Based on Slope and Time Duration
-for j = 1: numel (Raw)   
-    %currently writing different for loops to divide steps
-    
-    %plot(diff(Idx.IsRolling)) to identify where velocity is changing drastically
-    %scatter(Idx.IsRolling, Raw(j).Force(Idx.IsRolling) ./ Raw(j).Load(Idx.IsRolling)) )
-    %to get a look at normalized force where this occur
-    
-    MinPeakProminenceScalarValue = mean( Raw(j).Velocity(Idx.IsRolling) - ...
-        ( Bin(1).Tolerance.Velocity ./ 3 ) );
-   
-    [pk, lc] = findpeaks(Raw(j).Velocity(Idx.IsRolling), Idx.IsRolling, ...
-        'MinPeakProminence', MinPeakProminenceScalarValue);
-    
-    for i = 1: numel(pk)
-        if (i+1) <= numel(pk)
-            if pk(i) == pk(i+1)
-                pk(i+1) = [];
-                lc(i+1) = [];
-            end
-        end
-    end
-    
-    for i = 1: numel(lc)
-        if (i+1) <= numel(lc)
-            NumberOfVelocityDataPoints(i) = lc(i+1) - lc(i);
-        end
-    end
-    
-    %last edit note: next step is to find out how to find index of
-    %transients based on lc
-    MeanVelocityDataPoint = mean( NumberOfVelocityDataPoints );
-    Idx.TransientStart = lc(find( NumberOfVelocityDataPoints < MeanVelocityDataPoint ));
-    
-    %{
-    locating the beginning of change in velocities (represented by 
-    first-order delays) through difference in the y-axis coordinate 
-    (drastic change compared to the overall of the graph).
-    %}
-    
-    %{
-    IsSteadyState.Mean(j).Velocity = mean( Raw(j).Velocity(Idx.IsRolling) );
-    IsSteadyState.Min(j).Velocity = min( Raw(j).Velocity(Idx.IsRolling) );
-    IsSteadyState.DrasticChange(j).Velocity = IIsSteadyState.Mean(j).Velocity - ...
-        IsSteadyState.Min(j).Velocity;
 
-    for i = 1: numel( Idx.IsSteadyState )
-        slope = SteadyState(p,z).Velocity(i+1) - SteadyState(p,z).Velocity(i);
-    
-        if slope > IsSteadyState.DrasticChange.Velocity
-            StartOfDrasticChangeInVelocity(i) = i; %error here
-        end
-    end
-    %}
-        
-    %{
-    time duration can be found by finding the difference between the
-    previous beginning point and the next beginning point. Time
-    duration that exceeds the average will be get rid of, leaving
-    changes in velocities where transient-states occur
-    %}
-    
-    %{
-    for temp = 1: numel( StartOfDrasticChangeInVelocity )
-    NumberOfDataPointsDuringSteadyState = ...
-    StartOfDrasticChangeInVelocity(temp+1) - StartOfDrasticChangeInVelocity(temp);
-    if NumberOfDataPointsDuringSteadyState < mean( NumberOfDataPointsDuringSteadyState )
-    StartOfTransientStates(temp) = temp;
-    end
-    %}  
-    a=1;
-end
-%% Segmenting Velocity for Out Transients
-%{
-%%%will be decided whether this step is necessary or not
-for p = 1 : numel( Case.Pressure )       
-    for z = 1 : numel( Case.Load )
-        %{
-        from the chosen points indicating beginning of change in velocities, outs of 
-        the transient-states can be distinguished from the backs through 
-        finding the point of maximum y-coordinate before having a negative 
-        slope. (probably use diff() from one point to another to find the 
-        slope and if negative, stop processing data and indicate 
-        previously-calculated as "final" point of transient-state
-        %}
-                
-        %{
-        for more precise modeling, few iterations after the "final" point
-        of transient-state will be included for plotting 
-        %}
-        
-        %{
-        keep in mind to include first velocity data points that are beyond
-        defined threshold when modeling
-        %}
-        b=1;
-    end
-end
-%}
 %% Plotting Function
-RelaxationLengthPlotting( Tire, Raw, Mesh, Figure );
+RelaxationLengthPlotting( Tire, Raw, Response, Idx, Mesh, Figure );
