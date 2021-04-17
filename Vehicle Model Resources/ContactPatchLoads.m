@@ -36,19 +36,23 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % 
-% Last Updated: 2-Apr-2021
+% Last Updated: 16-Apr-2021
+
 
 %%% Test Case
 if nargin == 0
-    Tire = load('Models/TestTire.m');
+    load('Tire-Modeling\Vehicle Model Resources\Models\TestTire.mat');
     
-    SlipAngle = 5;
-    SlipRatio = 0.05;
+    SlipAngle = -20:0.5:20;
+    SlipRatio = linspace(-0.75,0.75,numel(SlipAngle));
     
-    NormalLoad = 1000;
+    NormalLoad = 650;
     Pressure = 70;
     Inclination = 1;
     Velocity = 10;
+    
+    [SlipRatio, SlipAngle ] = meshgrid( SlipRatio, SlipAngle );
+    %[SlipRatio, NormalLoad] = meshgrid( SlipRatio, NormalLoad );
     
     Idx = 1;
     Model = struct( 'Pure', 'Pacejka', 'Combined', 'MNC' );
@@ -58,6 +62,21 @@ if nargin == 0
         NormalLoad, Pressure, Inclination, Velocity, ...
         Idx, Model );
     
+  %{  
+figure
+    subplot(2,3,1)
+    mesh( SlipRatio, NormalLoad, Fx )
+    subplot(2,3,2)
+    mesh( SlipAngle, NormalLoad, Fx )
+    subplot(2,3,3)
+    mesh( SlipAngle, NormalLoad, Mz )
+    subplot(2,3,4)
+    mesh( SlipRatio, NormalLoad, SlipAngle )
+    subplot(2,3,5)
+%}
+figure
+    scatter( Fy(:), Fx(:), 'k.' )
+    xlabel( 'Fy' ); ylabel( 'Fx' );
     warning('Executing SlipEstimation() Test Case')
     return;
 end
@@ -169,10 +188,8 @@ function [Fx0, Kxk, Kappa0] = ...
 
     % Evaluate Null Slip Ratio
     if strcmpi( Model.Combined, 'MNC' )
-        Kappa0 = ((Fx0 .* Hx)./Kxk) + Vx;
-%                  Opts = optimoptions( 'fsolve', 'Display', 'off', 'Algorithm', 'Levenberg-Marquardt' );
-%                 Kappa0 = fsolve( @(k) Dx .* sin( Cx .* atan( (1-Ex) .* Bx.*(k + Hx) + ...
-%                      Ex.*atan( Bx.*(k + Hx) ) ) ) + Vx, zeros(size(Dx)), Opts );
+        Kappa0 = -Vx ./ Kxk - Hx;
+        Kappa0(isnan(Kappa0)) = 0; % Can use smoothing in future
     else
         Kappa0 = [];
     end
@@ -220,11 +237,8 @@ function [Fy0, By, Cy, Kya, Hy, Vy, Alpha0] = ...
 
     % Evaluate Null Slip Angle
     if strcmpi( Model.Combined, 'MNC' )
-        Alpha0 = ((Fy0 .* Hy)./Kya) + Vy;
-%                  Opts = optimoptions( 'fsolve', 'Display', 'off', 'Algorithm', 'Levenberg-Marquardt' );
-%                    Alpha0 = fsolve( @(a) (Dy .* sin( Cy .* atan( (1-Ey) .* By.*(a +Hy) + ...
-%                           Ey.*atan( By.*(a + Hy) ) ) ) + Vy) .* (-1).^(mod(i+1,2)), zeros(size(Dy)), Opts );
-
+        Alpha0 = -Vy ./ Kya - Hy;
+        Alpha0(isnan(Alpha0)) = 0;
     else
         Alpha0 = [];
     end
