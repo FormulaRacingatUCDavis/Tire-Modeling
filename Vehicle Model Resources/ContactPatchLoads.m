@@ -41,43 +41,103 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
 
 %%% Test Case
 if nargin == 0
-    load('Tire-Modeling\Vehicle Model Resources\Models\TestTire.mat');
+    warning('Executing SlipEstimation() Test Case')
     
-    SlipAngle = -20:0.5:20;
-    SlipRatio = linspace(-0.75,0.75,numel(SlipAngle));
+    addpath( genpath( fileparts( which( 'ContactPatchLoads.m' ) ) ) );
+    load('Models\TestTire.mat');
     
-    NormalLoad = 650;
-    Pressure = 70;
+    %%% Nominal Test Case Conditions
+    Pressure    = 70;
     Inclination = 1;
-    Velocity = 10;
+    Velocity    = 10;
+    Idx         = 1;
+    Model       = struct( 'Pure', 'Pacejka', 'Combined', 'MNC' );
     
-    [SlipRatio, SlipAngle ] = meshgrid( SlipRatio, SlipAngle );
-    %[SlipRatio, NormalLoad] = meshgrid( SlipRatio, NormalLoad );
+    %%% Slip-Load Plots 
+    SlipRatio = linspace(- 1, 1,51);
+    SlipAngle = linspace(-20,20,51);
     
-    Idx = 1;
-    Model = struct( 'Pure', 'Pacejka', 'Combined', 'MNC' );
+    NormalLoad  = 0:100:2000;
+        
+    [~         , SlipRatio] = meshgrid( NormalLoad, SlipRatio );
+    [NormalLoad, SlipAngle] = meshgrid( NormalLoad, SlipAngle );
+    
+    [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
+        SlipAngle, SlipRatio, ...
+        NormalLoad, Pressure, Inclination, Velocity, ...
+        Idx, Model );
+     
+    figure
+    subplot(3,2,1)
+    surf( SlipRatio, NormalLoad, Fx )
+    xlabel( 'Slip Ratio, $\kappa$ [ ]' )
+    ylabel( 'Normal Load, $F_{z}$ [$N$]' )
+    zlabel( 'Longitudinal Force, $F_{x}$ [$N$]' )
+    
+    subplot(3,2,2)
+    surf( SlipAngle, NormalLoad, Fy )
+    xlabel( 'Slip Angle, $\alpha$ [$deg$]' )
+    ylabel( 'Normal Load, $F_{z}$ [$N$]' )
+    zlabel( 'Lateral Force, $F_{y}$ [$N$]' )
+    
+    subplot(3,2,3)
+    surf( SlipAngle, NormalLoad, Mz )
+    xlabel( 'Slip Angle, $\alpha$ [$deg$]' )
+    ylabel( 'Normal Load, $F_{z}$ [$N$]' )
+    zlabel( 'Aligning Moment, $M_{z}$ [$Nm$]' )
+    
+    subplot(3,2,4)
+    % surf( SlipAngle, NormalLoad, Mx )
+    xlabel( 'Slip Angle, $\alpha$ [$deg$]' )
+    ylabel( 'Normal Load, $F_{z}$ [$N$]' )
+    zlabel( 'Overturning Moment, $M_{x}$ [$Nm$]' )
+    
+    subplot(3,2,5)
+    % surf( SlipRatio, NormalLoad, My )
+    xlabel( 'Slip Ratio, $\kappa$ [ ]' )
+    ylabel( 'Normal Load, $F_{z}$ [$N$]' )
+    zlabel( 'Rolling Resistance, $M_{y}$ [$Nm$]' )
+
+    %%% Friction Ellipse Plotting
+    SlipRatio = linspace(- 1, 1,51);
+    SlipAngle = linspace(-20,20,51);
+    
+    [SlipRatio, SlipAngle] = meshgrid( SlipRatio, SlipAngle );
+    
+    NormalLoad = 700;
+    
+    [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
+        SlipAngle, SlipRatio, ...
+        NormalLoad, Pressure, Inclination, Velocity, ...
+        Idx, Model );
+
+    ColorMap = colormap( 'parula' );
+    figure
+    for i = 1 : size( SlipAngle, 1)
+        plot( Fy(i,:), Fx(i,:), 'Color', ...
+            ColorMap( round( (SlipAngle(i,1)-SlipAngle(1)) .* ...
+                (length(ColorMap)-1) ./ diff( SlipAngle([1 end]) )) + 1, : ) ); hold on;
+    end
+    
+    for j = 1 : size( SlipRatio, 2)
+        plot( Fy(:,j), Fx(:,j), 'Color', ...
+            ColorMap( round( (SlipRatio(1,j)-SlipRatio(1)) .* ...
+                (length(ColorMap)-1) ./ diff( SlipRatio([1 end]) )) + 1, : ) );
+    end
+    
+    xlabel( 'Lateral Force, $F_{y}$ [$N$]' ); 
+    ylabel( 'Longitudinal Force, $F_{x}$ [$N$]' );
+    title( 'Friction Ellipse' )
+    
+    %%% Single Evaluation
+    SlipAngle = 5;
+    SlipRatio = 0.03;
     
     [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
         SlipAngle, SlipRatio, ...
         NormalLoad, Pressure, Inclination, Velocity, ...
         Idx, Model );
     
-  %{  
-figure
-    subplot(2,3,1)
-    mesh( SlipRatio, NormalLoad, Fx )
-    subplot(2,3,2)
-    mesh( SlipAngle, NormalLoad, Fx )
-    subplot(2,3,3)
-    mesh( SlipAngle, NormalLoad, Mz )
-    subplot(2,3,4)
-    mesh( SlipRatio, NormalLoad, SlipAngle )
-    subplot(2,3,5)
-%}
-figure
-    scatter( Fy(:), Fx(:), 'k.' )
-    xlabel( 'Fy' ); ylabel( 'Fx' );
-    warning('Executing SlipEstimation() Test Case')
     return;
 end
 
@@ -334,7 +394,7 @@ end
 
 %%% Evaluate Overturning Moment
 function Mx = EvaluateMx( Tire, ~, ~, Fz, ~, ~, dPi, Inc, ~, ~, ~, Fy )
-    Mx = 0;
+    Mx = zeros( size( Fz ) );
     %{
     Mx = Tire.Pacejka.Ro .* Fz .* ( Tire.Pacejka.q.s.x(1) - ...
         Tire.Pacejka.q.s.x(2) .* Inc .* ( 1 + Tire.Pacejka.p.P.Mx(1).*dPi ) + ...
@@ -349,7 +409,7 @@ end
 
 %%% Evaluate Rolling Resistance
 function My = EvaluateMy( Tire, Alpha, Kappa, Fz, dFz, Pi, dPi, Inc, V, ~, Model, Fx )
-    My = 0;
+    My = zeros( size( Fz ) );
 end
 
 end
