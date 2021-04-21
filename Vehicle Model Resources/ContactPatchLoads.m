@@ -68,36 +68,45 @@ if nargin == 0
         Idx, Model );
      
     figure
+    sgtitle( {'Slip-Load Surfaces', ...
+        ['$P_{i} ='  , num2str(Pressure)   , '$ [$kPa$],' ...
+          '$\gamma = ', num2str(Inclination), '$ [$deg$]']} )
+      
     subplot(3,2,1)
     surf( SlipRatio, NormalLoad, Fx )
-    xlabel( 'Slip Ratio, $\kappa$ [ ]' )
-    ylabel( 'Normal Load, $F_{z}$ [$N$]' )
-    zlabel( 'Longitudinal Force, $F_{x}$ [$N$]' )
+    xlabel( '$\kappa$ [ ]' )
+    ylabel( '$F_{z}$ [$N$]' )
+    zlabel( '$F_{x}$ [$N$]' )
+    title( 'Longitudinal Force' )
     
     subplot(3,2,2)
     surf( SlipAngle, NormalLoad, Fy )
-    xlabel( 'Slip Angle, $\alpha$ [$deg$]' )
-    ylabel( 'Normal Load, $F_{z}$ [$N$]' )
-    zlabel( 'Lateral Force, $F_{y}$ [$N$]' )
+    xlabel( '$\alpha$ [$deg$]' )
+    ylabel( '$F_{z}$ [$N$]' )
+    zlabel( '$F_{y}$ [$N$]' )
+    title( 'Lateral Force' )
     
     subplot(3,2,3)
     surf( SlipAngle, NormalLoad, Mz )
-    xlabel( 'Slip Angle, $\alpha$ [$deg$]' )
-    ylabel( 'Normal Load, $F_{z}$ [$N$]' )
-    zlabel( 'Aligning Moment, $M_{z}$ [$Nm$]' )
+    xlabel( '$\alpha$ [$deg$]' )
+    ylabel( '$F_{z}$ [$N$]' )
+    zlabel( '$M_{z}$ [$Nm$]' )
+    title( 'Aligning Moment' )
     
     subplot(3,2,4)
-    % surf( SlipAngle, NormalLoad, Mx )
-    xlabel( 'Slip Angle, $\alpha$ [$deg$]' )
-    ylabel( 'Normal Load, $F_{z}$ [$N$]' )
-    zlabel( 'Overturning Moment, $M_{x}$ [$Nm$]' )
+    surf( SlipAngle, NormalLoad, Mx )
+    xlabel( '$\alpha$ [$deg$]' )
+    ylabel( '$F_{z}$ [$N$]' )
+    zlabel( '$M_{x}$ [$Nm$]' )
+    title( 'Overturning Moment' )
     
     subplot(3,2,5)
-    % surf( SlipRatio, NormalLoad, My )
-    xlabel( 'Slip Ratio, $\kappa$ [ ]' )
-    ylabel( 'Normal Load, $F_{z}$ [$N$]' )
-    zlabel( 'Rolling Resistance, $M_{y}$ [$Nm$]' )
-
+    surf( SlipRatio, NormalLoad, My )
+    xlabel( '$\kappa$ [ ]' )
+    ylabel( '$F_{z}$ [$N$]' )
+    zlabel( '$M_{y}$ [$Nm$]' )
+    title( 'Rolling Resistance' )
+      
     %%% Friction Ellipse Plotting
     SlipRatio = linspace(- 1, 1,51);
     SlipAngle = linspace(-20,20,51);
@@ -106,7 +115,7 @@ if nargin == 0
     
     NormalLoad = 700;
     
-    [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
+    [Fx, Fy, ~, ~, ~] = ContactPatchLoads( Tire, ...
         SlipAngle, SlipRatio, ...
         NormalLoad, Pressure, Inclination, Velocity, ...
         Idx, Model );
@@ -129,7 +138,31 @@ if nargin == 0
     ylabel( 'Longitudinal Force, $F_{x}$ [$N$]' );
     title( 'Friction Ellipse' )
     
+    %%% Inclination Sensitivity
+    Inclination = -3:0.05:3;
+    
+    SlipRatio = linspace(- 1, 1,51);
+    SlipAngle = linspace(-20,20,51);
+    
+    [~          , SlipRatio] = meshgrid( Inclination, SlipRatio );
+    [Inclination, SlipAngle] = meshgrid( Inclination, SlipAngle );
+    
+    [Fx, Fy, ~, ~, ~] = ContactPatchLoads( Tire, ...
+        SlipAngle, SlipRatio, ...
+        NormalLoad, Pressure, Inclination, Velocity, ...
+        Idx, Model );
+    
+    figure
+    plot( Inclination(1,:), max(abs(Fx),[],1)./max(abs(Fx),[],'all') ); hold on;
+    plot( Inclination(1,:), max(abs(Fy),[],1)./max(abs(Fy),[],'all') )
+    
+    xlabel( 'Inclination, $\gamma$ [$deg$]' )
+    ylabel( 'Normalized Grip' )
+    title( 'Inclination Sensitivity')
+    legend( '$F_{x}$', '$F_{y}$' )
+    
     %%% Single Evaluation
+    Inclination = 1;
     SlipAngle = 5;
     SlipRatio = 0.03;
     
