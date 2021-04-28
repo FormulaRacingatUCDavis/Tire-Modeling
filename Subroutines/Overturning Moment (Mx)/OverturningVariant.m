@@ -18,26 +18,26 @@ function [Variant, Tire] = OverturningVariant(Raw, Tire)
 % Last Updated: 17- APR - 2021
 %% Optimization Variables
 qsx1  = optimvar( 'qsx1' , 'Lowerbound',-10   , 'Upperbound', 10    );
-qsx2  = optimvar( 'qsx2' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qsx3  = optimvar( 'qsx3' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qsx4  = optimvar( 'qsx4' , 'Lowerbound',- 1   , 'Upperbound',  1    );
-qsx5  = optimvar( 'qsx5' , 'Lowerbound',- 5   , 'Upperbound',-0.01  );
+qsx2  = optimvar( 'qsx2' , 'Lowerbound',  0   , 'Upperbound',  5    );
+qsx3  = optimvar( 'qsx3' , 'Lowerbound',- 5   , 'Upperbound',  5   );
+qsx4  = optimvar( 'qsx4' , 'Lowerbound',- 1   , 'Upperbound',  4    );
+qsx5  = optimvar( 'qsx5' , 'Lowerbound',  0   , 'Upperbound',  5    );
 qsx6  = optimvar( 'qsx6' , 'Lowerbound',  0   , 'Upperbound',  3    );
 qsx7  = optimvar( 'qsx7' , 'Lowerbound',- 5   , 'Upperbound',  5    );
 qsx8  = optimvar( 'qsx8' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qsx9  = optimvar( 'qsx9' , 'Lowerbound',- 5   , 'Upperbound',  5    );
-qsx10 = optimvar( 'qsx10', 'Lowerbound',  0   , 'Upperbound',  5    );
+qsx9  = optimvar( 'qsx9' , 'Lowerbound',  0   , 'Upperbound',  5    );
+qsx10 = optimvar( 'qsx10', 'Lowerbound',- 5   , 'Upperbound',  3    );
 qsx11 = optimvar( 'qsx11', 'Lowerbound',  0   , 'Upperbound', 10   );
 
 ppmx1 = optimvar( 'ppmx1', 'Lowerbound',-10    , 'Upperbound',10    );
 
 %% Optimization Initialization
-x0.qsx1  = -1;
-x0.qsx2  = -0.001;
-x0.qsx3  = -0.001;
-x0.qsx4  = -0.001;
-x0.qsx5  = -0.1;
-x0.qsx6  = 1;
+x0.qsx1  =  0;
+x0.qsx2  =  0.001;
+x0.qsx3  =  0.001;
+x0.qsx4  =  0.001;
+x0.qsx5  =  0.01;
+x0.qsx6  =  1;
 x0.qsx7  = 0.001;
 x0.qsx8  = 0.001;
 x0.qsx9  = 0.001;
