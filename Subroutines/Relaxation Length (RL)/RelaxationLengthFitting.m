@@ -79,14 +79,8 @@ for j = 1 : numel(Raw)
     [~, Idx.Breaks] = ...
         findpeaks( diff(Idx.IsRolling), 'NPeaks', 6, ...
         'MinPeakDistance', ( length( Raw(j).Velocity(Idx.IsRolling) ) ./ 10 ) );
-    
-    for k = 1 : numel(Idx.Breaks)  
-        if k < numel(Idx.Breaks)   
-            IdxInterval(k) = Idx.Breaks(k+1) - Idx.Breaks(k);
-        end 
-    end 
-    
-    Idx.NewBreaks = Idx.Breaks( IdxInterval < mean( IdxInterval ) ); %need change in naming to appropriate!
+   
+    Idx.NewBreaks = Idx.Breaks( diff(Idx.Breaks) < mean( diff(Idx.Breaks) ) );
     
     for k = 1 : numel(Idx.NewBreaks)  
         Response(j,k).Idx = Idx.IsRolling( Idx.NewBreaks(k)+1 : ...
