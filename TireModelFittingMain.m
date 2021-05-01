@@ -19,7 +19,7 @@ clc; clear; close all;
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % 
-% Last Updated: 5-Apr-2021
+% Last Updated: 1-May-2021
 
 %% Initialization
 % Sets up the model structure and adds relevant directories for saving and 

@@ -40,7 +40,7 @@ for p = 1 : size( Raw, 1 )
         xlabel( 'Normal Load ($F_{z}$) [$N$]' )
         ylabel( 'Slip Angle ($\alpha$) [$deg$]' )
         zlabel( 'Overturning Moment ($M_{x}$) [$Nm$]' )
-        title( { ['Pressure ($P_{i}$): $'    , num2str(Mesh(p,1,c).Pressure)   , '$ [$psi$]'], ...
+        title( { ['Pressure ($P_{i}$): $'    , num2str(Mesh(p,1,c).Pressure)   , '$ [$kPa$]'], ...
                  ['Inclination ($\gamma$): $', num2str(Mesh(p,1,c).Inclination), '$ [$deg$]'] } )
  
     end
