@@ -19,7 +19,7 @@ clc; clear; close all;
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % 
-% Last Updated: 5-Apr-2021
+% Last Updated: 01-May-2021
 
 %% Initialization
 % Sets up the model structure and adds relevant directories for saving and 
@@ -50,7 +50,7 @@ Figure.State = 'minimized';
 % Imports and bins the FSAE TTC test data into Data and Bin structures which 
 % are utilized throughout the rest of the fitting process to select data from 
 % desired operating conditions. 
-%{
+
 TestName = {'Transient'                 , ...
             'Cornering 1'               , ...
             'Cornering 2'               , ...
@@ -103,16 +103,16 @@ Tire = PureLongitudinalFitting( Tire, Data, Bin, Figure ); % Longitudinal Force 
 Tire = PureLateralFitting( Tire, Data, Bin, Figure ); % Lateral Force ( Fyo )
 
 Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
-%}
+
 %%% Steady State, Combined Slip Force Modeling
 % This is currently undeveloped due to data limitations. Instead, combined tire forces
 % can be evaluated using the Modified-Nicolas-Comstock (MNC) Model on the pure slip 
 % models. It is implemented within the FRUCDTire Class Definition.
-load("TestData_04_21_21_03_02.mat")
+
 %%% Steady State, Combined Slip Moment Fitting
 % Tire = CombinedAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment (Mz)
 
- Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
+Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
 
 % Tire = ResistanceModeling( Tire, Data, Bin, Figure ); % Rolling Resistance (My)
 
@@ -120,7 +120,6 @@ load("TestData_04_21_21_03_02.mat")
 % Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure );
 
 %% Radial Deflection Modeling
-%%% Vertical Stiffness Modeling
 % Tire = RadialDeflection( Tire, Data ); % Radial Deflection (Re, Rl)
 
 %% Thermal Modeling
@@ -137,4 +136,3 @@ if strcmpi( SaveModel, 'Yes' )
 end
 
 clear SaveModel
-

@@ -83,9 +83,10 @@ function Pacejka = PacejkaParameters()
     Pacejka.q.H.z = zeros(4,1);
     Pacejka.p.P.z = zeros(2,1);
 
-    Pacejka.q.s.x = zeros(10,1);
+    Pacejka.q.s.x = zeros(11,1);
     Pacejka.q.s.y = zeros(8,1);
-
+    Pacejka.p.P.Mx = 0;
+    
     % r-Factors (Combined Slip Force Coefficients)
     Pacejka.r.B.x = zeros(3,1);
     Pacejka.r.C.x = 0;
