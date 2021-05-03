@@ -19,7 +19,7 @@ clc; clear; close all;
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % 
-% Last Updated: 01-May-2021
+% Last Updated: 02-May-2021
 
 %% Initialization
 % Sets up the model structure and adds relevant directories for saving and 
@@ -96,6 +96,9 @@ Tire = TireParameters( ModelName{1}, [Data.Source], []);
 
 clear ModelName
 
+%% Radial Deflection Modeling
+Tire = RadialDeflectionFitting( Tire, Data ); % Radial Deflection (Re, Rl)
+
 %% Contact Patch Load Modeling
 %%% Steady State, Pure Slip Force & Aligning Moment Fitting
 Tire = PureLongitudinalFitting( Tire, Data, Bin, Figure ); % Longitudinal Force ( Fxo )
@@ -118,9 +121,6 @@ Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
 
 %%% Transient Response
 % Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure );
-
-%% Radial Deflection Modeling
-% Tire = RadialDeflection( Tire, Data ); % Radial Deflection (Re, Rl)
 
 %% Thermal Modeling
 % Heat Generation Modeling

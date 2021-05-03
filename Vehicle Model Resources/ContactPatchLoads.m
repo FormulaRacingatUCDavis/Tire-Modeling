@@ -36,15 +36,14 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % 
-% Last Updated: 16-Apr-2021
+% Last Updated: 02-May-2021
 
-
-%%% Test Case
+%% Test Case
 if nargin == 0
     warning('Executing SlipEstimation() Test Case')
     
     addpath( genpath( fileparts( which( 'ContactPatchLoads.m' ) ) ) );
-    load('Models\TestTire.mat');
+    load('Models\TestTire.mat'); %#ok<LOAD>
     
     %%% Nominal Test Case Conditions
     Pressure    = 70;
@@ -174,7 +173,7 @@ if nargin == 0
     return;
 end
 
-%%% Model Compatibility Check
+%% Model Compatibility Check
 if ~ismember(Model.Pure, {'Linear', 'Pacejka'})
     error('Please choose either ''Linear'' or ''Pacejka'' for the pure slip model')
 elseif ~ismember(Model.Combined, {'Pure', 'MNC'})
@@ -185,6 +184,7 @@ elseif ~ismember(Model.Combined, {'Pure', 'MNC'})
     end
 end
 
+%% Main Evaluation
 %%% Slip Angle Conversion
 SlipAngle = deg2rad(SlipAngle);
 
@@ -442,8 +442,13 @@ function Mx = EvaluateMx( Tire, ~, ~, Fz, ~, ~, dPi, Inc, ~, ~, ~, Fy )
 end
 
 %%% Evaluate Rolling Resistance
-function My = EvaluateMy( Tire, Alpha, Kappa, Fz, dFz, Pi, dPi, Inc, V, ~, Model, Fx )
-    My = zeros( size( Fz ) );
+function My = EvaluateMy( Tire, ~, Kappa, Fz, ~, Pi, ~, Inc, V, ~, ~, Fx )
+    Re = Tire.Radius.Effective( Kappa, Fz, Pi, Inc );
+    Rl = Tire.Radius.Loaded( Fz, Pi, Inc );
+    
+    My = Fx .* (Re - Rl) + Fz .* Re .* ( Tire.Pacejka.q.s.y(1) + ...
+        Tire.Pacejka.q.s.y(3) .* (V ./ Tire.Pacejka.Vo) + ...
+        Tire.Pacejka.q.s.y(4) .* (V ./ Tire.Pacejka.Vo).^4 );
 end
 
 end

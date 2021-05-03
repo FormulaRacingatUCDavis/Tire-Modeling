@@ -33,16 +33,21 @@ for p = 1 : size( Raw, 1 )
         subplot( size( Raw, 3 ), size( Raw, 1 ), ...
             sub2ind( [size( Raw, 1 ), size( Raw, 3 )], p, c ) );
         
-        plot3( [Raw(p,:,c).Load], rad2deg([Raw(p,:,c).Alpha]), [Raw(p,:,c).Moment], 'k.' ); hold on;
-        surf( Load, Alpha, VariantEval( Tire, Alpha, 0, Load, Mesh(p,1,c).Pressure, ...
-            Mesh(p,1,c).Inclination) )
+        scatter3( rad2deg([Raw(p,:,c).Alpha]), [Raw(p,:,c).Moment], [Raw(p,:,c).Load], ...
+            [], [Raw(p,:,c).Load], '.' ); hold on;
+        surf( Alpha, VariantEval( Tire, Alpha, 0, Load, Mesh(p,1,c).Pressure, ...
+            Mesh(p,1,c).Inclination), Load );
     
-        xlabel( 'Normal Load ($F_{z}$) [$N$]' )
-        ylabel( 'Slip Angle ($\alpha$) [$deg$]' )
-        zlabel( 'Overturning Moment ($M_{x}$) [$Nm$]' )
+        xlabel( 'Slip Angle ($\alpha$) [$deg$]' )
+        ylabel( 'Overturning Moment ($M_{x}$) [$Nm$]' )
+        zlabel( 'Normal Load ($F_{z}$) [$N$]' )
+        
+        CB = colorbar( 'TickLabelInterpreter', 'latex' );
+        CB.Label.String = 'Normal Load ($F_{z}$) [$N$]';
+        CB.Label.Interpreter = 'latex';
+
         title( { ['Pressure ($P_{i}$): $'    , num2str(Mesh(p,1,c).Pressure)   , '$ [$kPa$]'], ...
                  ['Inclination ($\gamma$): $', num2str(Mesh(p,1,c).Inclination), '$ [$deg$]'] } )
- 
     end
 end
 
@@ -50,7 +55,7 @@ sgtitle( 'Overturning MF6.1 Pacejka Fit' )
 Figure.Mx.Surfaces.WindowState = Figure.State;
 
 %% Local Functions
-function [Mx] = VariantEval( Tire, Alpha, Kappa, Load, Pressure, Inclination )
+function Mx = VariantEval( Tire, Alpha, Kappa, Load, Pressure, Inclination )
     [~, ~, ~, Mx, ~] = ContactPatchLoads(Tire, Alpha, Kappa, ...
         Load, Pressure, Inclination, 10, 1, ...
         struct('Pure', 'Pacejka', 'Combined', 'MNC'));
