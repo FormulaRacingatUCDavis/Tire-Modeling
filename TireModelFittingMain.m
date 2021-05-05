@@ -35,7 +35,7 @@ Directory.Tool       = fileparts( matlab.desktop.editor.getActiveFilename );
 Directory.Data       = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'Tire-Data'];
 Directory.Resources  = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'MATLAB-Resources'];
 
-Directory.Model = [Directory.Tool, '\Vehicle Model Resources\Models'];
+Directory.Model = [Directory.Data, '\Models'];
 Directory.Media = [Directory.Tool, '\Media'];
 
 addpath( genpath( Directory.Tool      ) );
@@ -115,7 +115,7 @@ Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
 %%% Steady State, Combined Slip Moment Fitting
 % Tire = CombinedAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment (Mz)
 
-Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
+ Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
 
 % Tire = ResistanceModeling( Tire, Data, Bin, Figure ); % Rolling Resistance (My)
 
