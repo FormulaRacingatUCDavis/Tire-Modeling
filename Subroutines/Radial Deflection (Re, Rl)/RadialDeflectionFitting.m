@@ -30,8 +30,11 @@ Loaded(1).Load     = [Data(1).Force(3,:)   , Data(2).Force(3,:)   , Data(3).Forc
 Loaded(1).Pressure = [Data(1).Pressure     , Data(2).Pressure     , Data(3).Pressure     ]; 
 Loaded(1).Radius   = [Data(1).Radius.Loaded, Data(2).Radius.Loaded, Data(3).Radius.Loaded] .* 10;
 
-Tire.Radius.Loaded = fit( [Loaded(1).Load; Loaded(1).Pressure]', Loaded(1).Radius', Form, Opts );
+LoadedFit{1} = fit( [Loaded(1).Load; Loaded(1).Pressure]', Loaded(1).Radius', Form, Opts );
 
+Tire.Radius.Loaded.Form       = formula( LoadedFit{1} );
+Tire.Radius.Loaded.ArgNames   = indepnames( LoadedFit{1} );
+Tire.Radius.Loaded.CoeffNames = coeffnames( LoadedFit{1} );
 %% Effective Radius
 Effective.Load      = [Data(4).Force(3,:)      , Data(5).Force(3,:)      , Data(6).Force(3,:)      ];
 Effective.Pressure  = [Data(4).Pressure        , Data(5).Pressure        , Data(6).Pressure        ];
@@ -44,11 +47,11 @@ if ~all( strcmpi({Data(2:end).Tire}, Data(1).Tire ) )
     Loaded(2).Pressure = [Data(4).Pressure     , Data(5).Pressure     , Data(6).Pressure     ]; 
     Loaded(2).Radius   = [Data(4).Radius.Loaded, Data(5).Radius.Loaded, Data(6).Radius.Loaded] .* 10;
     
-    LoadedFit = fit( [Loaded(2).Load; Loaded(2).Pressure]', Loaded(2).Radius', Form, Opts );
+    LoadedFit{2} = fit( [Loaded(2).Load; Loaded(2).Pressure]', Loaded(2).Radius', Form, Opts );
     
     Effective.Radius = Effective.Radius .* ...
         Tire.Radius.Loaded( Tire.Pacejka.Fzo./4, Tire.Pacejka.Pio ) ./ ...
-        LoadedFit( Tire.Pacejka.Fzo./4, Tire.Pacejka.Pio );
+        LoadedFit{2}( Tire.Pacejka.Fzo./4, Tire.Pacejka.Pio );
 end
 
 %%% Fit Effective Radius Surface

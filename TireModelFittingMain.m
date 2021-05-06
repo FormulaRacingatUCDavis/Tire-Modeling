@@ -46,6 +46,7 @@ addpath( genpath( Directory.Resources ) );
 Figure.Mode  = 'Debug';
 Figure.State = 'minimized';
 
+%{
 %% Data Import
 % Imports and bins the FSAE TTC test data into Data and Bin structures which 
 % are utilized throughout the rest of the fitting process to select data from 
@@ -95,9 +96,13 @@ ModelName = inputdlg( sprintf('%s\n%s','Enter Tire Model Name in Following Forma
 Tire = TireParameters( ModelName{1}, [Data.Source], []);
 
 clear ModelName
+%}
+load('TestData_05_02_21_21_30.mat');
 
 %% Radial Deflection Modeling
 Tire = RadialDeflectionFitting( Tire, Data ); % Radial Deflection (Re, Rl)
+
+return
 
 %% Contact Patch Load Modeling
 %%% Steady State, Pure Slip Force & Aligning Moment Fitting
