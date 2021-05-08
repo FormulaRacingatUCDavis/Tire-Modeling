@@ -7,16 +7,16 @@ function Tire = RadialDeflectionFitting( Tire, Data )
 % tires), the effective radius fit will be scaled.
 % 
 % Inputs:
-%   Tire - FRUCDTire Object
-%   Data - Formatted Structure of Calspan TTC Data via DataImport()
+%   Tire - (struct) FRUCDTire Object
+%   Data - (struct) Formatted Structure of Calspan TTC Data via DataImport()
 % 
 % Outputs:
-%   Tire - FRUCDTire Object with Updated Radius Property
+%   Tire - (struct) FRUCDTire Object with Updated Radius Property
 %
 % Author(s):
 % Blake Christierson (bechristierson@ucdavis.edu)
 %
-% Last Updated: 02-May-2021
+% Last Updated: 08-May-2021
 
 %% Loaded Radius
 Form = fittype( 'p00+p10*Fz+p01*Pi+p20*Fz^2+p02*Pi^2+p11*Fz*Pi', ...

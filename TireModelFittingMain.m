@@ -9,17 +9,18 @@ clc; clear; close all;
 %   - SI Unit Calspan TTC Data Sets [via uigetfile()]
 % 
 % Outputs:
-%   Directory - Data, Model, and Figure Path Locations
-%   Data      - Parsed FSAE TTC Data
-%   Bin       - Logical Binnings for Separating Operating Conditions
-%   Tire      - Tire Model
-%   Figure    - Stores Model Figures
+%   Directory - (struct) Data, Model, and Figure Path Locations
+%   Data      - (struct) Parsed FSAE TTC Data
+%   Bin       - (struct) Logical Binnings for Separating Operating Conditions
+%   Tire      - (struct) Tire Model
+%   Figure    - (struct) Stores Model Figures
 %
 % Author(s): 
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
-% 
-% Last Updated: 02-May-2021
+% Leonardo Howard    (leohoward@ucdavis.edu     ) [Jan 2021 -         ]
+
+% Last Updated: 08-May-2021
 
 %% Initialization
 % Sets up the model structure and adds relevant directories for saving and 
@@ -46,7 +47,6 @@ addpath( genpath( Directory.Resources ) );
 Figure.Mode  = 'Debug';
 Figure.State = 'minimized';
 
-%{
 %% Data Import
 % Imports and bins the FSAE TTC test data into Data and Bin structures which 
 % are utilized throughout the rest of the fitting process to select data from 
@@ -96,13 +96,9 @@ ModelName = inputdlg( sprintf('%s\n%s','Enter Tire Model Name in Following Forma
 Tire = TireParameters( ModelName{1}, [Data.Source], []);
 
 clear ModelName
-%}
-load('TestData_05_02_21_21_30.mat');
 
 %% Radial Deflection Modeling
 Tire = RadialDeflectionFitting( Tire, Data ); % Radial Deflection (Re, Rl)
-
-return
 
 %% Contact Patch Load Modeling
 %%% Steady State, Pure Slip Force & Aligning Moment Fitting
@@ -120,15 +116,15 @@ Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
 %%% Steady State, Combined Slip Moment Fitting
 % Tire = CombinedAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment (Mz)
 
- Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
+Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
 
 % Tire = ResistanceModeling( Tire, Data, Bin, Figure ); % Rolling Resistance (My)
 
 %%% Transient Response
-% Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure );
+Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure );
 
 %% Thermal Modeling
-% Heat Generation Modeling
+%%% Heat Generation Modeling
 
 %% Exporting Model
 SaveModel = questdlg( 'Save Model?', '', 'Yes', 'No', 'No' );
