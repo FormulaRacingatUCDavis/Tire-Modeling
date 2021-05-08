@@ -1,4 +1,4 @@
-function [FitResult, GoF] = StepSteerFyResponseFit( t, Fy )
+function [FitResult, GoF, RL] = StepSteerFyResponseFit( t, Fy, V)
 %CREATEFITS(X,Y)
 %  Create fits.
 %
@@ -37,7 +37,15 @@ opts.Upper = [Inf Inf];
 % Fit model to data.
 [FitResult{1}, GoF(1)] = fit( xData, yData, ft, opts );
 
+%% First Order RL calculation.
+CurveFitValues = coeffvalues(FitResult{1}); %extract coefficients from the curve fitting
+Tau = CurveFitValues(2); %extract tau from the curve fitting coefficients
+        
+RL = Tau.*mode(V); %obtain the relaxation length values  
+
 %% Fit: 'Second Order'.
+%comment on why this part is commented out
+%{
 [xData, yData] = prepareCurveData( t, Fy );
 
 % Set up fittype and options.
@@ -50,5 +58,4 @@ opts.Upper = [Inf Inf 1];
 
 % Fit model to data.
 [FitResult{2}, GoF(2)] = fit( xData, yData, ft, opts );
-
-
+%}

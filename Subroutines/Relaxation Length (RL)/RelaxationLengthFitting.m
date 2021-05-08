@@ -26,18 +26,25 @@ function Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure )
 %% Operating Condition Space
 Case.Pressure    = Bin(1).Values.Pressure;    % Pressure Bin Values Storage
 Case.Load        = Bin(1).Values.Load;        % Normal Load Bin Values Storage
+Case.Slip.Angle  = Bin(1).Values.Slip.Angle;  % Slip Angle Bin Values Storage
 
 Mesh = struct( 'Pressure', [], 'Load', [], 'dPi', [], 'dFz', [] );
 
-for p = 1 : numel( Case.Pressure )
-    for z = 1 : numel( Case.Load )
-        Mesh(p,z).Pressure    = Case.Pressure(p);
-        Mesh(p,z).Load        = Case.Load(z);
-                        
-        Mesh(p,z).dPi = (Case.Pressure(p) - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
-        Mesh(p,z).dFz = (Case.Load(z)     - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo; 
+%for a = 1 : numel( Case.Slip.Angle )
+    for p = 1 : numel( Case.Pressure )
+        for z = 1 : numel( Case.Load )
+            Mesh(p,z).Pressure    = Case.Pressure(p);
+            Mesh(p,z).Load        = Case.Load(z);
+            
+            Mesh(p,z).Slip.Angle  = Case.Slip.Angle;
+            %Mesh(p,z).Slip.Angle  = Case.Slip.Angle(a);
+            Mesh(p,z).Slip.Angle(2) = [];
+
+            Mesh(p,z).dPi = (Case.Pressure(p) - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
+            Mesh(p,z).dFz = (Case.Load(z)     - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo; 
+        end
     end
-end
+%end
 
 %% Data Allocation
 Raw = struct( 'Slip', [], 'Force', [], 'Velocity', [], 'Pressure', [], ...
