@@ -21,13 +21,13 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
 %
 % Outputs:
 %   Fx - (n,1 numeric) Longitudinal (Tractive) Force {F_x} [N]
-%   Fy - (n,1 numeric) Lateral Force      {F_y} [N]
-%   Mz - (n,1 numeric) Aligning Moment    {M_z} [N-m]
-%   Mx - (n,1 numeric) Overturning Moment {M_x} [N-m]
-%   My - (n,1 numeric) Rolling Resistance {M_y} [N-m]
+%   Fy - (n,1 numeric) Lateral Force                 {F_y} [N]
+%   Mz - (n,1 numeric) Aligning Moment               {M_z} [N-m]
+%   Mx - (n,1 numeric) Overturning Moment            {M_x} [N-m]
+%   My - (n,1 numeric) Rolling Resistance            {M_y} [N-m]
 %
 % Notes:
-%   Pacejka combined slip model is not current implemented (4/2/21) and
+%   Pacejka combined slip model is not currently implemented (4/2/21) and
 %   when the model does become available the model compatibility checks
 %   should be reformatted.
 %
@@ -35,7 +35,7 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % 
-% Last Updated: 02-May-2021
+% Last Updated: 08-May-2021
 
 %% Test Case
 if nargin == 0
