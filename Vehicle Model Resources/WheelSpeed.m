@@ -1,6 +1,5 @@
 function [InputTorque, SpinAcc] = WheelSpeed( SpinRate,DriveTorque, ...
     BrakeTorque, TractiveForce, EffRadius, Inertia, Damping )
-
 %% WheelSpeed - Wheel Torque Balance & Spin Acceleration
 % Calculates brake or drive torque required for steady state applications
 % or the spin acceleration for transient applications.
