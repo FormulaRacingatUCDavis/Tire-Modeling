@@ -5,57 +5,8 @@ function PureLongitudinalPlotting( Tire, Raw, Mesh, Nominal, ~, ~, Figure )
 [Dx, Ex, Kxk, Vx, Hx, Fxo] = VariantEval( Tire );
 
 Pressure    = unique( [Mesh.Pressure]    );
-Load        = unique( [Mesh.Load]        );
 Inclination = unique( [Mesh.Inclination] );
-%% Nominal Plotting
-for p = 1 : numel( Pressure )
-    Figure.Fxo.Nominal(p) = figure( ...
-        'Name'       , ['Longitudinal Nominal Fits, P=', num2str(Pressure(p)), ' [psi]'], ...
-        'NumberTitle', 'off' , ...
-        'Visible'    , 'on'  );
-end
 
-for i = 1 : numel( Nominal )
-    p = find( Mesh(i).Pressure    == Pressure    );
-    z = find( Mesh(i).Load        == Load        );
-    c = find( Mesh(i).Inclination == Inclination );
-   
-    figure( Figure.Fxo.Nominal(p) )
-   
-    subplot( numel(Inclination), numel(Load), ...
-        sub2ind( [numel(Load), numel(Inclination)], z, c ) );
-    
-    plot( Raw(i).Slip, Raw(i).Force, 'k.' ); hold on;
-    
-    fplot( NominalEval( Nominal(i).C, Nominal(i).D, Nominal(i).E, ...
-        Nominal(i).K, Nominal(i).H, Nominal(i).V ), [-0.25 0.25], 'g-.' )
-    fplot( @(Slip) Fxo( Mesh(i).Pressure, Mesh(i).Load, ...
-        Mesh(i).Inclination, Slip ), [-0.25 0.25], 'g' )
-
-    plot( Raw(i).Slip, Nominal(i).Residual, 'r.')
-    plot( Raw(i).Slip, Raw(i).Force - ...
-        Fxo( Mesh(i).Pressure   , Mesh(i).Load, ...
-             Mesh(i).Inclination, Raw(i).Slip), 'y.')
-
-    xlabel( 'Slip Ratio ($\kappa$) []' )
-    ylabel( 'Longitudinal Force ($F_{x}$) [$N$]' )
-    title( { ['Normal Load ($F_{z}$): $', num2str(round(Mesh(i).Load,1)), '$ [$N$]'], ...
-        ['Inclination ($\gamma$): $', num2str(Mesh(i).Inclination), '$ [$deg$]'] } )
-
-    if all([z c] == ones(3,1))
-        legend( {'Raw Data', 'Nominal Fit', 'Variant Fit',...
-                 'Nominal Residual', 'Variant Residual'} )
-    end
-end
-
-for p = 1 : numel( Pressure )
-    figure( Figure.Fxo.Nominal(p) )  
-    
-    sgtitle( {'Nominal P6 Pacejka Fits', ...
-        ['Pressure ($P_{i}$): $', num2str(Mesh(i).Pressure), '$ [$psi$]'] } )
-    
-    Figure.Fxo.Nominal(p).WindowState = Figure.State;
-end
 %% Response Surface Plotting
 if strcmpi( Figure.Mode, 'Debug' )
     Figure.Fxo.Response = figure( ...
@@ -74,11 +25,11 @@ if strcmpi( Figure.Mode, 'Debug' )
     ylabel( 'Peak: $D_{x}$' )
     xlabel( 'Normal Load: $F_{z}$' )
     
-    legend( {'$P = 10$ [$psi$], $\gamma = 0$ [$deg$]', ...
-             '$P = 12$ [$psi$], $\gamma = 0$ [$deg$]', ...
-             '$P = 12$ [$psi$], $\gamma = 2$ [$deg$]', ...
-             '$P = 12$ [$psi$], $\gamma = 4$ [$deg$]', ...
-             '$P = 14$ [$psi$], $\gamma = 0$ [$deg$]', ...
+    legend( {'$P = 10$ [$kPa$], $\gamma = 0$ [$deg$]', ...
+             '$P = 12$ [$kPa$], $\gamma = 0$ [$deg$]', ...
+             '$P = 12$ [$kPa$], $\gamma = 2$ [$deg$]', ...
+             '$P = 12$ [$kPa$], $\gamma = 4$ [$deg$]', ...
+             '$P = 14$ [$kPa$], $\gamma = 0$ [$deg$]', ...
              'Nominal Fit Coefficient' }, 'Interpreter', 'latex' );
          
     ax2 = subplot(5,1,2);
@@ -113,7 +64,7 @@ if strcmpi( Figure.Mode, 'Debug' )
     Figure.Fxo.Response.WindowState = Figure.State;
 end
 
-%% Variant Plotting
+%% Carpet Plots
 Figure.Fxo.Surfaces = figure( 'Name'       , 'Longitudinal Force Surfaces', ...
                               'NumberTitle', 'off', ...
                               'Visible'    , 'on' );
@@ -132,7 +83,7 @@ for i = 1 : numel( Nominal )
     xlabel( 'Normal Load ($F_{z}$) [$N$]' )
     ylabel( 'Slip Ratio ($\kappa$) []' )
     zlabel( 'Longitudinal Force ($F_{x}$) [$N$]' )
-    title( { ['Pressure ($P_{i}$): $'    , num2str(Mesh(i).Pressure)   , '$ [$psi$]'], ...
+    title( { ['Pressure ($P_{i}$): $'    , num2str(Mesh(i).Pressure)   , '$ [$kPa$]'], ...
              ['Inclination ($\gamma$): $', num2str(Mesh(i).Inclination), '$ [$deg$]'] } )
 end
 
@@ -140,42 +91,43 @@ sgtitle( 'Pure Longitudinal MF6.1 Pacejka Fit' )
 Figure.Fxo.Surfaces.WindowState = Figure.State;
 
 %% Local Functions
-    function Fxo = NominalEval( C, D, E, K, H, V )
-        % Magic Formula Evaluation
-        B = K ./ ( C.*D );
-        
-        Fxo = @(Slip) ( D.*sin( C.*atan( ...
-            ( 1 - E ).*( B.*( Slip + H ) ) + ...
-            E.*atan( B .* ( Slip + H ) ) ) ) ) + V;
-    end
+function Fxo = NominalEval( C, D, E, K, H, V )
+    % Magic Formula Evaluation
+    B = K ./ ( C.*D );
 
-    function [Dx, Ex, Kxk, Vx, Hx, Fxo] = VariantEval( Tire )
-        dFz = @(Fz) (Fz - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo;
-        dPi = @(Pi) (Pi - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
-        
-        Cx = Tire.Pacejka.p.C.x(1);
-        
-        Dx = @(Pi, Fz, Gam) (Tire.Pacejka.p.D.x(1) + Tire.Pacejka.p.D.x(2).*dFz(Fz)) .* ...
-            (1 + Tire.Pacejka.p.P.x(3).*dPi(Pi) + Tire.Pacejka.p.P.x(4).*dPi(Pi).^2) .* ...
-            (1 - Tire.Pacejka.p.D.x(3).*Gam.^2).*Fz;
-        
-        Ex = @(Fz, Slip) ( Tire.Pacejka.p.E.x(1) + Tire.Pacejka.p.E.x(2).*dFz(Fz) ...
-            + Tire.Pacejka.p.E.x(3).*dFz(Fz).^2 ) .* ( 1 - Tire.Pacejka.p.E.x(4).*sign(Slip) );
-        
-        Kxk = @(Pi, Fz) Fz.*(Tire.Pacejka.p.K.x(1) + Tire.Pacejka.p.K.x(2).*dFz(Fz) ) .* ...
-            exp( Tire.Pacejka.p.K.x(3) .* dFz(Fz) ) .* ...
-            (1 + Tire.Pacejka.p.P.x(1).*dPi(Pi) + Tire.Pacejka.p.P.x(2).*dPi(Pi).^2);
-        
-        Bx = @(Pi, Fz, Gam) Kxk(Pi, Fz) ./ ( Cx.*Dx(Pi, Fz, Gam) );
-        
-        Vx = @(Fz) Fz.*(Tire.Pacejka.p.V.x(1) + Tire.Pacejka.p.V.x(2).*dFz(Fz) );
-        
-        Hx = @(Fz) Tire.Pacejka.p.H.x(1) + Tire.Pacejka.p.H.x(2).*dFz(Fz);
-        
-        Fxo = @(Pi, Fz, Gam, Slip) Dx(Pi, Fz, Gam) .* ...
-            sin( Cx .* atan( (1-Ex(Fz, Slip)) .* ...
-            Bx(Pi, Fz, Gam).*(Slip + Hx(Fz) ) + ...
-            Ex(Fz, Slip).*atan( ...
-            Bx(Pi, Fz, Gam).*(Slip + Hx(Fz) ) ) ) ) + Vx(Fz);
-    end
+    Fxo = @(Slip) ( D.*sin( C.*atan( ...
+        ( 1 - E ).*( B.*( Slip + H ) ) + ...
+        E.*atan( B .* ( Slip + H ) ) ) ) ) + V;
+end
+
+function [Dx, Ex, Kxk, Vx, Hx, Fxo] = VariantEval( Tire )
+    dFz = @(Fz) (Fz - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo;
+    dPi = @(Pi) (Pi - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
+
+    Cx = Tire.Pacejka.p.C.x(1);
+
+    Dx = @(Pi, Fz, Gam) (Tire.Pacejka.p.D.x(1) + Tire.Pacejka.p.D.x(2).*dFz(Fz)) .* ...
+        (1 + Tire.Pacejka.p.P.x(3).*dPi(Pi) + Tire.Pacejka.p.P.x(4).*dPi(Pi).^2) .* ...
+        (1 - Tire.Pacejka.p.D.x(3).*Gam.^2).*Fz;
+
+    Ex = @(Fz, Slip) ( Tire.Pacejka.p.E.x(1) + Tire.Pacejka.p.E.x(2).*dFz(Fz) ...
+        + Tire.Pacejka.p.E.x(3).*dFz(Fz).^2 ) .* ( 1 - Tire.Pacejka.p.E.x(4).*sign(Slip) );
+
+    Kxk = @(Pi, Fz) Fz.*(Tire.Pacejka.p.K.x(1) + Tire.Pacejka.p.K.x(2).*dFz(Fz) ) .* ...
+        exp( Tire.Pacejka.p.K.x(3) .* dFz(Fz) ) .* ...
+        (1 + Tire.Pacejka.p.P.x(1).*dPi(Pi) + Tire.Pacejka.p.P.x(2).*dPi(Pi).^2);
+
+    Bx = @(Pi, Fz, Gam) Kxk(Pi, Fz) ./ ( Cx.*Dx(Pi, Fz, Gam) );
+
+    Vx = @(Fz) Fz.*(Tire.Pacejka.p.V.x(1) + Tire.Pacejka.p.V.x(2).*dFz(Fz) );
+
+    Hx = @(Fz) Tire.Pacejka.p.H.x(1) + Tire.Pacejka.p.H.x(2).*dFz(Fz);
+
+    Fxo = @(Pi, Fz, Gam, Slip) Dx(Pi, Fz, Gam) .* ...
+        sin( Cx .* atan( (1-Ex(Fz, Slip)) .* ...
+        Bx(Pi, Fz, Gam).*(Slip + Hx(Fz) ) + ...
+        Ex(Fz, Slip).*atan( ...
+        Bx(Pi, Fz, Gam).*(Slip + Hx(Fz) ) ) ) ) + Vx(Fz);
+end
+
 end

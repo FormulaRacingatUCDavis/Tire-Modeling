@@ -19,7 +19,7 @@ clc; clear; close all;
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % 
-% Last Updated: 5-Apr-2021
+% Last Updated: 02-May-2021
 
 %% Initialization
 % Sets up the model structure and adds relevant directories for saving and 
@@ -35,7 +35,7 @@ Directory.Tool       = fileparts( matlab.desktop.editor.getActiveFilename );
 Directory.Data       = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'Tire-Data'];
 Directory.Resources  = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'MATLAB-Resources'];
 
-Directory.Model = [Directory.Tool, '\Vehicle Model Resources\Models'];
+Directory.Model = [Directory.Data, '\Models'];
 Directory.Media = [Directory.Tool, '\Media'];
 
 addpath( genpath( Directory.Tool      ) );
@@ -46,6 +46,7 @@ addpath( genpath( Directory.Resources ) );
 Figure.Mode  = 'Debug';
 Figure.State = 'minimized';
 
+%{
 %% Data Import
 % Imports and bins the FSAE TTC test data into Data and Bin structures which 
 % are utilized throughout the rest of the fitting process to select data from 
@@ -95,6 +96,13 @@ ModelName = inputdlg( sprintf('%s\n%s','Enter Tire Model Name in Following Forma
 Tire = TireParameters( ModelName{1}, [Data.Source], []);
 
 clear ModelName
+%}
+load('TestData_05_02_21_21_30.mat');
+
+%% Radial Deflection Modeling
+Tire = RadialDeflectionFitting( Tire, Data ); % Radial Deflection (Re, Rl)
+
+return
 
 %% Contact Patch Load Modeling
 %%% Steady State, Pure Slip Force & Aligning Moment Fitting
@@ -112,16 +120,12 @@ Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
 %%% Steady State, Combined Slip Moment Fitting
 % Tire = CombinedAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment (Mz)
 
-% Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
+ Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
 
 % Tire = ResistanceModeling( Tire, Data, Bin, Figure ); % Rolling Resistance (My)
 
 %%% Transient Response
 % Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure );
-
-%% Radial Deflection Modeling
-%%% Vertical Stiffness Modeling
-% Tire = RadialDeflection( Tire, Data ); % Radial Deflection (Re, Rl)
 
 %% Thermal Modeling
 % Heat Generation Modeling
@@ -137,4 +141,3 @@ if strcmpi( SaveModel, 'Yes' )
 end
 
 clear SaveModel
-

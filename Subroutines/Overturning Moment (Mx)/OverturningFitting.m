@@ -1,21 +1,19 @@
 function Tire = OverturningFitting(Tire, Data, Bin, Figure)
-%% Overturning Fitting = Allocates all the data for Variant and runs the plotting function
+%% Overturning Fitting - Fits Overturning Moment Pacejka Model
 % Executes all the fitting procedures for the Overturning Moment
 % generation. All equations are referenced from the 3rd Edition of 'Tyre &
 % Vehicle Dynamics' (Page 182) from Pacejka.
-
-%   The Fitting process fits the variant coefficient fitting at neutral
+%
+%   The fitting process fits the variant coefficient fitting at neutral
 %   camber which is then used to fit camber variance. This will be modified
 %   in the future for pressure variance.
-
-% Fit Surface Variant Inclination & Pressure 
-% Fit Primary Curves for Bounds & Initial Constrained High Dimensional 
-% fmincon()
+%
 % Inputs:
 %   Tire      - Tire Model
 %   Data      - Parsed FSAE TTC Data
 %   Bin       - Logical Binnings for Separating Operating Conditions
 %   Figure    - Stores Model Figures
+%
 % Outputs:
 %   Tire      - Tire Model w/ Relaxation Length Model
 %
@@ -23,9 +21,9 @@ function Tire = OverturningFitting(Tire, Data, Bin, Figure)
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021]
 % Carlos Lopez (calopez@ucdavis.edu) [Dec 2020 - ]
 % 
-% Last Updated: 20-Feb-2021
-%% Operating Condition Space
+% Last Updated: 01-May-2021
 
+%% Operating Condition Space
 Case.Pressure    = Bin(2).Values.Pressure;    % Pressure Bin Values Storage
 Case.Load        = Bin(2).Values.Load;        % Normal Load Bin Values Storage
 Case.Inclination = Bin(2).Values.Inclination; % Inclination Bin Values Storage
@@ -83,9 +81,9 @@ for i = [2 3]
 end
 
 %% Variant Fitting 
-[Variant, Tire ] = OverturningVariant( Raw, Tire);
+Tire = OverturningVariant( Raw, Tire );
 
 %% Plotting Function
-OverturningPlotting( Mesh, Raw, Variant, Tire, Figure );
+OverturningPlotting( Mesh, Raw, Tire, Figure );
 
 end

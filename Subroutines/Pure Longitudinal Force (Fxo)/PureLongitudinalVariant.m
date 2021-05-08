@@ -1,4 +1,5 @@
 function [ Variant, Tire ] = PureLongitudinalVariant( Tire, Raw, Response )
+%% PureLongitudinalVariant - Variant Pure Slip Longitudinal Fitting
 % Inputs:
 %   Tire     - Tire Model
 %   Raw      - Raw Data for a Given Experimental Operating Condition
@@ -12,7 +13,7 @@ function [ Variant, Tire ] = PureLongitudinalVariant( Tire, Raw, Response )
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % 
-% Last Updated: 15-Feb-2021
+% Last Updated: 02-May-2021
 
 x0 = Response.x0;
 
@@ -96,99 +97,44 @@ Tire.Pacejka.p.P.x(3) = Variant.Solution.ppx3;
 Tire.Pacejka.p.P.x(4) = Variant.Solution.ppx4;
 
 %% Local Functions
-    function [Solution, Log] = Runfmincon( Obj, x0, Constr, n )
-        % Initializing Logs
-        Log(n).x = [];
-        Log(n).fval = [];
-        
-        % Creating Array of Initial Vectors (Latin Hypercube Sampling)
-        if nargin > 3 && n > 1
-            Jitter = lhsdesign( n-1, numel(fieldnames(x0)) ) - 0.5;
-            
-            Initial = (struct2array(x0)/2) .* Jitter + struct2array(x0);
-            Initial(:, find( ~struct2array(x0) ) ) = ...
-                Jitter( :, find( ~struct2array(x0) ) ) .* 0.2; %#ok<FNDSB>
-            
-            Variables = fieldnames( x0 );
-            for ii = 1 : n-1
-                for jj = 1 : numel( Variables )
-                    x0(ii+1).(Variables{jj}) = Initial(ii, jj);
-                end
-            end
-        end
-        
-        % Optimization Problem
-        if isempty(Constr)
-            Prob = optimproblem( 'Objective', Obj );
-        else
-            Prob = optimproblem( 'Objective', Obj, 'Constraints', Constr );
-        end
-        
-        % Optimization Options
-        Opts = optimoptions( 'fmincon', ...
-            'MaxFunctionEvaluations', 10000, ...
-            'MaxIterations', 10000, ...
-            'Display', 'off', ...
-            'PlotFcn', {@optimplotx, @optimplotfval}, ...
-            'OutputFcn', @OptimLogging );
-        
-        % Solving Optimization Problem(s)
-        for ii = 1 : n
-            [Solution(ii), Feval(ii)] = solve( Prob, x0(ii), ...
-                'solver', 'fmincon', 'options', Opts ); %#ok<AGROW>
-        end
-        
-        % Selecting Optimal Solution
-        [~, MinIdx] = min( Feval );
-        Solution = Solution(MinIdx);
-        
-        function stop = OptimLogging( x, optimValues, state )
-            stop = false;
-            
-            if strcmp(state, 'iter')
-                Log(ii).x = [Log(ii).x x];
-                Log(ii).fval = [Log(ii).fval optimValues.fval];
-            end
-        end
+function Ex = ExBound( pex1, pex2, pex3, pex4, dFz, Sign )
+    if dFz > 0 || dFz < -1
+        Ex = 0;
+    else
+        Ex = ( pex1 + pex2.*dFz + pex3.*dFz.^2 ) .* ( 1 + pex4 .* sign(Sign) );
     end
+end
 
-    function Ex = ExBound( pex1, pex2, pex3, pex4, dFz, Sign )
-        if dFz > 0 || dFz < -1
-            Ex = 0;
-        else
-            Ex = ( pex1 + pex2.*dFz + pex3.*dFz.^2 ) .* ( 1 + pex4 .* sign(Sign) );
-        end
-    end
+function RMSE = ErrorFyo( pcx1, ...
+        pdx1, pdx2, pdx3, ...
+        pex1, pex2, pex3, pex4, ...
+        pkx1, pkx2, pkx3, ...
+        phx1, phx2, ...
+        pvx1, pvx2, ...
+        ppx1, ppx2, ppx3, ppx4 )
 
-    function RMSE = ErrorFyo( pcx1, ...
-            pdx1, pdx2, pdx3, ...
-            pex1, pex2, pex3, pex4, ...
-            pkx1, pkx2, pkx3, ...
-            phx1, phx2, ...
-            pvx1, pvx2, ...
-            ppx1, ppx2, ppx3, ppx4 )
-        
-        Cx = pcx1;
-       
-        Dx = (pdx1 + pdx2.*[Raw.dFz]) .* ...
-            (1 + ppx3.*[Raw.dPi] + ppx4.*[Raw.dPi].^2) .* ...
-            (1 - pdx3.*[Raw.Inclination].^2).*[Raw.Load];
-        
-        Ex = ( pex1 + pex2.*[Raw.dFz] + pex3.*[Raw.dFz].^2 ) .* ...
-            ( 1 - pex4.*sign([Raw.Slip] ) );
-        
-        Kxk = [Raw.Load].*(pkx1 + pkx2.*[Raw.dFz]).*exp( pkx3.*[Raw.dFz] ).* ...
-            (1 + ppx1.*[Raw.dPi] + ppx2.*[Raw.dPi].^2);
-        
-        Bx = Kxk ./ (Cx.*Dx);
-        
-        Vx = [Raw.Load].*(pvx1 + pvx2.*[Raw.dFz]);
-        
-        Hx = (phx1 + phx2.*[Raw.dFz]);
-        
-        Fxo = Dx.*sin( Cx.*atan( (1-Ex).*Bx.*([Raw.Slip] + Hx) + ...
-            Ex.*atan(Bx.*([Raw.Slip] + Hx) ) ) ) + Vx;
-        
-        RMSE = sqrt( mean( ([Raw.Force] - Fxo).^2 ) );
-    end
+    Cx = pcx1;
+
+    Dx = (pdx1 + pdx2.*[Raw.dFz]) .* ...
+        (1 + ppx3.*[Raw.dPi] + ppx4.*[Raw.dPi].^2) .* ...
+        (1 - pdx3.*[Raw.Inclination].^2).*[Raw.Load];
+
+    Ex = ( pex1 + pex2.*[Raw.dFz] + pex3.*[Raw.dFz].^2 ) .* ...
+        ( 1 - pex4.*sign([Raw.Slip] ) );
+
+    Kxk = [Raw.Load].*(pkx1 + pkx2.*[Raw.dFz]).*exp( pkx3.*[Raw.dFz] ).* ...
+        (1 + ppx1.*[Raw.dPi] + ppx2.*[Raw.dPi].^2);
+
+    Bx = Kxk ./ (Cx.*Dx);
+
+    Vx = [Raw.Load].*(pvx1 + pvx2.*[Raw.dFz]);
+
+    Hx = (phx1 + phx2.*[Raw.dFz]);
+
+    Fxo = Dx.*sin( Cx.*atan( (1-Ex).*Bx.*([Raw.Slip] + Hx) + ...
+        Ex.*atan(Bx.*([Raw.Slip] + Hx) ) ) ) + Vx;
+
+    RMSE = sqrt( mean( ([Raw.Force] - Fxo).^2 ) );
+end
+
 end
