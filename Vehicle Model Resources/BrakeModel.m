@@ -15,8 +15,7 @@ function [LinePressure, BreakTorque] = BrakeModel(PedalForce,BalanceBar,BoreDiam
 % Outputs:
 %  BreakTorque  - (n,1 numeric) Break Torque        {Tao_b} [N-m]
 %  LinePressure - (n,1 numeric) Line Pressure       {P_b} [Pa]
-%  
-%   
+%    
 % Notes:
 % Test Cases needs to be looked over, commented out parts I'm not sure what 
 % Also Not 100% if my units are right in input and output cases
@@ -24,7 +23,7 @@ function [LinePressure, BreakTorque] = BrakeModel(PedalForce,BalanceBar,BoreDiam
 % Author(s): 
 % Tristan Pham (atlpham@ucdavis.edu) [Sep 2020 - Jun 2021] 
 
-% Last Updated: 16-Apr-2021
+% Last Updated: 27-Mar-2021
 
 
 %% Test Cases
