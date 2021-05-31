@@ -2,7 +2,6 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
     SlipAngle, SlipRatio, ...
     NormalLoad, Pressure, Inclination, Velocity, ...
     Idx, Model )
-
 %% ContactPatchLoads - Tire Load Evaluation
 % This script evaluates a Pacejka contact patch tire model using the
 % formatted by TireModelFittingMain(). 
@@ -22,13 +21,13 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
 %
 % Outputs:
 %   Fx - (n,1 numeric) Longitudinal (Tractive) Force {F_x} [N]
-%   Fy - (n,1 numeric) Lateral Force      {F_y} [N]
-%   Mz - (n,1 numeric) Aligning Moment    {M_z} [N-m]
-%   Mx - (n,1 numeric) Overturning Moment {M_x} [N-m]
-%   My - (n,1 numeric) Rolling Resistance {M_y} [N-m]
+%   Fy - (n,1 numeric) Lateral Force                 {F_y} [N]
+%   Mz - (n,1 numeric) Aligning Moment               {M_z} [N-m]
+%   Mx - (n,1 numeric) Overturning Moment            {M_x} [N-m]
+%   My - (n,1 numeric) Rolling Resistance            {M_y} [N-m]
 %
 % Notes:
-%   Pacejka combined slip model is not current implemented (4/2/21) and
+%   Pacejka combined slip model is not currently implemented (4/2/21) and
 %   when the model does become available the model compatibility checks
 %   should be reformatted.
 %
@@ -36,15 +35,14 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % 
-% Last Updated: 16-Apr-2021
+% Last Updated: 08-May-2021
 
-
-%%% Test Case
+%% Test Case
 if nargin == 0
     warning('Executing SlipEstimation() Test Case')
     
     addpath( genpath( fileparts( which( 'ContactPatchLoads.m' ) ) ) );
-    load('Models\TestTire.mat');
+    load('Models\TestTire.mat'); %#ok<LOAD>
     
     %%% Nominal Test Case Conditions
     Pressure    = 70;
@@ -174,7 +172,7 @@ if nargin == 0
     return;
 end
 
-%%% Model Compatibility Check
+%% Model Compatibility Check
 if ~ismember(Model.Pure, {'Linear', 'Pacejka'})
     error('Please choose either ''Linear'' or ''Pacejka'' for the pure slip model')
 elseif ~ismember(Model.Combined, {'Pure', 'MNC'})
@@ -185,6 +183,7 @@ elseif ~ismember(Model.Combined, {'Pure', 'MNC'})
     end
 end
 
+%% Main Evaluation
 %%% Slip Angle Conversion
 SlipAngle = deg2rad(SlipAngle);
 
@@ -246,6 +245,7 @@ My = EvaluateMy( Tire, SlipAngle, SlipRatio, ...
 %%% Pure Slip Longitudinal Force Evaluation (Fx0)
 function [Fx0, Kxk, Kappa0] = ...
         EvaluateFx0( Tire, ~, Kappa, Fz, dFz, ~, dPi, Inc, ~, ~, Model )
+    
     % Evaluate P6 Pacejka
     Cx = Tire.Pacejka.p.C.x(1) .* Tire.Pacejka.L.C.x;
 
@@ -291,6 +291,7 @@ end
 %%% Pure Slip Lateral Force Evaluation (Fy0)
 function [Fy0, By, Cy, Kya, Hy, Vy, Alpha0] = ...
         EvaluateFy0( Tire, Alpha, ~, Fz, dFz, ~, dPi, Inc, ~, i, Model )            
+    
     % Evaluate P6 Pacejka
     Cy = Tire.Pacejka.p.C.y(1);
 
@@ -341,6 +342,7 @@ end
 function [Mz0, Bt, Ct, Dt, Et, Ht, Br, Cr, Dr, Hf] = ...
         EvaluateMz0( Tire, Alpha, ~, Fz, dFz, ~, dPi, Inc, ~, i, ~, ...
             Fyo, By, Cy, Kya, Hy, Vy )
+    
     % Evaluate P6 Pacejka
     Bt = (Tire.Pacejka.q.B.z(1) + Tire.Pacejka.q.B.z(2).*dFz + ...
         Tire.Pacejka.q.B.z(3).*dFz.^2) .* ...
@@ -402,6 +404,7 @@ end
 %%% Evaluate Combined Slip Aligning Moment (Mz)
 function Mz = EvaluateMz( Tire, Alpha, Kappa, ~, dFz, ~, ~, Inc, ~, i, ~, ...
     Fx, Fy, Fyp, Kxk, Kya, Bt, Ct, Dt, Et, Ht, Br, Cr, Dr, Hf )
+    
     % Equivalent Slips
     Alphat = (Alpha + (-1).^(mod(i+1,2)).*Ht );
     Alphar = (Alpha + (-1).^(mod(i+1,2)).*Hf );
@@ -427,22 +430,24 @@ end
 
 %%% Evaluate Overturning Moment
 function Mx = EvaluateMx( Tire, ~, ~, Fz, ~, ~, dPi, Inc, ~, ~, ~, Fy )
-    Mx = zeros( size( Fz ) );
-    %{
     Mx = Tire.Pacejka.Ro .* Fz .* ( Tire.Pacejka.q.s.x(1) - ...
         Tire.Pacejka.q.s.x(2) .* Inc .* ( 1 + Tire.Pacejka.p.P.Mx(1).*dPi ) + ...
         Tire.Pacejka.q.s.x(3) .* Fy ./ Tire.Pacejka.Fzo + ...
         Tire.Pacejka.q.s.x(4) .* cos( Tire.Pacejka.q.s.x(5) .* ...
-        atan( (Tire.Pacejka.q.S.x(6) .* Fz./Tire.Pacejka.Fzo) ).^2 ) .* ...
+        ( atan( (Tire.Pacejka.q.s.x(6) .* Fz ./ Tire.Pacejka.Fzo) ) ).^2 ) .* ...
         sin( Tire.Pacejka.q.s.x(7) .* Inc + Tire.Pacejka.q.s.x(8) .* ...
-        atan( Tire.Pacejka.q.s.x(9) .* Fy./Tire.Pacejka.Fzo ) ) + ...
-        Tire.Pacejka.q.s.x(10) .* atan( Tire.Pacejka.q.s.x(11) .* Fz./Tire.Pacejka.Fzo) .* Inc );
-    %}
+        atan( Tire.Pacejka.q.s.x(9) .* Fy ./ Tire.Pacejka.Fzo ) ) + ...
+        Tire.Pacejka.q.s.x(10) .* atan( Tire.Pacejka.q.s.x(11) .* Fz ./ Tire.Pacejka.Fzo ) .* Inc );
 end
 
 %%% Evaluate Rolling Resistance
-function My = EvaluateMy( Tire, Alpha, Kappa, Fz, dFz, Pi, dPi, Inc, V, ~, Model, Fx )
-    My = zeros( size( Fz ) );
+function My = EvaluateMy( Tire, ~, Kappa, Fz, ~, Pi, ~, Inc, V, ~, ~, Fx )
+    Re = Tire.Radius.Effective( Kappa, Fz, Pi, Inc );
+    Rl = Tire.Radius.Loaded( Fz, Pi, Inc );
+    
+    My = Fx .* (Re - Rl) + Fz .* Re .* ( Tire.Pacejka.q.s.y(1) + ...
+        Tire.Pacejka.q.s.y(3) .* (V ./ Tire.Pacejka.Vo) + ...
+        Tire.Pacejka.q.s.y(4) .* (V ./ Tire.Pacejka.Vo).^4 );
 end
 
 end

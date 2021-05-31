@@ -9,17 +9,18 @@ clc; clear; close all;
 %   - SI Unit Calspan TTC Data Sets [via uigetfile()]
 % 
 % Outputs:
-%   Directory - Data, Model, and Figure Path Locations
-%   Data      - Parsed FSAE TTC Data
-%   Bin       - Logical Binnings for Separating Operating Conditions
-%   Tire      - Tire Model
-%   Figure    - Stores Model Figures
+%   Directory - (struct) Data, Model, and Figure Path Locations
+%   Data      - (struct) Parsed FSAE TTC Data
+%   Bin       - (struct) Logical Binnings for Separating Operating Conditions
+%   Tire      - (struct) Tire Model
+%   Figure    - (struct) Stores Model Figures
 %
 % Author(s): 
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
-% 
-% Last Updated: 5-Apr-2021
+% Leonardo Howard    (leohoward@ucdavis.edu     ) [Jan 2021 -         ]
+
+% Last Updated: 08-May-2021
 
 %% Initialization
 % Sets up the model structure and adds relevant directories for saving and 
@@ -35,7 +36,7 @@ Directory.Tool       = fileparts( matlab.desktop.editor.getActiveFilename );
 Directory.Data       = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'Tire-Data'];
 Directory.Resources  = [Directory.Tool(1:max(strfind( Directory.Tool,'\' ))), 'MATLAB-Resources'];
 
-Directory.Model = [Directory.Tool, '\Vehicle Model Resources\Models'];
+Directory.Model = [Directory.Data, '\Models'];
 Directory.Media = [Directory.Tool, '\Media'];
 
 addpath( genpath( Directory.Tool      ) );
@@ -45,7 +46,7 @@ addpath( genpath( Directory.Resources ) );
 %%% Figure Structure
 Figure.Mode  = 'Debug';
 Figure.State = 'minimized';
-
+%{
 %% Data Import
 % Imports and bins the FSAE TTC test data into Data and Bin structures which 
 % are utilized throughout the rest of the fitting process to select data from 
@@ -96,6 +97,9 @@ Tire = TireParameters( ModelName{1}, [Data.Source], []);
 
 clear ModelName
 
+%% Radial Deflection Modeling
+%Tire = RadialDeflectionFitting( Tire, Data ); % Radial Deflection (Re, Rl)
+
 %% Contact Patch Load Modeling
 %%% Steady State, Pure Slip Force & Aligning Moment Fitting
 Tire = PureLongitudinalFitting( Tire, Data, Bin, Figure ); % Longitudinal Force ( Fxo )
@@ -108,23 +112,19 @@ Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
 % This is currently undeveloped due to data limitations. Instead, combined tire forces
 % can be evaluated using the Modified-Nicolas-Comstock (MNC) Model on the pure slip 
 % models. It is implemented within the FRUCDTire Class Definition.
-
+%}
 %%% Steady State, Combined Slip Moment Fitting
 % Tire = CombinedAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment (Mz)
-
-% Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
+load('C:\FSAE\GitHub\Tire-Data\Models\TestData_05_01_21_14_45.mat')
+Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
 
 % Tire = ResistanceModeling( Tire, Data, Bin, Figure ); % Rolling Resistance (My)
 
 %%% Transient Response
-% Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure );
-
-%% Radial Deflection Modeling
-%%% Vertical Stiffness Modeling
-% Tire = RadialDeflection( Tire, Data ); % Radial Deflection (Re, Rl)
+%Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure );
 
 %% Thermal Modeling
-% Heat Generation Modeling
+%%% Heat Generation Modeling
 
 %% Exporting Model
 SaveModel = questdlg( 'Save Model?', '', 'Yes', 'No', 'No' );
@@ -137,4 +137,3 @@ if strcmpi( SaveModel, 'Yes' )
 end
 
 clear SaveModel
-

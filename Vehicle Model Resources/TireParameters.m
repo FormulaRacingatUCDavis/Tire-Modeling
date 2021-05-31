@@ -1,4 +1,19 @@
 function Tire = TireParameters(Name, Source, Notes)
+%% TireParameters - Tire Model Structure Initialization
+% This script generates an FRUCD tire model structure
+% 
+% Inputs:
+%   Name   - (n,1 char)   Model Name
+%   Source - (6,1 struct) Model Source File Information
+%   Notes  - (n,1 cell)   Additional Model Notes
+%
+% Outputs:
+%   Tire   - (1,1 struct) Initialized FRUCD Tire Model 
+%
+% Author(s): 
+% Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
+% 
+% Last Updated: 02-May-2021
 
 if nargin > 0
     Tire.Name    = Name;                      % Tire Name
@@ -15,10 +30,11 @@ end
 
 function Pacejka = PacejkaParameters()
     %%% Nominal Conditions
-    Pacejka.Fzo = 3000;      % Nominal Pacejka Load     [N] 
-    Pacejka.Pio = 70;        % Nominal Pacejka Pressure [kPa]
-    Pacejka.Ro = 8*2.54/100; % Nominal Pacejka Radius   [m]
-
+    Pacejka.Fzo = 3000;       % Nominal Pacejka Load     [N] 
+    Pacejka.Pio = 70;         % Nominal Pacejka Pressure [kPa]
+    Pacejka.Ro  = 8*2.54/100; % Nominal Pacejka Radius   [m]
+    Pacejka.Vo  = 15;         % Nominal Pacejka Velocity [m/s]
+    
     % Scaling Factors (Lambdas)
     Pacejka.L.F.zo = 1; 
 
@@ -83,9 +99,10 @@ function Pacejka = PacejkaParameters()
     Pacejka.q.H.z = zeros(4,1);
     Pacejka.p.P.z = zeros(2,1);
 
-    Pacejka.q.s.x = zeros(10,1);
+    Pacejka.q.s.x = zeros(11,1);
     Pacejka.q.s.y = zeros(8,1);
-
+    Pacejka.p.P.Mx = 0;
+    
     % r-Factors (Combined Slip Force Coefficients)
     Pacejka.r.B.x = zeros(3,1);
     Pacejka.r.C.x = 0;

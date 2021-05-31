@@ -111,109 +111,49 @@ Tire.Pacejka.p.P.y(4) = Variant.Solution.ppy4;
 Tire.Pacejka.p.P.y(5) = Variant.Solution.ppy5;
 
 %% Local Functions
-    function [Solution, Log] = Runfmincon( Obj, x0, Constr, n )
-        % Initializing Logs
-        Log(n).x = [];
-        Log(n).fval = [];
-        
-        % Creating Array of Initial Vectors (Latin Hypercube Sampling)
-        if nargin > 3 && n > 1
-            Jitter = lhsdesign( n-1, numel(fieldnames(x0)) ) - 0.5;
-            
-            Initial = (struct2array(x0)/2) .* Jitter + struct2array(x0);
-            Initial(:, find( ~struct2array(x0) ) ) = ...
-                Jitter( :, find( ~struct2array(x0) ) ) .* 0.2; %#ok<FNDSB>
-            
-            Variables = fieldnames( x0 );
-            for ii = 1 : n-1
-                for jj = 1 : numel( Variables )
-                    x0(ii+1).(Variables{jj}) = Initial(ii, jj);
-                end
-            end
-        end
-        
-        % Optimization Problem
-        if isempty(Constr)
-            Prob = optimproblem( 'Objective', Obj );
-        else
-            Prob = optimproblem( 'Objective', Obj, 'Constraints', Constr );
-        end
-        
-        % Optimization Options
-        Opts = optimoptions( 'fmincon', ...
-            'Algorithm', 'sqp', ...
-            'MaxFunctionEvaluations', 10000, ...
-            'MaxIterations', 10000, ...
-            'Display', 'off', ...
-            'PlotFcn', {@optimplotx, @optimplotfval}, ...
-            'OutputFcn', @OptimLogging );
-        
-        % Solving Optimization Problem(s)
-        for ii = 1 : n
-            try
-                [Solution(ii), Feval(ii)] = solve( Prob, x0(ii), ...
-                    'solver', 'fmincon', 'options', Opts ); %#ok<AGROW>
-            catch
-                continue
-            end
-        end
+function Ey = EyBound( pey1, pey2, pey3, pey4, pey5, dFz, Inclination, Slip )
+    Ey = ( pey1 + pey2.*dFz ) .* ...
+        ( 1 + pey5.*Inclination.^2 - ...
+        ( pey3 + pey4.*Inclination ).*sign(Slip) );
+end
 
-        % Selecting Optimal Solution
-        [~, MinIdx] = min( Feval );
-        Solution = Solution(MinIdx);
-        
-        function stop = OptimLogging( x, optimValues, state )
-            stop = false;
-            
-            if strcmp(state, 'iter')
-                Log(ii).x = [Log(ii).x x];
-                Log(ii).fval = [Log(ii).fval optimValues.fval];
-            end
-        end
-    end
+function RMSE = ErrorFyo( pcy1, ...
+        pdy1, pdy2, pdy3, ...
+        pey1, pey2, pey3, pey4, pey5, ...
+        pky1, pky2, pky3, pky4, pky5, pky6, pky7, ...
+        phy1, phy2, ...
+        pvy1, pvy2, pvy3, pvy4, ...
+        ppy1, ppy2, ppy3, ppy4, ppy5 )
 
-    function Ey = EyBound( pey1, pey2, pey3, pey4, pey5, dFz, Inclination, Slip )
-        Ey = ( pey1 + pey2.*dFz ) .* ...
-            ( 1 + pey5.*Inclination.^2 - ...
-            ( pey3 + pey4.*Inclination ).*sign(Slip) );
-    end
+    Cy = pcy1;
 
-    function RMSE = ErrorFyo( pcy1, ...
-            pdy1, pdy2, pdy3, ...
-            pey1, pey2, pey3, pey4, pey5, ...
-            pky1, pky2, pky3, pky4, pky5, pky6, pky7, ...
-            phy1, phy2, ...
-            pvy1, pvy2, pvy3, pvy4, ...
-            ppy1, ppy2, ppy3, ppy4, ppy5 )
-        
-        Cy = pcy1;
-        
-        Dy = (pdy1 + pdy2.*[Raw.dFz]) .* ...
-            (1 + ppy3.*[Raw.dPi] + ppy4.*[Raw.dPi].^2) .* ...
-            (1 - pdy3.*[Raw.Inclination].^2).*[Raw.Load];
-        
-        Kya = pky1 .* Tire.Pacejka.Fzo .* ( 1 + ppy1.*[Raw.dPi] ) .* ...
-            ( 1 - pky3.*abs([Raw.Inclination]) ) .* sin( pky4 .* ...
-            atan( ([Raw.Load]./Tire.Pacejka.Fzo) ./ ...
-            ( ( pky2 + pky5.*[Raw.Inclination].^2 ) .* ( 1 + ppy2.*[Raw.dPi] ) ) ) );
-        
-        Kyg0 = [Raw.Load].*(pky6 + pky7.*[Raw.dFz]) .* (1 + ppy5.*[Raw.dPi]);
-        
-        By = Kya ./ (Cy.*Dy);
-        
-        Vyg = [Raw.Load].*(pvy3 + pvy4.*[Raw.dFz]).*[Raw.Inclination];
-        
-        Vy = [Raw.Load].*(pvy1 + pvy2.*[Raw.dFz]) + Vyg;
-        
-        Hy = (phy1 + phy2.*[Raw.dFz]) .* (Kyg0.*[Raw.Inclination] - Vyg) ./ Kya;
-        
-        Ey = ( pey1 + pey2.*[Raw.dFz] ) .* ...
-            ( 1 + pey5.*[Raw.Inclination].^2 - ...
-            ( pey3 + pey4.*[Raw.Inclination] ).*sign([Raw.Slip] + Hy) );
+    Dy = (pdy1 + pdy2.*[Raw.dFz]) .* ...
+        (1 + ppy3.*[Raw.dPi] + ppy4.*[Raw.dPi].^2) .* ...
+        (1 - pdy3.*[Raw.Inclination].^2).*[Raw.Load];
 
-        Fyo = Dy.*sin( Cy.*atan( (1-Ey).*By.*([Raw.Slip] + Hy) + ...
-            Ey.*atan(By.*([Raw.Slip] + Hy) ) ) ) + Vy;
-        
-        RMSE = sqrt( mean( ([Raw.Force] - Fyo).^2 ) );
-    end
+    Kya = pky1 .* Tire.Pacejka.Fzo .* ( 1 + ppy1.*[Raw.dPi] ) .* ...
+        ( 1 - pky3.*abs([Raw.Inclination]) ) .* sin( pky4 .* ...
+        atan( ([Raw.Load]./Tire.Pacejka.Fzo) ./ ...
+        ( ( pky2 + pky5.*[Raw.Inclination].^2 ) .* ( 1 + ppy2.*[Raw.dPi] ) ) ) );
+
+    Kyg0 = [Raw.Load].*(pky6 + pky7.*[Raw.dFz]) .* (1 + ppy5.*[Raw.dPi]);
+
+    By = Kya ./ (Cy.*Dy);
+
+    Vyg = [Raw.Load].*(pvy3 + pvy4.*[Raw.dFz]).*[Raw.Inclination];
+
+    Vy = [Raw.Load].*(pvy1 + pvy2.*[Raw.dFz]) + Vyg;
+
+    Hy = (phy1 + phy2.*[Raw.dFz]) .* (Kyg0.*[Raw.Inclination] - Vyg) ./ Kya;
+
+    Ey = ( pey1 + pey2.*[Raw.dFz] ) .* ...
+        ( 1 + pey5.*[Raw.Inclination].^2 - ...
+        ( pey3 + pey4.*[Raw.Inclination] ).*sign([Raw.Slip] + Hy) );
+
+    Fyo = Dy.*sin( Cy.*atan( (1-Ey).*By.*([Raw.Slip] + Hy) + ...
+        Ey.*atan(By.*([Raw.Slip] + Hy) ) ) ) + Vy;
+
+    RMSE = sqrt( mean( ([Raw.Force] - Fyo).^2 ) );
+end
+
 end
