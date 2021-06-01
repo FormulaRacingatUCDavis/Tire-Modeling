@@ -1,5 +1,5 @@
-function [InputTorque, SpinAcc] = WheelSpeed( SpinRate,DriveTorque, ...
-    BrakeTorque, TractiveForce, EffRadius, Inertia, Damping )
+function [InputTorque, SpinAcc] = WheelSpeed( SpinRate, DriveTorque, ...
+    BrakeTorque, RollingResist, TractiveForce, EffRadius, Inertia, Damping )
 %% WheelSpeed - Wheel Torque Balance & Spin Acceleration
 % Calculates brake or drive torque required for steady state applications
 % or the spin acceleration for transient applications.
@@ -8,6 +8,7 @@ function [InputTorque, SpinAcc] = WheelSpeed( SpinRate,DriveTorque, ...
 %   SpinRate      - (n,1 numeric) Wheel Spin Rate       {omega} [rad/s]
 %   DriveTorque   - (n,1 numeric) Drive Torque          {tau_D} [N-m]
 %   BrakeTorque   - (n,1 numeric) Brake Torque          {tau_B} [N-m]
+%   RollingResist - (n,1 numeric) Rolling Resistance    {M_y}   [N-m] 
 %   TractiveForce - (n,1 numeric) Tractive Force        {F_x}   [N]
 %   EffRadius     - (n,1 numeric) Tire Effective Radius {r_e}   [m]
 %   Inertia       - (n,1 numeric) Spin Inertia          {I_s}   [kg-m^2]
@@ -25,7 +26,7 @@ function [InputTorque, SpinAcc] = WheelSpeed( SpinRate,DriveTorque, ...
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Joseph Sanchez     (jomsanchez@ucdavis.edu)     [Sep 2020 - Jun 2022]
 
-% Last Updated: 10-Apr-2021
+% Last Updated: 26-May-2021
 
 %% Test Cases
 if nargin == 0
@@ -34,6 +35,8 @@ if nargin == 0
     
     DriveTorque = 20*ones(size(SpinRate)); 
     BrakeTorque = 0*ones(size(SpinRate)); 
+    
+    RollingResist = -0.05*ones(size(SpinRate));
     
     TractiveForce = 300*ones(size(SpinRate));
     EffRadius     = 0.19*ones(size(SpinRate));
@@ -45,7 +48,7 @@ if nargin == 0
     
     %%% Steady State Test Cases
     [InputTorque, ~] = WheelSpeed( SpinRate, [], [], ...
-        TractiveForce, EffRadius, Inertia, Damping );
+        RollingResist, TractiveForce, EffRadius, Inertia, Damping );
     
     for i = 1:numel(InputTorque)
         fprintf('   Steady State Instance %i: \n', i);
@@ -54,7 +57,7 @@ if nargin == 0
     
     %%% Transient Test Cases
     [~, SpinAcc] = WheelSpeed( SpinRate, DriveTorque, BrakeTorque, ...
-        TractiveForce, EffRadius, Inertia, Damping );  
+        RollingResist, TractiveForce, EffRadius, Inertia, Damping );  
     
     for i = 1:numel(SpinAcc)
         fprintf('   Transient Instance %i: \n', i);
@@ -67,13 +70,13 @@ end
 %% Computation
 if isempty( DriveTorque ) || isempty( BrakeTorque )
     %%% Steady State Input Torque
-    InputTorque = TractiveForce.*EffRadius + Damping.*SpinRate;
+    InputTorque = TractiveForce.*EffRadius + Damping.*SpinRate + RollingResist;
         
     SpinAcc = NaN;
 else
     %%% Transient Spin Acceleration
-    SpinAcc = ( DriveTorque - TractiveForce.*EffRadius - BrakeTorque - ...
-        Damping.*SpinRate ) ./ Inertia;
+    SpinAcc = ( DriveTorque - BrakeTorque - RollingResist - ...
+        TractiveForce.*EffRadius - Damping.*SpinRate ) ./ Inertia;
     
     InputTorque = NaN;
 end
