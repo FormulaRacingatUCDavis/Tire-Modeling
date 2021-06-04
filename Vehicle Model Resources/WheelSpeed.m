@@ -25,8 +25,8 @@ function [InputTorque, SpinAcc] = WheelSpeed( SpinRate, DriveTorque, ...
 % Author(s): 
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Joseph Sanchez     (jomsanchez@ucdavis.edu)     [Sep 2020 - Jun 2022]
-
-% Last Updated: 26-May-2021
+%
+% Last Updated: 01-Jun-2021
 
 %% Test Cases
 if nargin == 0
