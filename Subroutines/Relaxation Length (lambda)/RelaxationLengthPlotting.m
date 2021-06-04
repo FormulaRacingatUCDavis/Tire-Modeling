@@ -1,111 +1,165 @@
 function RelaxationLengthPlotting( Tire, Raw, Response, Idx, Mesh, Figure )
-% Plots results from Relaxation Length (RL) Fitting
+%% Relaxation Length Plotting - Transient Tire Model
+% This plots surfaces for the tire relaxation length as a function of 
+% inflation pressure and normal load for different slip angles.
+%  
+% Inputs:
+%   Tire           - (struct)      Pacejka Parameters
+%   SlipAngle      - (n,1 numeric) Slip Angle          {alpha} [deg]
+%   NormalLoad     - (n,1 numeric) Normal Load         {F_z}   [N]
+%   LateralForce   - (n,2 numeric) Lateral Force       {F_y}   [N]
+%   AligningMoment - (n,3 numeric) Aligning Moment     {M_z}   [Nm]
+%   Pressure       - (n,1 numeric) Inflation Pressure  {P_i}   [kPa]
+%   Velocity       - (n,1 numeric) Center Velocity     {v_c}   [m/s]
+%   Model          - (struct)      Fidelity Choices 
+%
+% Outputs:
+%
+% Notes:
+%   2nd order curve fitting is currently not implemented (6/2/21) because
+%   accuracy of relaxation length data is currently sufficient to justify 
+%   tire choice.
+%
+% Author(s): 
+% Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
+% Leonardo Howard    (leohoward@ucdavis.edu     ) [Feb 2021 -         ]
+% 
+% Last Updated: 02-June-2021
 
 %% Plotting The Cases of The Fit
-PlotNumber=1;
-PressureCase=1;
-SlipCase=1;
+Load = unique( [Mesh.Load] );
 
-for j = 1 : numel(Raw)
-    for k = 1 : numel(Idx.NewBreaks)
-        [FyResponseFit, ~, RelaxationLength] = ...
-            StepSteerFyResponseFit( Response(j,k).Time - Response(j,k).Time(1), ...
-            Response(j,k).Force, Response(j,k).Velocity );     
-        
-        %[MzResponseFit, ~] = StepSteerMzResponseFit(~);
-        
-        figure(1);
-        ax1 = nexttile;
-                   
-        title( { ['Pressure ($P$): $', num2str(Mesh(PressureCase).Pressure), '$ [$psi$]'], ...
-             ['Load ($F_Z$): $', num2str(Mesh(j).Load), '$ [$lbf$]'], ...
-             ['Slip Angle ($\alpha$): $', num2str(Mesh(1).Slip.Angle(SlipCase)), '$ [$rad$]'], ...
-             ['Relaxation Length ($RL$): $', num2str(RelaxationLength), '$ [$m$]'] } );
-         
-        %{
-        Using mode(Response(j,k).Slip) would provide the slip angle for 
-        each cases of fit, but the reason why the the sign of the slip angle 
-        is opposite to what was mentioned in the content round PDF is 
-        because we use SAE z-up coordinate system, whereas FSAETTC uses
-        ISO. From the graph, it would not show up because
-        Mesh(1).Slip.Angle(SlipCase) contains the correct slip angle for
-        each cases of fit. Hence, it is used instead.
-        %}
-        
-        yyaxis(ax1, 'left');
-        scatter( Response(j,k).Time - Response(j,k).Time(1), ...
-            Response(j,k).Force );
-        hold on;
-        plot( FyResponseFit{1,1} );
-        xlabel( 'Time: $t$' );
-        ylabel( 'Cornering Force: $F_{y}$' );
-        
-        ax1.XAxisLocation = 'origin';
-        if abs( max( Response(j,k).Force ) ) > abs( min( Response(j,k).Force ) )
-            ylim( [ -abs( max( Response(j,k).Force ) ) abs( max( Response(j,k).Force ) ) ] );
-        elseif abs( max( Response(j,k).Force ) ) < abs( min( Response(j,k).Force ) )
-            ylim( [ -abs( min( Response(j,k).Force ) ) abs( min( Response(j,k).Force ) ) ] );
-        else
-            ylim auto;
-        end
-        
-        %{
-        figure(2);
-        
-        ax2 = nexttile;
-        title('RL Mz Plot #' + string(PlotNumber));
-        
-        yyaxis(ax2, 'left');
-        scatter( Response(j,k).Time - Response(j,k).Time(1), ...
-            Response(j,k).Moment );
-        %hold on;
-        %plot( MzResponseFit{2,1} );
-        xlabel( 'Time: $t$' );
-        ylabel( 'Aligning Moment: $M_{z}$' );
-        
-        ax2.XAxisLocation = 'origin';
-        if abs( max( Response(j,k).Moment ) ) > abs( min( Response(j,k).Moment ) )
-            ylim( [ -abs( max( Response(j,k).Moment ) ) abs( max( Response(j,k).Moment ) ) ] );
-        elseif abs( max( Response(j,k).Moment ) ) < abs( min( Response(j,k).Moment ) )
-            ylim( [ -abs( min( Response(j,k).Moment ) ) abs( min( Response(j,k).Moment ) ) ] );
-        else
-            ylim auto;
-        end
-        %}
-        
-        Fit.RelaxationLength(j,k)   = RelaxationLength;
-        Fit.Pressure(j,k)           = Mesh(PressureCase).Pressure;
-        Fit.Load(j,k)               = Mesh(j).Load;
-        Fit.Slip(j,k)               = Mesh(1).Slip.Angle(SlipCase);       
-        
-        SlipCase = SlipCase+1;
-        if SlipCase > 3
-            SlipCase = 1;
-        end
-        
-        PlotNumber = PlotNumber+1;
+for x = 1 : numel(Run)
+    
+    for z = 1 : numel( Load )
+        Figure(x).Fy.Fit(z) = figure( ...
+            'Name'       , ['Tire: ', Tire(x).Name, ...
+                ', Lateral Force Fits, F_Z = ', num2str( Load(z) .* 4.44822 ), ' [N]'], ...
+            'NumberTitle', 'off' , ...
+            'Visible'    , 'off'  );
     end
     
-    PressureCase = PressureCase+1;
-    if PressureCase > 3
-        PressureCase = 1;
-    end
+    for j = 1 : numel(Raw)
+        
+        z = find( Mesh(j).Load == Load );
+        
+        figure( Figure(x).Fy.Fit(z) );
+        for k = 1 : numel(Idx.NewBreaks)
+            ax1 = nexttile;
+
+            title( { 
+                ['Pressure ($P$): $', ...
+                    num2str( Run(x).Fit(j,k).Pressure ), '$ [$psi$]'], ...
+                ['Slip Angle ($\alpha$): $', ...   
+                    num2str( rad2deg( Run(x).Fit(j,k).Slip ) ), '$ [$deg$]'], ...
+                ['Relaxation Length ($RL$): $', ...
+                    num2str( Run(x).Fit(j,k).RelaxationLength ), '$ [$m$]'] 
+                } );
+
+            yyaxis(ax1, 'left');
+            scatter( Run(x).Response(j,k).Time - Run(x).Response(j,k).Time(1), ...
+                Run(x).Response(j,k).Force );
+            hold on;
+            plot( Run(x).Fit(j,k).FyResponseFit{1,1} );
+            
+            xlabel( 'Time: $t$' );
+            ylabel( 'Cornering Force: $F_{y}$' );
+
+            ax1.XAxisLocation = 'origin';
+            ax1.YAxis(2).Visible = 'off';
+            if abs( max( Run(x).Response(j,k).Force ) ) > abs( min( Run(x).Response(j,k).Force ) )
+                ylim( [ -abs( max( Run(x).Response(j,k).Force ) ) abs( max( Run(x).Response(j,k).Force ) ) ] );
+            elseif abs( max( Run(x).Response(j,k).Force ) ) < abs( min( Run(x).Response(j,k).Force ) )
+                ylim( [ -abs( min( Run(x).Response(j,k).Force ) ) abs( min( Run(x).Response(j,k).Force ) ) ] );
+            else
+                ylim auto;
+            end
+        end               
+    end    
 end
 
-%% Surface Plot of Relaxation Length as a Function of Pressure and Load for Different Slip Angles
-for i = 1:3
-    figure(3);
-    subplot(3,1,i);
-     
-    surf( ...
-        reshape( Fit.Pressure(:,i), 3, 3 ), ...
-        reshape( Fit.Load(:,i), 3, 3 ), ...
-        reshape( Fit.RelaxationLength(:,i), 3, 3) ...
-    );
+%% 16" and 18" Hoosier R25B Lateral Force Comparison Figure
+%{
+%Round 8 Run 1:  Hoosier R25B 16"
+%Round 6 Run 20: Hoosier R25B 18"
 
-    xlabel('Pressure: $P$'); 
-    ylabel('Load: $F_{z}$'); 
-    zlabel('Relaxation Length: $RL$');
+for x = 1 : numel( Run )
+    PressureCase=1;
+    SlipCase=2;
+    j=1;
+    k=2;
+
+    [Run(x).FyResponseFit, ~, RelaxationLength] = ...
+        StepSteerFyResponseFit( Run(x).Response(j,k).Time - Run(x).Response(j,k).Time(1), ...
+        Run(x).Response(j,k).Force, Run(x).Response(j,k).Velocity );
+
+    Run(x).Fit(j,k).RelaxationLength   = RelaxationLength;
+    Run(x).Fit(j,k).Pressure           = Mesh(PressureCase).Pressure;
+    Run(x).Fit(j,k).Load               = Mesh(j).Load;
+    Run(x).Fit(j,k).Slip               = Mesh(1).Slip.Angle(SlipCase);
+end
+
+figure;
+ax1=nexttile;
+
+yyaxis(ax1, 'left');
+scatter( Run(1).Response(j,k).Time - Run(1).Response(j,k).Time(1), ...
+    Run(1).Response(j,k).Force );
+hold on;
+plot( Run(1).FyResponseFit{1,1}, 'm' );
+hold on;
+scatter( Run(2).Response(j,k).Time - Run(2).Response(j,k).Time(1), ...
+    Run(2).Response(j,k).Force, 'r' );
+hold on;
+plot( Run(2).FyResponseFit{1,1}, 'g');
+
+xlabel( 'Time: $t$' );
+ylabel( 'Cornering Force: $F_{y}$' );
+
+ax1.XAxisLocation = 'origin';
+ax1.YAxis(2).Visible = 'off';
+
+if abs( max( Run(1).Response(j,k).Force ) ) > abs( min( Run(1).Response(j,k).Force ) )
+    ylim( [ -50 abs( max( Run(1).Response(j,k).Force ) ) ] );
+elseif abs( max( Run(1).Response(j,k).Force ) ) < abs( min( Run(1).Response(j,k).Force ) )
+    ylim( [ -50 abs( min( Run(1).Response(j,k).Force ) ) ] );
+else
+    ylim auto;
+end
+
+legend({'16" Tire Data','16" Tire Curve Fitting','18" Tire Data','18" Tire Curve Fitting'}, ...
+    'Position',[0.6 0.4 0.2 0.1])
+
+text(1.5, 50, append('16" Tire Relaxation Length: ', num2str(Run(1).Fit(j,k).RelaxationLength),' m'))
+text(1.5, 40, append('18" Tire Relaxation Length: ', num2str(Run(2).Fit(j,k).RelaxationLength),' m'))
+%}
+
+%% Surface Plot of Relaxation Length as a Function of Pressure and Load for Different Slip Angles
+    for i = 1 : numel( Tire )
+        Figure(x).Fy.SurfacePlot(z) = figure( ...
+            'Name'       , ['Tire: ', Tire(x).Name, ', Surface Plot for Different Slip Angles'], ...
+            'NumberTitle', 'off' , ...
+            'Visible'    , 'off'  );
+    end
     
-    title( ['Slip Angle ($\alpha$): $', num2str( Fit.Slip(1,i) ), '$ [$rad$]'] );
+    figure( Figure(x).Fy.SurfacePlot(z) );
+    
+    for i = 1 : numel(Mesh(1).Slip.Angle)
+        subplot( numel(Mesh(1).Slip.Angle), 1, i );
+
+        surf( ...
+            reshape( [Run(x).Fit(:,i).Pressure], ...
+                [numel(Mesh(1).Slip.Angle), numel(Mesh(1).Slip.Angle)] ), ...
+            reshape( [Run(x).Fit(:,i).Load], ...               
+                [numel(Mesh(1).Slip.Angle), numel(Mesh(1).Slip.Angle)] ), ...
+            reshape( [Run(x).Fit(:,i).RelaxationLength], ...   
+                [numel(Mesh(1).Slip.Angle), numel(Mesh(1).Slip.Angle)] ) ...
+        );
+
+        xlabel('Pressure: $P$'); 
+        ylabel('Load: $F_{z}$'); 
+        zlabel('Relaxation Length: $RL$');
+
+        title( ['Slip Angle ($\alpha$): $', num2str( Run(x).Fit(1,i).Slip ), '$ [$rad$]'] );
+    end
 end

@@ -46,7 +46,7 @@ addpath( genpath( Directory.Resources ) );
 %%% Figure Structure
 Figure.Mode  = 'Debug';
 Figure.State = 'minimized';
-%{
+
 %% Data Import
 % Imports and bins the FSAE TTC test data into Data and Bin structures which 
 % are utilized throughout the rest of the fitting process to select data from 
@@ -89,39 +89,43 @@ end
 clear i
 
 %% Initialize Tire Model
-ModelName = inputdlg( sprintf('%s\n%s','Enter Tire Model Name in Following Format: ', ...
-    '{Manufacturer} {Compound} {Diameter}x{Width}-{Rim Diameter}x{Rim Width}'), ...
-    '', 1, {'Tire'} );
+for i = 1 : numel( Data )
+    ModelName = inputdlg( sprintf('%s\n%s','Enter Tire Model Name in Following Format: ', ...
+        '{Manufacturer} {Compound} {Diameter}x{Width}-{Rim Diameter}x{Rim Width}'), ...
+        '', 1, {'Tire'} );
 
-Tire = TireParameters( ModelName{1}, [Data.Source], []);
+    Tire(i) = TireParameters( ModelName{1}, [Data.Source], []);
 
-clear ModelName
+    clear ModelName
+end
+
+clear i
 
 %% Radial Deflection Modeling
 %Tire = RadialDeflectionFitting( Tire, Data ); % Radial Deflection (Re, Rl)
 
 %% Contact Patch Load Modeling
 %%% Steady State, Pure Slip Force & Aligning Moment Fitting
-Tire = PureLongitudinalFitting( Tire, Data, Bin, Figure ); % Longitudinal Force ( Fxo )
+%Tire = PureLongitudinalFitting( Tire, Data, Bin, Figure ); % Longitudinal Force ( Fxo )
 
-Tire = PureLateralFitting( Tire, Data, Bin, Figure ); % Lateral Force ( Fyo )
+%Tire = PureLateralFitting( Tire, Data, Bin, Figure ); % Lateral Force ( Fyo )
 
-Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
+%Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
 
 %%% Steady State, Combined Slip Force Modeling
 % This is currently undeveloped due to data limitations. Instead, combined tire forces
 % can be evaluated using the Modified-Nicolas-Comstock (MNC) Model on the pure slip 
 % models. It is implemented within the FRUCDTire Class Definition.
-%}
+
 %%% Steady State, Combined Slip Moment Fitting
 % Tire = CombinedAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment (Mz)
-load('C:\FSAE\GitHub\Tire-Data\Models\TestData_05_01_21_14_45.mat')
-Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
+
+%Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
 
 % Tire = ResistanceModeling( Tire, Data, Bin, Figure ); % Rolling Resistance (My)
 
 %%% Transient Response
-%Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure );
+Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure );
 
 %% Thermal Modeling
 %%% Heat Generation Modeling
