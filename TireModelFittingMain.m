@@ -20,7 +20,7 @@ clc; clear; close all;
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
 % Leonardo Howard    (leohoward@ucdavis.edu     ) [Jan 2021 -         ]
 
-% Last Updated: 08-May-2021
+% Last Updated: 02-Jun-2021
 
 %% Initialization
 % Sets up the model structure and adds relevant directories for saving and 
@@ -102,15 +102,15 @@ end
 clear i
 
 %% Radial Deflection Modeling
-%Tire = RadialDeflectionFitting( Tire, Data ); % Radial Deflection (Re, Rl)
+Tire = RadialDeflectionFitting( Tire, Data ); % Radial Deflection (Re, Rl)
 
 %% Contact Patch Load Modeling
 %%% Steady State, Pure Slip Force & Aligning Moment Fitting
-%Tire = PureLongitudinalFitting( Tire, Data, Bin, Figure ); % Longitudinal Force ( Fxo )
+Tire = PureLongitudinalFitting( Tire, Data, Bin, Figure ); % Longitudinal Force ( Fxo )
 
-%Tire = PureLateralFitting( Tire, Data, Bin, Figure ); % Lateral Force ( Fyo )
+Tire = PureLateralFitting( Tire, Data, Bin, Figure ); % Lateral Force ( Fyo )
 
-%Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
+Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
 
 %%% Steady State, Combined Slip Force Modeling
 % This is currently undeveloped due to data limitations. Instead, combined tire forces
@@ -120,7 +120,7 @@ clear i
 %%% Steady State, Combined Slip Moment Fitting
 % Tire = CombinedAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment (Mz)
 
-%Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
+Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
 
 % Tire = ResistanceModeling( Tire, Data, Bin, Figure ); % Rolling Resistance (My)
 
