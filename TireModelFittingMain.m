@@ -89,17 +89,35 @@ end
 clear i
 
 %% Initialize Tire Model
-for i = 1 : numel( Data )
-    ModelName = inputdlg( sprintf('%s\n%s','Enter Tire Model Name in Following Format: ', ...
-        '{Manufacturer} {Compound} {Diameter}x{Width}-{Rim Diameter}x{Rim Width}'), ...
-        '', 1, {'Tire'} );
+answer = questdlg('Preferred Tire Data Usage?',...
+    'Usage Options',...
+    'Bunched','Distinct','Distinct');
 
-    Tire(i) = TireParameters( ModelName{1}, [Data.Source], []);
+switch answer
+    case 'Bunched'
+        %%%Bunched Tire Data
+        ModelName = inputdlg( sprintf('%s\n%s','Enter Tire Model Name in Following Format: ', ...
+                '{Manufacturer} {Compound} {Diameter}x{Width}-{Rim Diameter}x{Rim Width}'), ...
+                '', 1, {'Tire'} );
 
-    clear ModelName
+        Tire = TireParameters( ModelName{1}, [Data.Source], []);
+
+        clear ModelName
+
+    case 'Distinct'
+        %%%Distinct Tire Data
+        for i = 1 : numel( Data )
+            ModelName = inputdlg( sprintf('%s\n%s','Enter Tire Model Name in Following Format: ', ...
+                '{Manufacturer} {Compound} {Diameter}x{Width}-{Rim Diameter}x{Rim Width}'), ...
+                '', 1, {'Tire'} );
+
+            Tire(i) = TireParameters( ModelName{1}, [Data.Source], []);
+
+            clear ModelName
+        end
+
+        clear i
 end
-
-clear i
 
 %% Radial Deflection Modeling
 Tire = RadialDeflectionFitting( Tire, Data ); % Radial Deflection (Re, Rl)
