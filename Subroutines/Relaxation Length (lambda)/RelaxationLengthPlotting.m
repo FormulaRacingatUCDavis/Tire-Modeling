@@ -1,4 +1,4 @@
-function RelaxationLengthPlotting( Tire, Raw, Response, Idx, Mesh, Figure )
+function RelaxationLengthPlotting( Tire, Raw, Run, Idx, Mesh, Figure )
 %% Relaxation Length Plotting - Transient Tire Model
 % This plots surfaces for the tire relaxation length as a function of 
 % inflation pressure and normal load for different slip angles.

@@ -96,15 +96,15 @@ Tire = TireParameters( ModelName{1}, [Data.Source], []);
 clear ModelName
 
 %% Radial Deflection Modeling
-%Tire = RadialDeflectionFitting( Tire, Data ); % Radial Deflection (Re, Rl)
+Tire = RadialDeflectionFitting( Tire, Data ); % Radial Deflection (Re, Rl)
 
 %% Contact Patch Load Modeling
 %%% Steady State, Pure Slip Force & Aligning Moment Fitting
-%Tire = PureLongitudinalFitting( Tire, Data, Bin, Figure ); % Longitudinal Force ( Fxo )
+Tire = PureLongitudinalFitting( Tire, Data, Bin, Figure ); % Longitudinal Force ( Fxo )
 
-%Tire = PureLateralFitting( Tire, Data, Bin, Figure ); % Lateral Force ( Fyo )
+Tire = PureLateralFitting( Tire, Data, Bin, Figure ); % Lateral Force ( Fyo )
 
-%Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
+Tire = PureAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment ( Mzo )
 
 %%% Steady State, Combined Slip Force Modeling
 % This is currently undeveloped due to data limitations. Instead, combined tire forces
@@ -114,7 +114,7 @@ clear ModelName
 %%% Steady State, Combined Slip Moment Fitting
 % Tire = CombinedAligningFitting( Tire, Data, Bin, Figure ); % Aligning Moment (Mz)
 
-%Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
+Tire = OverturningFitting( Tire, Data, Bin, Figure ); % Overturning Moment (Mx)
 
 % Tire = ResistanceModeling( Tire, Data, Bin, Figure ); % Rolling Resistance (My)
 
