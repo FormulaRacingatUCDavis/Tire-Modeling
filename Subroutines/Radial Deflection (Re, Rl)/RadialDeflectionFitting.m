@@ -48,7 +48,8 @@ if ~all( strcmpi({Data(2:end).Tire}, Data(1).Tire ) )
     Loaded(2).Radius   = [Data(4).Radius.Loaded, Data(5).Radius.Loaded, Data(6).Radius.Loaded] .* 10;
     
     LoadedFit{2} = fit( [Loaded(2).Load; Loaded(2).Pressure]', Loaded(2).Radius', Form, Opts );
-    
+    Tire.Radius.Loaded = fit( [Loaded(2).Load; Loaded(2).Pressure]', Loaded(2).Radius', Form, Opts );
+  
     Effective.Radius = Effective.Radius .* ...
         Tire.Radius.Loaded( Tire.Pacejka.Fzo./4, Tire.Pacejka.Pio ) ./ ...
         LoadedFit{2}( Tire.Pacejka.Fzo./4, Tire.Pacejka.Pio );

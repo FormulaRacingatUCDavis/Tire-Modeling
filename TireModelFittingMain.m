@@ -95,6 +95,7 @@ Tire = TireParameters( ModelName{1}, [Data.Source], []);
 
 clear ModelName
 
+
 %% Radial Deflection Modeling
 Tire = RadialDeflectionFitting( Tire, Data ); % Radial Deflection (Re, Rl)
 
