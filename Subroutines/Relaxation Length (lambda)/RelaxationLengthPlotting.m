@@ -24,7 +24,7 @@ function RelaxationLengthPlotting( Tire, Raw, Run, Idx, Mesh, Figure )
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Leonardo Howard    (leohoward@ucdavis.edu     ) [Feb 2021 -         ]
 % 
-% Last Updated: 12-August-2021
+% Last Updated: 22-October-2021
 
 %% Plotting The Cases of The Fit
 Load = unique( [Mesh.Load] );
@@ -78,8 +78,32 @@ end
 
 %% 16" and 18" Hoosier R25B Lateral Force Comparison Figure
 %{
-%Round 8 Run 1:  Hoosier R25B 16"
-%Round 6 Run 20: Hoosier R25B 18"
+%{
+    This section of the code is to provide justification for the choice to
+    use the 16" tire over the 18" tire in terms of transient vehicle 
+    lateral response.
+
+    To produce the lateral force comparison figure for the 16" and the 18"
+    Hoosier R25B tires, the following tire data is required:
+        1. Round 8 Run 1:  Hoosier R25B 16"
+        2. Round 6 Run 20: Hoosier R25B 18"
+    
+    Hence, the file LateralTirePerformanceComparison.mat is created to 
+    produce filtered tire data from RelaxationLengthFitting.m for
+    use in RelaxationLengthPlotting.m to generate comparison figure which
+    would be difficult to obtain from the tire data chosen routinely.
+
+    This .mat file is obtained by first making some slight changes to 
+    RelaxationLengthFitting.m so that it can run two tire data to generate
+    data for the variables Response and Mesh [example: placing "for r = 1 :
+    numel(Data)" at the beginning of the codes and ending the "for" loop
+    when data for the variables Response and Mesh are obtained], then 
+    setting breakpoint right before RelaxationLengthPlotting() is called, 
+    and placing the line 
+    "save Models\LateralTirePerformanceComparison.mat Run Mesh" into the
+    command window.
+%}
+load('Models\LateralTirePerformanceComparison.mat'); %#ok<LOAD>
 
 for x = 1 : numel( Run )
     PressureCase=1;

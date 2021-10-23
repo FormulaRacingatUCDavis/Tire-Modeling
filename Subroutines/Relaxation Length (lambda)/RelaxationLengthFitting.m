@@ -27,12 +27,12 @@ function Tire = RelaxationLengthFitting( Tire, Data, Bin, Figure )
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Leonardo Howard    (leohoward@ucdavis.edu     ) [Feb 2021 -         ]
 % 
-% Last Updated: 12-August-2021
+% Last Updated: 22-October-2021
 
 %% Operating Condition Space
-Case.Pressure    = Bin.Values.Pressure;    % Pressure Bin Values Storage
-Case.Load        = Bin.Values.Load;        % Normal Load Bin Values Storage
-Case.Slip.Angle  = Bin.Values.Slip.Angle;  % Slip Angle Bin Values Storage
+Case.Pressure    = Bin(1).Values.Pressure;    % Pressure Bin Values Storage
+Case.Load        = Bin(1).Values.Load;        % Normal Load Bin Values Storage
+Case.Slip.Angle  = Bin(1).Values.Slip.Angle;  % Slip Angle Bin Values Storage
 
 Mesh = struct( 'Pressure', [], 'Load', [], 'dPi', [], 'dFz', [] );
 
@@ -56,23 +56,23 @@ Raw( size(Mesh,1), size(Mesh,2) ).Slip = [];
 
 for p = 1 : numel( Case.Pressure )       
     for z = 1 : numel( Case.Load ) 
-        Idx.Valid = find(Bin.Pressure(p,:) & Bin.Load(z,:));
+        Idx.Valid = find(Bin(1).Pressure(p,:) & Bin(1).Load(z,:));
 
         % Finds last point of initial spring rate tests
-        Idx.Valid = Idx.Valid( Idx.Valid > find( Bin.Velocity(4,:), 1, 'last' ) );     
+        Idx.Valid = Idx.Valid( Idx.Valid > find( Bin(1).Velocity(4,:), 1, 'last' ) );     
 
         if numel( Idx.Valid ) < 50
             continue % Skip Sparse Bins
         end
 
-        Raw(p,z).Time       = Data.Time(Idx.Valid);          % Allocate Time Data
-        Raw(p,z).Slip       = Data.Slip.Angle(Idx.Valid);    % Allocate Slip Angle Data
-        Raw(p,z).Force      = Data.Force(2,Idx.Valid);       % Allocate Lateral Force Data
-        Raw(p,z).Moment     = Data.Moment(3,Idx.Valid);      % Allocate Aligning Moment Data
+        Raw(p,z).Time       = Data(1).Time(Idx.Valid);          % Allocate Time Data
+        Raw(p,z).Slip       = Data(1).Slip.Angle(Idx.Valid);    % Allocate Slip Angle Data
+        Raw(p,z).Force      = Data(1).Force(2,Idx.Valid);       % Allocate Lateral Force Data
+        Raw(p,z).Moment     = Data(1).Moment(3,Idx.Valid);      % Allocate Aligning Moment Data
 
-        Raw(p,z).Velocity   = Data.Velocity(Idx.Valid);      % Allocate Velocity Data
-        Raw(p,z).Load       = Data.Force(3,Idx.Valid);       % Allocate Normal Force Data
-        Raw(p,z).Pressure   = Data.Pressure(Idx.Valid);      % Allocate Pressure Data
+        Raw(p,z).Velocity   = Data(1).Velocity(Idx.Valid);      % Allocate Velocity Data
+        Raw(p,z).Load       = Data(1).Force(3,Idx.Valid);       % Allocate Normal Force Data
+        Raw(p,z).Pressure   = Data(1).Pressure(Idx.Valid);      % Allocate Pressure Data
 
         Raw(p,z).dFz        = (Raw(p,z).Load     - Tire.Pacejka.Fzo) ./ Tire.Pacejka.Fzo;
         Raw(p,z).dPi        = (Raw(p,z).Pressure - Tire.Pacejka.Pio) ./ Tire.Pacejka.Pio;
