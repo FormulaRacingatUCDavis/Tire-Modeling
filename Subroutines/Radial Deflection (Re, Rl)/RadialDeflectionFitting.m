@@ -15,8 +15,10 @@ function Tire = RadialDeflectionFitting( Tire, Data )
 %
 % Author(s):
 % Blake Christierson (bechristierson@ucdavis.edu)
+% Leonardo Howard    (leohoward@ucdavis.edu     )
+% Tristan Pham       (atlpham@ucdavis.edu       )
 %
-% Last Updated: 08-May-2021
+% Last Updated: 23-Oct-2021
 
 %% Loaded Radius
 Form = fittype( 'p00+p10*Fz+p01*Pi+p20*Fz^2+p02*Pi^2+p11*Fz*Pi', ...

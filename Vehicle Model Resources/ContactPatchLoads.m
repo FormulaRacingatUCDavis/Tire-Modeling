@@ -34,8 +34,10 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
 % Author(s): 
 % Blake Christierson (bechristierson@ucdavis.edu) [Sep 2018 - Jun 2021] 
 % Carlos Lopez       (calopez@ucdavis.edu       ) [Jan 2019 -         ]
+% Leonardo Howard    (leohoward@ucdavis.edu     ) [Jan 2021 -         ]
+% Tristan Pham       (atlpham@ucdavis.edu       ) [Jan 2021 -         ]
 % 
-% Last Updated: 08-May-2021
+% Last Updated: 23-Oct-2021
 
 %% Test Case
 if nargin == 0
