@@ -37,14 +37,16 @@ function [Fx, Fy, Mz, Mx, My] = ContactPatchLoads( Tire, ...
 % Leonardo Howard    (leohoward@ucdavis.edu     ) [Jan 2021 -         ]
 % Tristan Pham       (atlpham@ucdavis.edu       ) [Jan 2021 -         ]
 % 
-% Last Updated: 23-Oct-2021
+% Last Updated: 11-Nov-2021
 
 %% Test Case
 if nargin == 0
     warning('Executing SlipEstimation() Test Case')
     
     addpath( genpath( fileparts( which( 'ContactPatchLoads.m' ) ) ) );
-    load('Models\TestTire.mat'); %#ok<LOAD>
+    %load('Models\TestTire.mat'); %#ok<LOAD> missing Tire.Pacejka.p.P.Mx
+    %load('Hoosier_R25B_16x75-10x7.mat');
+    load('Tire.mat');
     
     %%% Nominal Test Case Conditions
     Pressure    = 70;
