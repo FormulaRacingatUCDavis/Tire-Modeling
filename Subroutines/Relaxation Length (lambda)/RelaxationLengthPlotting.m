@@ -91,35 +91,23 @@ end
     Hence, the file LateralTirePerformanceComparison.mat is created to 
     produce filtered tire data from RelaxationLengthFitting.m for
     use in RelaxationLengthPlotting.m to generate comparison figure which
-    would be difficult to obtain from the tire data chosen routinely.
+    would be difficult to obtain from the tire data chosen routinely (Round 
+    6: Run 1,2,4, and Round 8: Run 34,35,36).
 
-    This .mat file is obtained by first making some slight changes to 
-    RelaxationLengthFitting.m so that it can run two tire data to generate
-    data for the variables Response and Mesh [example: placing "for r = 1 :
-    numel(Data)" at the beginning of the codes and ending the "for" loop
-    when data for the variables Response and Mesh are obtained], then 
-    setting breakpoint right before RelaxationLengthPlotting() is called, 
-    and placing the line 
-    "save Models\LateralTirePerformanceComparison.mat Run Mesh" into the
-    command window.
+    This .mat file is obtained by first running RelaxationLengthFitting.m 
+    twice after setting a breakpoint right before 
+    RelaxationLengthPlotting() is called. The reason for this is to save 
+    the 'Run' variable as 'Run_16in' and 'Run_18in' variables for the 2 
+    separate runs, respectively. Then, these two saved variables will be 
+    saved as 'Run(1)' and 'Run(2)', respectively. The saving process is 
+    done by running the following line which is used to save the 'Run_16in'
+    variable: "save Models\LateralTirePerformanceComparison.mat Run_16in".
+    into the command window.
 %}
 load('Models\LateralTirePerformanceComparison.mat'); %#ok<LOAD>
 
-for x = 1 : numel( Run )
-    PressureCase=1;
-    SlipCase=2;
-    j=1;
-    k=2;
-
-    [Run(x).FyResponseFit, ~, RelaxationLength] = ...
-        StepSteerFyResponseFit( Run(x).Response(j,k).Time - Run(x).Response(j,k).Time(1), ...
-        Run(x).Response(j,k).Force, Run(x).Response(j,k).Velocity );
-
-    Run(x).Fit(j,k).RelaxationLength   = RelaxationLength;
-    Run(x).Fit(j,k).Pressure           = Mesh(PressureCase).Pressure;
-    Run(x).Fit(j,k).Load               = Mesh(j).Load;
-    Run(x).Fit(j,k).Slip               = Mesh(1).Slip.Angle(SlipCase);
-end
+j=1;
+k=2;
 
 figure;
 ax1=nexttile;
@@ -128,12 +116,12 @@ yyaxis(ax1, 'left');
 scatter( Run(1).Response(j,k).Time - Run(1).Response(j,k).Time(1), ...
     Run(1).Response(j,k).Force );
 hold on;
-plot( Run(1).FyResponseFit{1,1}, 'm' );
+plot( Run(1).Fit(j,k).FyResponseFit{1,1}, 'm' );
 hold on;
 scatter( Run(2).Response(j,k).Time - Run(2).Response(j,k).Time(1), ...
     Run(2).Response(j,k).Force, 'r' );
 hold on;
-plot( Run(2).FyResponseFit{1,1}, 'g');
+plot( Run(2).Fit(j,k).FyResponseFit{1,1}, 'g');
 
 xlabel( 'Time: $t$' );
 ylabel( 'Cornering Force: $F_{y}$' );
