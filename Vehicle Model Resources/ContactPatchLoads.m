@@ -45,7 +45,8 @@ if nargin == 0
     
     addpath( genpath( fileparts( which( 'ContactPatchLoads.m' ) ) ) );
     %load('Models\TestTire.mat'); %#ok<LOAD> missing Tire.Pacejka.p.P.Mx
-    load('Hoosier_R25B_16x75-10x7.mat');
+    load('Hoosier_R25B_18x75-10x7.mat');
+    %load('Hoosier_R25B_16x75-10x7.mat');
     %load('Tire.mat');
     
     %%% Nominal Test Case Conditions
