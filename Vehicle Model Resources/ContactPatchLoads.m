@@ -45,8 +45,8 @@ if nargin == 0
     
     addpath( genpath( fileparts( which( 'ContactPatchLoads.m' ) ) ) );
     %load('Models\TestTire.mat'); %#ok<LOAD> missing Tire.Pacejka.p.P.Mx
-    load('Hoosier_R25B_18x75-10x7.mat');
-    %load('Hoosier_R25B_16x75-10x7.mat');
+    %load('Hoosier_R25B_18x75-10x7.mat');
+    load('Hoosier_R25B_16x75-10x7.mat');
     %load('Tire.mat');
     
     %%% Nominal Test Case Conditions
@@ -73,41 +73,41 @@ if nargin == 0
     figure
     sgtitle( {'Slip-Load Surfaces', ...
         ['$P_{i} ='  , num2str(Pressure)   , '$ [$kPa$],' ...
-          '$\gamma = ', num2str(Inclination), '$ [$deg$]']} )
+          '$\gamma = ', num2str(Inclination), '$ [$deg$]']} ,'Interpreter','latex')
       
     subplot(3,2,1)
     surf( SlipRatio, NormalLoad, Fx )
-    xlabel( '$\kappa$ [ ]' )
-    ylabel( '$F_{z}$ [$N$]' )
-    zlabel( '$F_{x}$ [$N$]' )
+    xlabel( '$\kappa$ [ ]' ,'Interpreter','latex')
+    ylabel( '$F_{z}$ [$N$]','Interpreter','latex' )
+    zlabel( '$F_{x}$ [$N$]' ,'Interpreter','latex')
     title( 'Longitudinal Force' )
     
     subplot(3,2,2)
     surf( SlipAngle, NormalLoad, Fy )
-    xlabel( '$\alpha$ [$deg$]' )
-    ylabel( '$F_{z}$ [$N$]' )
-    zlabel( '$F_{y}$ [$N$]' )
+    xlabel( '$\alpha$ [$deg$]','Interpreter','latex' )
+    ylabel( '$F_{z}$ [$N$]','Interpreter','latex' )
+    zlabel( '$F_{y}$ [$N$]','Interpreter','latex' )
     title( 'Lateral Force' )
     
     subplot(3,2,3)
     surf( SlipAngle, NormalLoad, Mz )
-    xlabel( '$\alpha$ [$deg$]' )
-    ylabel( '$F_{z}$ [$N$]' )
-    zlabel( '$M_{z}$ [$Nm$]' )
+    xlabel( '$\alpha$ [$deg$]' ,'Interpreter','latex')
+    ylabel( '$F_{z}$ [$N$]','Interpreter','latex' )
+    zlabel( '$M_{z}$ [$Nm$]','Interpreter','latex' )
     title( 'Aligning Moment' )
     
     subplot(3,2,4)
     surf( SlipAngle, NormalLoad, Mx )
-    xlabel( '$\alpha$ [$deg$]' )
-    ylabel( '$F_{z}$ [$N$]' )
-    zlabel( '$M_{x}$ [$Nm$]' )
+    xlabel( '$\alpha$ [$deg$]' ,'Interpreter','latex')
+    ylabel( '$F_{z}$ [$N$]' ,'Interpreter','latex')
+    zlabel( '$M_{x}$ [$Nm$]','Interpreter','latex' )
     title( 'Overturning Moment' )
     
     subplot(3,2,5)
     surf( SlipRatio, NormalLoad, My )
-    xlabel( '$\kappa$ [ ]' )
-    ylabel( '$F_{z}$ [$N$]' )
-    zlabel( '$M_{y}$ [$Nm$]' )
+    xlabel( '$\kappa$ [ ]','Interpreter','latex' )
+    ylabel( '$F_{z}$ [$N$]','Interpreter','latex' )
+    zlabel( '$M_{y}$ [$Nm$]','Interpreter','latex' )
     title( 'Rolling Resistance' )
       
     %%% Friction Ellipse Plotting
@@ -137,8 +137,8 @@ if nargin == 0
                 (length(ColorMap)-1) ./ diff( SlipRatio([1 end]) )) + 1, : ) );
     end
     
-    xlabel( 'Lateral Force, $F_{y}$ [$N$]' ); 
-    ylabel( 'Longitudinal Force, $F_{x}$ [$N$]' );
+    xlabel( 'Lateral Force, $F_{y}$ [$N$]','Interpreter','latex' ); 
+    ylabel( 'Longitudinal Force, $F_{x}$ [$N$]','Interpreter','latex' );
     title( 'Friction Ellipse' )
     
     %%% Inclination Sensitivity
@@ -159,10 +159,10 @@ if nargin == 0
     plot( Inclination(1,:), max(abs(Fx),[],1)./max(abs(Fx),[],'all') ); hold on;
     plot( Inclination(1,:), max(abs(Fy),[],1)./max(abs(Fy),[],'all') )
     
-    xlabel( 'Inclination, $\gamma$ [$deg$]' )
+    xlabel( 'Inclination, $\gamma$ [$deg$]','Interpreter','latex' )
     ylabel( 'Normalized Grip' )
     title( 'Inclination Sensitivity')
-    legend( '$F_{x}$', '$F_{y}$' )
+    legend( '$F_{x}$', '$F_{y}$','Interpreter','latex' )
     
     %%% Single Evaluation
     Inclination = 1;

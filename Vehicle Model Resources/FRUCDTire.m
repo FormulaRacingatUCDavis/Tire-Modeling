@@ -406,22 +406,28 @@ classdef FRUCDTire
 
             %%% Evaluate Overturning Moment
             function Mx = EvaluateMx( obj, ~, ~, Fz, ~, ~, dPi, Inc, ~, ~, ~, Fy )
-                Mx = 0;
-                %{
+%                   Mx = 0;
+                
                 Mx = obj.Pacejka.Ro .* Fz .* ( obj.Pacejka.q.s.x(1) - ...
                     obj.Pacejka.q.s.x(2) .* Inc .* ( 1 + obj.Pacejka.p.P.Mx(1).*dPi ) + ...
                     obj.Pacejka.q.s.x(3) .* Fy ./ obj.Pacejka.Fzo + ...
                     obj.Pacejka.q.s.x(4) .* cos( obj.Pacejka.q.s.x(5) .* ...
-                    atan( (obj.Pacejka.q.S.x(6) .* Fz./obj.Pacejka.Fzo) ).^2 ) .* ...
+                    atan( (obj.Pacejka.q.s.x(6) .* Fz./obj.Pacejka.Fzo) ).^2 ) .* ...
                     sin( obj.Pacejka.q.s.x(7) .* Inc + obj.Pacejka.q.s.x(8) .* ...
                     atan( obj.Pacejka.q.s.x(9) .* Fy./obj.Pacejka.Fzo ) ) + ...
                     obj.Pacejka.q.s.x(10) .* atan( obj.Pacejka.q.s.x(11) .* Fz./obj.Pacejka.Fzo) .* Inc );
-                %}
+                
             end
 
             %%% Evaluate Rolling Resistance
             function My = EvaluateMy( obj, Alpha, Kappa, Fz, dFz, Pi, dPi, Inc, V, ~, Fidelity, Fx )
-                My = 0;
+%                 My = 0;
+                Re = obj.Radius.Effective( Kappa, Fz, Pi );
+                Rl = obj.Radius.Loaded( Fz, Pi );
+    
+                My = Fx .* (Re - Rl) + Fz .* Re .* ( obj.Pacejka.q.s.y(1) + ...
+                    obj.Pacejka.q.s.y(3) .* (V ./ obj.Pacejka.Vo) + ...
+                    obj.Pacejka.q.s.y(4) .* (V ./ obj.Pacejka.Vo).^4 );
             end
         end
     end
