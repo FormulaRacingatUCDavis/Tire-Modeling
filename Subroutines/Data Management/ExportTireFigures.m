@@ -57,17 +57,17 @@ for i = [2 3]
                 SlipAngle = -15:0.01:15;
                 
                 Fidelity.Pure = 'Pacejka'; Fidelity.Combined = 'Pure';
-                [~, FyPacejka, ~, ~, ~] = ContactPatchLoads( SlipAngle, ...
+                [~, FyPacejka, ~, ~, ~] = ContactPatchLoads( Tire, SlipAngle, ...
                     0, Bin(i).Values.Load(z), Bin(i).Values.Pressure(p), ...
                     Bin(i).Values.Inclination(c), 10, 1, ...
-                    struct('Pure', 'Pacejka'));
+                    struct('Pure', 'Pacejka', 'Combined', 'MNC'));
                 
                 PacejkaPlot = plot( SlipAngle, FyPacejka, 'b', 'HandleVisibility', 'off' ); 
                 
                 % Label Data Set
                 FySpline = feval( SplineFit{p,z,c}, SlipAngle )';
-                PlotInLineText( ['$F_{z}=', num2str(round(Bin(i).Values.Load(z))),'$ [$N$]'], ...
-                    [SlipAngle; FySpline], [14,1], 6 )
+                % PlotInLineText( ['$F_{z}=', num2str(round(Bin(i).Values.Load(z))),'$ [$N$]'], ...
+                %     [SlipAngle; FySpline], [14,1], 6 )
                 
                 % Find Line of Peaks
                 [FyPacejkaMax, MaxIdx] = max( FyPacejka );
